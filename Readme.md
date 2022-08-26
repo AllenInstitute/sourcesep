@@ -1,6 +1,6 @@
 ### Description
 
-Source separation for multiplexed modulator imaging.
+Source separation for multiplexed spectral fiber photometry neuromodulator imaging.
 
 ### Environment
 ```
