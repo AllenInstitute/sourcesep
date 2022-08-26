@@ -1,4 +1,4 @@
-def load_config(dataset_key='challenge_1', verbose=False):
+def load_config(dataset_key='pilot', verbose=False):
     """Loads dictionary with path names and any other variables set through config.toml
 
     Args:
@@ -24,11 +24,6 @@ def load_config(dataset_key='challenge_1', verbose=False):
     for key in config:
         if Path(config[key]).exists():
             config[key] = Path(config[key])
-        elif Path(toml_dict[dataset_key]['dataset_root'] + toml_dict[dataset_key][key]).exists():
-            config[key] = Path(toml_dict[dataset_key]['dataset_root'] + toml_dict[dataset_key][key])
-        else:
-            config[key] = Path(toml_dict[dataset_key]['dataset_root'] + toml_dict[dataset_key][key])
-            not_found.append(key)
 
     for key in not_found:
         print(f'Did not find {key}')

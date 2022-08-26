@@ -4,11 +4,27 @@ Source separation for multiplexed spectral fiber photometry neuromodulator imagi
 
 ### Environment
 ```
-conda activate sourcesep python=3.8
+conda create -n sourcesep python=3.8
 conda install scikit-learn statsmodels jupyterlab pandas seaborn scipy rich tqdm autopep8 h5py pytables
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 pip install timebudget
 pip install -e .
+```
+
+### Config
+Config.toml contents:
+```
+['pilot']
+data_dir='/SpectralUnmixing'
+```
+
+```
+SpectralUnmixing
+    ├── GCaMP8s_1.csv
+    ├── GCaMP8s_2.csv
+    ├── GCaMP8s_3.csv
+    ├── HbAbs.csv
+    └── IndicatorSpectra.csv 
 ```
 
 ### Contributors:
