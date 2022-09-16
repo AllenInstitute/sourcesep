@@ -27,5 +27,11 @@ SpectralUnmixing
     └── IndicatorSpectra.csv 
 ```
 
+
+### Notes
+ - `.qmd` files are [quarto](https://quarto.org/) markdown files
+ - [FFT for non uniformly sampled data](https://github.com/flatironinstitute/finufft)
+ 
+
 ### Contributors:
 Rohan Gala, Smrithi Sunil, Kaspar Podgorski, Uygar Sümbül
