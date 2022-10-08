@@ -7,7 +7,7 @@ Source separation for multiplexed spectral fiber photometry neuromodulator imagi
 conda create -n sourcesep python=3.8
 conda install scikit-learn statsmodels jupyterlab pandas seaborn scipy rich tqdm autopep8 h5py pytables
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
-pip install timebudget librosa
+pip install timebudget dysts librosa
 pip install -e .
 ```
 
@@ -29,8 +29,6 @@ SpectralUnmixing
 
 
 ### Notes
-
-
 
 [Deep Learning approaches for source separation in music/speech](https://www.youtube.com/watch?v=AB-F2JmI9U4) that we might adapt for our problem:
  - [Asteroid](https://asteroid-team.github.io/): Augmentations, model components, model implementations
