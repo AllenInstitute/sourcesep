@@ -27,6 +27,6 @@ def load_config(dataset_key='pilot', verbose=False):
 
     for key in not_found:
         print(f'Did not find {key}')
-        #config.pop(key, None)
+        config.pop(key, None)
 
     return config

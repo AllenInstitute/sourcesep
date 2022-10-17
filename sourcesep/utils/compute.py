@@ -16,5 +16,5 @@ def lowpass(xt, sampling_interval, pass_below):
     xf = fft(xt)
     f = fftfreq(xt.size, sampling_interval)
     xf[np.abs(f)>pass_below] = 0
-    xt_filtered = ifft(xf)
+    xt_filtered = np.real_if_close(ifft(xf))
     return xt_filtered
