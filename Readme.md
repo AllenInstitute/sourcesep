@@ -3,11 +3,14 @@
 Source separation for multiplexed spectral fiber photometry neuromodulator imaging.
 
 ### Environment
+
 ```
 conda create -n sourcesep python=3.8
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
-conda install scipy scikit-learn statsmodels jupyterlab pandas seaborn rich tqdm autopep8 h5py pytables
-pip install timebudget dysts librosa
+conda install scipy scikit-learn statsmodels jupyterlab pandas seaborn h5py pytables
+pip install timebudget rich tqdm autopep8 
+pip install dysts sdeint 
+pip install librosa 
 pip install -e .
 ```
 

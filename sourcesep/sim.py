@@ -24,12 +24,7 @@ class SimData():
         self.Mu_dox = None
 
         self.A_model = Lorenz()                    # Activity model
-        self.H_ox_model = Lowpass_Gauss()          # Hemodynamics model (oxy hemo)
-        self.H_dox_model = Lowpass_Gauss()         # Hemodynamics model (deoxy hemo)
-        self.N_model = Lowpass_Gauss()             # Laser noise model
-        self.M_model = Lowpass_Gauss()             # Motion artifact model
-
-        self.paths = load_config(dataset_key='all') # Paths for data files
+        self.paths = load_config(dataset_key='all')# Paths for data files
         self.rng = np.random.default_rng()
 
     def set_arrays(self):
@@ -39,8 +34,8 @@ class SimData():
                                  self.T)
 
         # wavelengths measured
-        self.L_arr = np.linspace(self.cfg['sensor']['lambda_min'],
-                                 self.cfg['sensor']['lambda_max'],
+        self.L_arr = np.linspace(self.cfg['sensor']['lambda_min_nm'],
+                                 self.cfg['sensor']['lambda_max_nm'],
                                  self.cfg['sensor']['n_channels'])
         return
 
@@ -119,52 +114,26 @@ class SimData():
         Mu_dox = self.Mu_dox
         return Mu_ox, Mu_dox
 
-    def A_model(self):
-        self.model.ic = self.rng.integers(1, high=100)*self.rng.random(3)
-        A = self.model.make_trajectory(self.T, pts_per_period=100, resample=True, standardize=True)
-        A = A[:,:self.I]
+    def gen_A(self):
+        A = []
+        T_conv = int(0.2*self.T)
+        p = self.cfg['sensor']['sampling_freq_Hz'] * 1/self.cfg['activity']['dominant_freq_Hz']
+        p = p*2 # for the lorenz attractor, the period is roughly around both orbits.
+        p = self.rng.integers(low=int(0.8*p), high=int(1.2*p))
+        assert p > 1, 'Check number of points per period'
+        for i in range(self.I % self.A_model.embedding_dimension + 1):
+            self.A_model.ic = self.rng.integers(low=-100, high=100)*self.rng.random(3)
+            A.append(self.A_model.make_trajectory(self.T + T_conv,
+                                                pts_per_period=p,
+                                                resample=True,
+                                                standardize=False))
+
+        A = np.hstack(A)
+        ind = np.arange(A.shape[1])
+        np.random.shuffle(ind) # inplace op.
+        A = A[T_conv:,ind[:self.I]]
         assert A.shape == (self.T, self.I), 'check generated shape of A'
         return A
-
-    def compose_obs(self):
-        # These are all constants:
-        S = self.get_S()
-        W = self.get_W()
-        E = self.get_E()
-        Mu_ox, Mu_dox = self.get_Mu()
-
-        A = self.A_model()
-
-        AS = np.einsum('ti,il->til', A, S)
-        ASW = np.einsum('til,ij->tjl', AS, W)
-        E = np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
-        ASWE = ASW + E
-
-        # 2nd term
-        H_ox = self.rng.random((self.T,))
-        H_dox = self.rng.random((self.T,))
-
-        HD = np.einsum('td,dl -> tl', H_ox[...,np.newaxis], Mu_ox[np.newaxis,...]) \
-            + np.einsum('td,dl -> tl', H_dox[...,np.newaxis], Mu_dox[np.newaxis,...])
-
-        HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), HD)
-
-        M = self.rng.random((self.T,))
-        B = self.rng.random((self.J,self.L))
-
-        HDM = np.einsum('tjl,t -> tjl', HD, M)
-        B = np.einsum('t,jl -> tjl', np.ones((self.T,)), B)
-        H = HDM + B
-
-        # 3rd term
-        N = self.rng.random((self.T,self.J))
-        N = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
-        assert np.array_equal(N[:,:,0],N[:,:,1]), 'broadcast check'
-
-        O = np.einsum('tjl,tjl -> tjl', ASWE, H)
-        O = np.einsum('tjl,tjl -> tjl', O, N)
-        return O
-
 
     def gen_H(self):
         hdyn = self.cfg['hemodynamics']
@@ -179,18 +148,53 @@ class SimData():
         H_dox = lowpass(xt=H_dox_pre,
                         sampling_interval=sampling_interval,
                         pass_below=hdyn['lowpass_thr_Hz'])
+        assert H_ox.shape == (self.T,), 'check H_ox shape'
+        assert H_dox.shape == (self.T,), 'check H_dox shape'
         return H_ox, H_dox
 
     def gen_N(self):
         # Simulating N - this can be estimated from diffraction pattern around saturated pixels. 
         # For now we can treat this as a known 'constant' (i.e. doesn't need to be fit) in the model
         # Simulated with amplitude of 2% compared to that for activity
-        0.02* self.rng.standard_normal(size=(self.T,))
+        return 0.02 * self.rng.standard_normal(size=(self.T,self.J))
 
+    def gen_M(self):
+        return 0.02 * self.rng.random((self.T,))
+
+
+    def gen_B(self):
+        return 0 * self.rng.random((self.J,self.L))
+
+    def compose_obs(self):
+        # These are all constants:
+        S = self.get_S()
+        W = self.get_W()
+        E = self.get_E()
+        Mu_ox, Mu_dox = self.get_Mu()
+
+        A = self.gen_A()
+        AS = np.einsum('ti,il->til', A, S)
+        ASW = np.einsum('til,ij->tjl', AS, W)
+        E = np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
+        ASWE = ASW + E
+
+        # 2nd term
+        H_ox, H_dox = self.gen_H()
+        HD = np.einsum('td,dl -> tl', H_ox[...,np.newaxis], Mu_ox[np.newaxis,...]) \
+            + np.einsum('td,dl -> tl', H_dox[...,np.newaxis], Mu_dox[np.newaxis,...])
+        HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), HD)
+        M = self.gen_M()
+        B = self.gen_B()
+        HDM = np.einsum('tjl,t -> tjl', HD, M)
+        B = np.einsum('t,jl -> tjl', np.ones((self.T,)), B)
+        H = HDM + B
+
+        # 3rd term
+        N = self.gen_N()
+        N = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
+        O = np.einsum('tjl,tjl -> tjl', ASWE, H)
+        O = np.einsum('tjl,tjl -> tjl', O, N)
+        return O
 
 def gauss_lambda(mu, sigma):
     return lambda x: np.exp(-(x-mu)**2/(sigma**2))
-
-
-def Lowpass_Gauss():
-    return
