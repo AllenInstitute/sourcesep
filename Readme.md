@@ -24,7 +24,7 @@ spectra='/data/spectra/'
 pilot='/data/pilot/'
 ```
 
-Data directory structure. (Download data from this [dropbox link](https://www.dropbox.com/sh/tsro86ixhv10ccj/AAD2gsnkY85B7wzYjnB8Vd0Ha?dl=0))
+Data directory structure. (Download data from this [dropbox link](https://www.dropbox.com/sh/k3650wj14sixmvu/AADKdH3ctglrWlNwygwNGLFMa?dl=0))
 
 ```
 data
