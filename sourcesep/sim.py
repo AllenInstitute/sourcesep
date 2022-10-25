@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import toml
+from scipy import signal
 from dysts.flows import Lorenz
 from sourcesep.utils.config import load_config
 from sourcesep.utils.compute import lowpass
@@ -114,7 +115,7 @@ class SimData():
         Mu_dox = self.Mu_dox
         return Mu_ox, Mu_dox
 
-    def gen_A(self):
+    def gen_A_slow(self):
         A = []
         T_conv = int(0.2*self.T)
         p = self.cfg['sensor']['sampling_freq_Hz'] * 1/self.cfg['activity']['dominant_freq_Hz']
@@ -126,7 +127,7 @@ class SimData():
             A.append(self.A_model.make_trajectory(self.T + T_conv,
                                                 pts_per_period=p,
                                                 resample=True,
-                                                standardize=False))
+                                                standardize=True))
 
         A = np.hstack(A)
         ind = np.arange(A.shape[1])
@@ -135,19 +136,38 @@ class SimData():
         assert A.shape == (self.T, self.I), 'check generated shape of A'
         return A
 
+    def gen_A_fast(self):
+        icfg = self.cfg['indicator']
+        sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
+        A_fast = np.zeros((self.T,self.I))
+        for i,k in enumerate(icfg.keys()):
+            # instantiate spikes
+            x_unif = self.rng.random(self.T)
+            p_spike = icfg[k]['modulator_spiking_f_Hz'] * sampling_interval
+            A_fast[x_unif <= p_spike, i] = 1
+
+            # convolve with exponential decay kernel
+            t_window = np.arange(0, icfg[k]['exp_decay_const_s']*10, sampling_interval)
+            kernel = 1 * np.exp(-(1/icfg[k]['exp_decay_const_s'])*t_window)
+            A_fast[:,i] = signal.convolve(A_fast[:,i], kernel, mode='same')
+
+        return A_fast
+
     def gen_H(self):
         hdyn = self.cfg['hemodynamics']
         sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
 
-        H_ox_pre = hdyn['H_ox_amp'] * self.rng.standard_normal(size=(self.T,))
+        H_ox_pre = self.rng.standard_normal(size=(self.T,))
         H_ox = lowpass(xt=H_ox_pre,
                        sampling_interval=sampling_interval,
                        pass_below=hdyn['lowpass_thr_Hz'])
+        H_ox = H_ox/np.max(H_ox)
 
-        H_dox_pre = hdyn['H_ox_amp'] * self.rng.standard_normal(size=(self.T,))
+        H_dox_pre = self.rng.standard_normal(size=(self.T,))
         H_dox = lowpass(xt=H_dox_pre,
                         sampling_interval=sampling_interval,
                         pass_below=hdyn['lowpass_thr_Hz'])
+        H_dox = H_dox/np.max(H_dox)
         assert H_ox.shape == (self.T,), 'check H_ox shape'
         assert H_dox.shape == (self.T,), 'check H_dox shape'
         return H_ox, H_dox
@@ -156,23 +176,24 @@ class SimData():
         # Simulating N - this can be estimated from diffraction pattern around saturated pixels. 
         # For now we can treat this as a known 'constant' (i.e. doesn't need to be fit) in the model
         # Simulated with amplitude of 2% compared to that for activity
-        return 0.02 * self.rng.standard_normal(size=(self.T,self.J))
+        return self.rng.standard_normal(size=(self.T,self.J))
 
     def gen_M(self):
-        return 0.02 * self.rng.random((self.T,))
-
+        return self.rng.standard_normal(size=(self.T,))
 
     def gen_B(self):
-        return 0 * self.rng.random((self.J,self.L))
+        return self.rng.random((self.J,self.L))
 
-    def compose_obs(self):
+    def compose(self):
+        amp = self.cfg['amplitude']
+
         # These are all constants:
         S = self.get_S()
         W = self.get_W()
         E = self.get_E()
         Mu_ox, Mu_dox = self.get_Mu()
 
-        A = self.gen_A()
+        A = amp['A_slow'] * self.gen_A_slow() + amp['A_fast'] * self.gen_A_fast()
         AS = np.einsum('ti,il->til', A, S)
         ASW = np.einsum('til,ij->tjl', AS, W)
         E = np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
@@ -180,21 +201,29 @@ class SimData():
 
         # 2nd term
         H_ox, H_dox = self.gen_H()
+        H_ox = 1 + amp['H_ox'] * H_ox           # multiplicative; setting mean = 1
+        H_dox = 1 + amp['H_dox'] * H_dox        # multiplicative; setting mean = 1
         HD = np.einsum('td,dl -> tl', H_ox[...,np.newaxis], Mu_ox[np.newaxis,...]) \
             + np.einsum('td,dl -> tl', H_dox[...,np.newaxis], Mu_dox[np.newaxis,...])
         HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), HD)
-        M = self.gen_M()
-        B = self.gen_B()
+        M = 1 + amp['M'] * self.gen_M()         # multiplicative; setting mean = 1
+        B = amp['B'] * self.gen_B()
         HDM = np.einsum('tjl,t -> tjl', HD, M)
-        B = np.einsum('t,jl -> tjl', np.ones((self.T,)), B)
-        H = HDM + B
+        B_ = np.einsum('t,jl -> tjl', np.ones((self.T,)), B)
+        H = HDM + B_
 
         # 3rd term
-        N = self.gen_N()
-        N = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
+        N = 1 + amp['N'] * self.gen_N()         # multiplicative; setting mean = 1
+        N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N) 
         O = np.einsum('tjl,tjl -> tjl', ASWE, H)
-        O = np.einsum('tjl,tjl -> tjl', O, N)
-        return O
+        O = np.einsum('tjl,tjl -> tjl', O, N_)
 
-def gauss_lambda(mu, sigma):
-    return lambda x: np.exp(-(x-mu)**2/(sigma**2))
+        dat = dict(O=O,
+                   E=E,
+                   A=A,
+                   N=N,
+                   B=B,
+                   M=M,
+                   H_ox=H_ox,
+                   H_dox=H_dox)
+        return dat

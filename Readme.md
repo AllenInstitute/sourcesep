@@ -19,24 +19,26 @@ Config.toml contents:
 
 ```
 ['all']
-root='/SpectralUnmixing/'
-spectra='/SpectralUnmixing/spectra/'
-pilot='/SpectralUnmixing/pilot/'
+root='/data/'
+spectra='/data/spectra/'
+pilot='/data/pilot/'
 ```
 
+Data directory structure. (Download data from this [dropbox link](https://www.dropbox.com/sh/tsro86ixhv10ccj/AAD2gsnkY85B7wzYjnB8Vd0Ha?dl=0))
+
 ```
-SpectralUnmixing
-    ├── pilot
-    │   ├── GCaMP8s_1.csv
-    │   ├── GCaMP8s_2.csv
-    │   ├── GCaMP8s_3.csv
-    │   └── test.hdf5
-    ├── sim_config.toml
-    └── spectra
-        ├── EGFP.csv
-        ├── HbAbs.csv
-        ├── Venus.csv
-        └── mApple.csv
+data
+  ├── pilot
+  │   ├── GCaMP8s_1.csv
+  │   ├── GCaMP8s_2.csv
+  │   ├── GCaMP8s_3.csv
+  │   └── test.hdf5
+  ├── sim_config.toml
+  └── spectra
+      ├── EGFP.csv
+      ├── HbAbs.csv
+      ├── Venus.csv
+      └── mApple.csv
 ```
 
 
