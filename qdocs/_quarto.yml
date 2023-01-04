@@ -4,7 +4,11 @@ project:
 
 book:
   title: "Source separation"
-  author: "Rohan Gala"
+  author:
+  - Rohan Gala
+  - Smrithi Sunil
+  - Kaspar Podgorski
+  - Uygar Sümbül
   date: "01/03/2022"
   chapters:
     - index.qmd
