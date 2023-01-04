@@ -1,5 +1,6 @@
 # Simulating hyperspectral fiber photometry signals
 
+## Generative model for observed signal
 $$
 \def\lexc{\lambda^{\dagger}_{j}}
 $$
@@ -46,8 +47,9 @@ $$
 
 ## Model for hemodynamics
 
+Absorption by hemoglobin corrupts the signal. The Beer-Lambert law is used to model this effect in the generative model above. 
 
- - $\varepsilon$: extinction coefficient (in $\textrm{cm}^{-1}\textrm{mole}^{-1}{L}$), @hemoglobinspectra. This is a function of $\lambda$ 
+ - $\varepsilon$: extinction coefficient (in $\textrm{cm}^{-1}\textrm{mole}^{-1}{L}$),see @hemoglobinspectra. This is a function of $\lambda$ 
  - $h$: concentration (100 to 200 $gL^{-1}$ for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity
  - $l$: effective cuvette length in the Beer-Lambert law. We set this to 1 $\textrm{cm}$, and assume no dependence on $\lambda$ here. 
  - $M_{\textrm{Hg}}$: molar mass of Hemoglobin = 64,500 $g\textrm{mole}^{-1}$

@@ -43,6 +43,10 @@ data
       └── pathlength.csv
 ```
 
+### Documentation
+
+`./qdocs` contains source files for the quarto project rendered in `./docs`, which can be viewed as a [github pages website](https://alleninstitute.github.io/sourcesep).
+
 ### Notes
 
 [Deep Learning approaches for source separation in music/speech](https://www.youtube.com/watch?v=AB-F2JmI9U4) that we might adapt for our problem:
@@ -55,8 +59,7 @@ Particular models:
  - [Demucs](https://github.com/facebookresearch/demucs)
 
 Miscellaneous:
- 
- - `.qmd` files are [quarto](https://quarto.org/) markdown files
+
  - [FFT for non uniformly sampled data](https://github.com/flatironinstitute/finufft)
 
 
