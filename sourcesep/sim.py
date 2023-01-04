@@ -105,15 +105,20 @@ class SimData():
         return self.E
 
     def get_Mu(self):
-        if (self.Mu_ox is None) and (self.Mu_dox is None):
+        if (self.Mu_ox is None) or (self.Mu_dox is None):
             df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['spectrum_path'])
-            scale = np.max([df['Hb02 (cm-1/M)'].max(),df['Hb (cm-1/M)'].max()])
-            self.Mu_ox = np.interp(self.L_arr, df['wavelength'], df['Hb02 (cm-1/M)']) / scale
-            self.Mu_dox = np.interp(self.L_arr, df['wavelength'], df['Hb (cm-1/M)']) / scale
+            self.eps_ox = np.interp(self.L_arr, df['wavelength'], df['Hb02 (cm-1/M)'])
+            self.eps_dox = np.interp(self.L_arr, df['wavelength'], df['Hb (cm-1/M)']) # cm-1 g-1
+            self.MHg = 64500 # Hemoglobin grams per mole
+            self.blood_concentration = 150 # grams per Liter
 
-        Mu_ox = self.Mu_ox
-        Mu_dox = self.Mu_dox
-        return Mu_ox, Mu_dox
+            df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['pathlength_path'])
+            self.pathlength = np.interp(x=self.L_arr, xp=df['Wavelength (nm)'], fp=df['Estimated average pathlength (cm)']) #
+            
+            self.Mu_dox = self.blood_concentration * (self.pathlength * self.eps_dox) / self.MHg
+            self.Mu_ox = self.blood_concentration * (self.pathlength * self.eps_ox) / self.MHg
+
+        return self.Mu_ox, self.Mu_dox
 
     def gen_A_slow(self):
         A = []
@@ -154,23 +159,35 @@ class SimData():
         return A_fast
 
     def gen_H(self):
+        # Should be always +ve
         hdyn = self.cfg['hemodynamics']
+        cfg = self.cfg['amplitude']
         sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
 
-        H_ox_pre = self.rng.standard_normal(size=(self.T,))
-        H_ox = lowpass(xt=H_ox_pre,
+        H_total = lowpass(xt=self.rng.standard_normal(size=(self.T,)),
                        sampling_interval=sampling_interval,
                        pass_below=hdyn['lowpass_thr_Hz'])
-        H_ox = H_ox/np.max(H_ox)
+        
+        # rescaling H_total
+        H_total = H_total - np.min(H_total)
+        H_total = H_total / np.max(H_total)
+        H_total = cfg['H_total_range']*(H_total - np.mean(H_total)) + 1.0
 
-        H_dox_pre = self.rng.standard_normal(size=(self.T,))
-        H_dox = lowpass(xt=H_dox_pre,
-                        sampling_interval=sampling_interval,
-                        pass_below=hdyn['lowpass_thr_Hz'])
-        H_dox = H_dox/np.max(H_dox)
+        f = lowpass(xt=self.rng.standard_normal(size=(self.T,)),
+                       sampling_interval=sampling_interval,
+                       pass_below=hdyn['lowpass_thr_Hz'])
+
+        # rescaling f
+        f = f - np.min(f)
+        f = f / np.max(f)
+        f = cfg['f_range'] * (f - np.mean(f)) + 0.7
+
+        H_ox = f*H_total
+        H_dox = (1-f)*H_total
+
         assert H_ox.shape == (self.T,), 'check H_ox shape'
         assert H_dox.shape == (self.T,), 'check H_dox shape'
-        return H_ox, H_dox
+        return H_ox, H_dox, H_total, f
 
     def gen_N(self):
         # Simulating N - this can be estimated from diffraction pattern around saturated pixels. 
@@ -200,12 +217,13 @@ class SimData():
         ASWE = ASW + E
 
         # 2nd term
-        H_ox, H_dox = self.gen_H()
-        H_ox = 1 + amp['H_ox'] * H_ox           # multiplicative; setting mean = 1
-        H_dox = 1 + amp['H_dox'] * H_dox        # multiplicative; setting mean = 1
+        H_ox, H_dox, H_total, f  = self.gen_H()
+        H_ox = amp['H_ox'] * H_ox
+        H_dox = amp['H_dox'] * H_dox
         HD = np.einsum('td,dl -> tl', H_ox[...,np.newaxis], Mu_ox[np.newaxis,...]) \
             + np.einsum('td,dl -> tl', H_dox[...,np.newaxis], Mu_dox[np.newaxis,...])
         HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), HD)
+        HD = np.exp(-1 * HD)
         M = 1 + amp['M'] * self.gen_M()         # multiplicative; setting mean = 1
         B = amp['B'] * self.gen_B()
         HDM = np.einsum('tjl,t -> tjl', HD, M)
@@ -214,7 +232,7 @@ class SimData():
 
         # 3rd term
         N = 1 + amp['N'] * self.gen_N()         # multiplicative; setting mean = 1
-        N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N) 
+        N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
         O = np.einsum('tjl,tjl -> tjl', ASWE, H)
         O = np.einsum('tjl,tjl -> tjl', O, N_)
 

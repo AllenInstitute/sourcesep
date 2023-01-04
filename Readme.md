@@ -34,13 +34,14 @@ data
   │   ├── GCaMP8s_3.csv
   │   └── test.hdf5
   ├── sim_config.toml
+  ├── calibrate_px_to_nm.tif
   └── spectra
       ├── EGFP.csv
       ├── HbAbs.csv
       ├── Venus.csv
-      └── mApple.csv
+      ├── mApple.csv
+      └── pathlength.csv
 ```
-
 
 ### Notes
 
