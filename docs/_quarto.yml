@@ -1,0 +1,18 @@
+project:
+  type: book
+  output-dir: ../site
+
+book:
+  title: "Source separation"
+  author: "Rohan Gala"
+  date: "01/03/2022"
+  chapters:
+    - index.qmd
+    - 00_simulations.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo

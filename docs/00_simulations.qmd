@@ -1,0 +1,69 @@
+# Simulating hyperspectral fiber photometry signals
+
+$$
+\def\lexc{\lambda^{\dagger}_{j}}
+$$
+
+|Type  | Symbol              | Code     | Description     |
+|:-----|:-------------------:|:---------|:----------------|
+|      | $O_{j}(t,\lambda)$  | O        | observed signal from the $j$-th laser at time $t$ at spectral wavelength $\lambda$  | 
+|Const | $s_{i}(\lambda)$    | S        | emission spectrum of sensor associated with $i$-th neuromodulator                   | 
+|Const | $e_{j}(\lambda)$    | E        | time-invariant spectral signature of $j$-th excitation laser                        | 
+|Const | $\mu_\textrm{oxy}(\lambda)$   | Mu_ox  | Spectrum of oxygenated hemolobin                                            |
+|Const | $\mu_\textrm{deoxy}(\lambda)$ | Mu_dox | Spectrum of deoxygenated hemolobin                                          |
+|Param | $w_{ij}$              | W        | emission efficiency of $i$-th neuromodulator excited by $j$-th laser              | 
+|Param | $a_{i}(t)$            | A        | sensor signal from time varying amount for the $i$-th neuromodulator              | 
+|Param | $n_{j}(t)$            | N        | noise from $j$-th laser                                                           | 
+|Param | $b_{j}(\lambda)$      | B        | fiber fluorescence triggered by $j$-th laser                                      | 
+|Param | $m(t)$                | M        | motion correction (potentially depends on $i$)                                    | 
+|Param | $h_\textrm{oxy}(t)$   | H_ox     | Hemodynamics (oxygenated component)                                               |
+|Param | $h_\textrm{deoxy}(t)$ | H_dox    | Hemodynamics (deoxygenated component)                                             |
+
+$$
+\begin{align*}
+O_{j}(t,\lambda)  &= \{ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluorescence}\}}{\left(a_{i}(t)s_{i}({\lambda})w_{ij}\right)} + e_{j}(\lambda) \right) &\\
+& \times \exp \left[ -\left[ h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lambda)
++ h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lambda) \right]\right] \times m(t) &\\
+&+ b_{j}(\lambda) \} \times n_{j}(t)
+\end{align*}
+$$
+
+- $a_{i}(t)$ for  $i \in \textrm{autofluorescence}$ is slow
+- $a_{i}(t)$ for  $i \in \textrm{sensors}$ can be fast (prior: 50 ms to 1 s) or slow (prior: 10 s to 50 s)
+- $a_{i}(t) := c_{i}\{f(t)s_\textrm{bright}(\lambda) + (1-f(t))s_\textrm{dark}(\lambda)\}$ : a single sensor with concentration $c_i$ exists in two states (e.g. bright, dark or bound, unbound) that have their own emission spectra. 
+- Isosbestic point is the particular $\lambda$ where the two populations cannot be distinguished. This does not always exist for all sensors, but when it does exist it can be used to infer noise parameters that also corrupt measurements at other $\lambda$ values.
+- $n_{j}(t)$ : laser specific uncorrelated (in time) gaussian noise dominated by high frequency components.
+- $h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)$ : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time. The fastest dynamics occur at 0.5 Hz
+- For each $j$, a spectral band (around excitation wavelength $\lambda^{\dagger}_{j}$ ) has no information because the pixels are saturated. The diffraction pattern around these pixels is dominated by signal from the laser itself. This might provide an approximation for terms like $h_{\textrm{oxy}}(t)$ ... etc. These could be used as inputs to the model.
+
+
+$$
+O_{j}(t,\lexc) = [e_{j}(\lexc) \times\ \exp[-([
+h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lexc)
++h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lexc)])] \times m(t) + b_{j}(\lexc)] \times{n_{j}(t)}
+$$
+
+
+## Model for hemodynamics
+
+
+ - $\varepsilon$: extinction coefficient (in $\textrm{cm}^{-1}\textrm{mole}^{-1}{L}$), @hemoglobinspectra. This is a function of $\lambda$ 
+ - $h$: concentration (100 to 200 $gL^{-1}$ for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity
+ - $l$: effective cuvette length in the Beer-Lambert law. We set this to 1 $\textrm{cm}$, and assume no dependence on $\lambda$ here. 
+ - $M_{\textrm{Hg}}$: molar mass of Hemoglobin = 64,500 $g\textrm{mole}^{-1}$
+ - $A$: absorbance, calculated as per Beer-Lambert's law $A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hg}}}$
+ - Let $f(t)$ be fraction of hemoglobin in the oxygenated state. Define $h_{\textrm{oxy}}$, $h_{\textrm{deoxy}}$, $\mu_\textrm{oxy}$ and $\mu_\textrm{deoxy}$ as:
+
+$$
+\begin{align*}
+h_\textrm{oxy}(t) &= f(t)h_{\textrm{total}}(t) \\
+h_\textrm{deoxy}(t) &= (1 - f(t))h_{\textrm{total}}(t) \\
+\mu_\textrm{oxy} &= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
+\mu_\textrm{deoxy} &= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
+\end{align*}
+$$
+
+ - Replacing $A$ in the definition of absorbance: $\frac{I}{I_o} = e^{-A}$: 
+$$
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}}h_{\textrm{deoxy}}(t))}
+$$

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Source separation - 1&nbsp; Simulating hyperspectral fiber photometry signals</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./references.html" rel="next">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Source separation</a> 
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00_simulations.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link active" data-scroll-target="#model-for-hemodynamics"> <span class="header-section-number">1.1</span> Model for hemodynamics</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    
+  </div>
+  
+
+</header>
+
+<p><span class="math display">\[
+\def\lexc{\lambda^{\dagger}_{j}}
+\]</span></p>
+<table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 38%">
+<col style="width: 18%">
+<col style="width: 31%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Type</th>
+<th style="text-align: center;">Symbol</th>
+<th style="text-align: left;">Code</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: center;"><span class="math inline">\(O_{j}(t,\lambda)\)</span></td>
+<td style="text-align: left;">O</td>
+<td style="text-align: left;">observed signal from the <span class="math inline">\(j\)</span>-th laser at time <span class="math inline">\(t\)</span> at spectral wavelength <span class="math inline">\(\lambda\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Const</td>
+<td style="text-align: center;"><span class="math inline">\(s_{i}(\lambda)\)</span></td>
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">emission spectrum of sensor associated with <span class="math inline">\(i\)</span>-th neuromodulator</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Const</td>
+<td style="text-align: center;"><span class="math inline">\(e_{j}(\lambda)\)</span></td>
+<td style="text-align: left;">E</td>
+<td style="text-align: left;">time-invariant spectral signature of <span class="math inline">\(j\)</span>-th excitation laser</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Const</td>
+<td style="text-align: center;"><span class="math inline">\(\mu_\textrm{oxy}(\lambda)\)</span></td>
+<td style="text-align: left;">Mu_ox</td>
+<td style="text-align: left;">Spectrum of oxygenated hemolobin</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Const</td>
+<td style="text-align: center;"><span class="math inline">\(\mu_\textrm{deoxy}(\lambda)\)</span></td>
+<td style="text-align: left;">Mu_dox</td>
+<td style="text-align: left;">Spectrum of deoxygenated hemolobin</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(w_{ij}\)</span></td>
+<td style="text-align: left;">W</td>
+<td style="text-align: left;">emission efficiency of <span class="math inline">\(i\)</span>-th neuromodulator excited by <span class="math inline">\(j\)</span>-th laser</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(a_{i}(t)\)</span></td>
+<td style="text-align: left;">A</td>
+<td style="text-align: left;">sensor signal from time varying amount for the <span class="math inline">\(i\)</span>-th neuromodulator</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(n_{j}(t)\)</span></td>
+<td style="text-align: left;">N</td>
+<td style="text-align: left;">noise from <span class="math inline">\(j\)</span>-th laser</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(b_{j}(\lambda)\)</span></td>
+<td style="text-align: left;">B</td>
+<td style="text-align: left;">fiber fluorescence triggered by <span class="math inline">\(j\)</span>-th laser</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(m(t)\)</span></td>
+<td style="text-align: left;">M</td>
+<td style="text-align: left;">motion correction (potentially depends on <span class="math inline">\(i\)</span>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(h_\textrm{oxy}(t)\)</span></td>
+<td style="text-align: left;">H_ox</td>
+<td style="text-align: left;">Hemodynamics (oxygenated component)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Param</td>
+<td style="text-align: center;"><span class="math inline">\(h_\textrm{deoxy}(t)\)</span></td>
+<td style="text-align: left;">H_dox</td>
+<td style="text-align: left;">Hemodynamics (deoxygenated component)</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+\begin{align*}
+O_{j}(t,\lambda)  &amp;= \{ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluorescence}\}}{\left(a_{i}(t)s_{i}({\lambda})w_{ij}\right)} + e_{j}(\lambda) \right) &amp;\\
+&amp; \times \exp \left[ -\left[ h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lambda)
++ h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lambda) \right]\right] \times m(t) &amp;\\
+&amp;+ b_{j}(\lambda) \} \times n_{j}(t)
+\end{align*}
+\]</span></p>
+<ul>
+<li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{autofluorescence}\)</span> is slow</li>
+<li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{sensors}\)</span> can be fast (prior: 50 ms to 1 s) or slow (prior: 10 s to 50 s)</li>
+<li><span class="math inline">\(a_{i}(t) := c_{i}\{f(t)s_\textrm{bright}(\lambda) + (1-f(t))s_\textrm{dark}(\lambda)\}\)</span> : a single sensor with concentration <span class="math inline">\(c_i\)</span> exists in two states (e.g.&nbsp;bright, dark or bound, unbound) that have their own emission spectra.</li>
+<li>Isosbestic point is the particular <span class="math inline">\(\lambda\)</span> where the two populations cannot be distinguished. This does not always exist for all sensors, but when it does exist it can be used to infer noise parameters that also corrupt measurements at other <span class="math inline">\(\lambda\)</span> values.</li>
+<li><span class="math inline">\(n_{j}(t)\)</span> : laser specific uncorrelated (in time) gaussian noise dominated by high frequency components.</li>
+<li><span class="math inline">\(h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)\)</span> : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time. The fastest dynamics occur at 0.5 Hz</li>
+<li>For each <span class="math inline">\(j\)</span>, a spectral band (around excitation wavelength <span class="math inline">\(\lambda^{\dagger}_{j}\)</span> ) has no information because the pixels are saturated. The diffraction pattern around these pixels is dominated by signal from the laser itself. This might provide an approximation for terms like <span class="math inline">\(h_{\textrm{oxy}}(t)\)</span> … etc. These could be used as inputs to the model.</li>
+</ul>
+<p><span class="math display">\[
+O_{j}(t,\lexc) = [e_{j}(\lexc) \times\ \exp[-([
+h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lexc)
++h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lexc)])] \times m(t) + b_{j}(\lexc)] \times{n_{j}(t)}
+\]</span></p>
+<section id="model-for-hemodynamics" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="model-for-hemodynamics"><span class="header-section-number">1.1</span> Model for hemodynamics</h2>
+<ul>
+<li><span class="math inline">\(\varepsilon\)</span>: extinction coefficient (in <span class="math inline">\(\textrm{cm}^{-1}\textrm{mole}^{-1}{L}\)</span>), <span class="citation" data-cites="hemoglobinspectra">Prahl (<a href="references.html#ref-hemoglobinspectra" role="doc-biblioref">1998</a>)</span>. This is a function of <span class="math inline">\(\lambda\)</span></li>
+<li><span class="math inline">\(h\)</span>: concentration (100 to 200 <span class="math inline">\(gL^{-1}\)</span> for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity</li>
+<li><span class="math inline">\(l\)</span>: effective cuvette length in the Beer-Lambert law. We set this to 1 <span class="math inline">\(\textrm{cm}\)</span>, and assume no dependence on <span class="math inline">\(\lambda\)</span> here.</li>
+<li><span class="math inline">\(M_{\textrm{Hg}}\)</span>: molar mass of Hemoglobin = 64,500 <span class="math inline">\(g\textrm{mole}^{-1}\)</span></li>
+<li><span class="math inline">\(A\)</span>: absorbance, calculated as per Beer-Lambert’s law <span class="math inline">\(A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hg}}}\)</span></li>
+<li>Let <span class="math inline">\(f(t)\)</span> be fraction of hemoglobin in the oxygenated state. Define <span class="math inline">\(h_{\textrm{oxy}}\)</span>, <span class="math inline">\(h_{\textrm{deoxy}}\)</span>, <span class="math inline">\(\mu_\textrm{oxy}\)</span> and <span class="math inline">\(\mu_\textrm{deoxy}\)</span> as:</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+h_\textrm{oxy}(t) &amp;= f(t)h_{\textrm{total}}(t) \\
+h_\textrm{deoxy}(t) &amp;= (1 - f(t))h_{\textrm{total}}(t) \\
+\mu_\textrm{oxy} &amp;= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
+\mu_\textrm{deoxy} &amp;= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
+\end{align*}
+\]</span></p>
+<ul>
+<li>Replacing <span class="math inline">\(A\)</span> in the definition of absorbance: <span class="math inline">\(\frac{I}{I_o} = e^{-A}\)</span>:</li>
+</ul>
+<p><span class="math display">\[
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}}h_{\textrm{deoxy}}(t))}
+\]</span></p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="ref-hemoglobinspectra" class="csl-entry" role="doc-biblioentry">
+Prahl, Scott. 1998. <span>“Optical Spectra of Hemoglobin.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://omlc.org/spectra/hemoglobin/summary.html" class="uri">https://omlc.org/spectra/hemoglobin/summary.html</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./references.html" class="pagination-link">
+        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

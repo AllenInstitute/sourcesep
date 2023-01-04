@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Source separation",
+    "section": "",
+    "text": "These are notes for the problem of source separation encountered in hyperspectral fiber photometry."
+  },
+  {
+    "objectID": "00_simulations.html",
+    "href": "00_simulations.html",
+    "title": "1  Simulating hyperspectral fiber photometry signals",
+    "section": "",
+    "text": "\\[\n\\def\\lexc{\\lambda^{\\dagger}_{j}}\n\\]\n\\[\n\\begin{align*}\nO_{j}(t,\\lambda)  &= \\{ \\left( \\sum_{i \\in \\{\\textrm{sensors},\\textrm{autofluorescence}\\}}{\\left(a_{i}(t)s_{i}({\\lambda})w_{ij}\\right)} + e_{j}(\\lambda) \\right) &\\\\\n& \\times \\exp \\left[ -\\left[ h_{\\textrm{oxy}}(t)\\mu_{\\textrm{oxy}}(\\lambda)\n+ h_{\\textrm{deoxy}}(t)\\mu_{\\textrm{deoxy}}(\\lambda) \\right]\\right] \\times m(t) &\\\\\n&+ b_{j}(\\lambda) \\} \\times n_{j}(t)\n\\end{align*}\n\\]\n\\[\nO_{j}(t,\\lexc) = [e_{j}(\\lexc) \\times\\ \\exp[-([\nh_{\\textrm{oxy}}(t)\\mu_{\\textrm{oxy}}(\\lexc)\n+h_{\\textrm{deoxy}}(t)\\mu_{\\textrm{deoxy}}(\\lexc)])] \\times m(t) + b_{j}(\\lexc)] \\times{n_{j}(t)}\n\\]"
+  },
+  {
+    "objectID": "00_simulations.html#model-for-hemodynamics",
+    "href": "00_simulations.html#model-for-hemodynamics",
+    "title": "1  Simulating hyperspectral fiber photometry signals",
+    "section": "1.1 Model for hemodynamics",
+    "text": "1.1 Model for hemodynamics\n\n\\(\\varepsilon\\): extinction coefficient (in \\(\\textrm{cm}^{-1}\\textrm{mole}^{-1}{L}\\)), Prahl (1998). This is a function of \\(\\lambda\\)\n\\(h\\): concentration (100 to 200 \\(gL^{-1}\\) for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity\n\\(l\\): effective cuvette length in the Beer-Lambert law. We set this to 1 \\(\\textrm{cm}\\), and assume no dependence on \\(\\lambda\\) here.\n\\(M_{\\textrm{Hg}}\\): molar mass of Hemoglobin = 64,500 \\(g\\textrm{mole}^{-1}\\)\n\\(A\\): absorbance, calculated as per Beer-Lambert’s law \\(A = \\frac{\\varepsilon \\times h \\times {l}}{M_{\\textrm{Hg}}}\\)\nLet \\(f(t)\\) be fraction of hemoglobin in the oxygenated state. Define \\(h_{\\textrm{oxy}}\\), \\(h_{\\textrm{deoxy}}\\), \\(\\mu_\\textrm{oxy}\\) and \\(\\mu_\\textrm{deoxy}\\) as:\n\n\\[\n\\begin{align*}\nh_\\textrm{oxy}(t) &= f(t)h_{\\textrm{total}}(t) \\\\\nh_\\textrm{deoxy}(t) &= (1 - f(t))h_{\\textrm{total}}(t) \\\\\n\\mu_\\textrm{oxy} &= \\tfrac{\\varepsilon_{\\textrm{oxy}}(\\lambda)}{M_{\\textrm{Hg}}} \\\\\n\\mu_\\textrm{deoxy} &= \\tfrac{\\varepsilon_{\\textrm{deoxy}}(\\lambda)}{M_{\\textrm{Hg}}}\n\\end{align*}\n\\]\n\nReplacing \\(A\\) in the definition of absorbance: \\(\\frac{I}{I_o} = e^{-A}\\):\n\n\\[\nI(\\lambda, t) = I_o(\\lambda, t) e^{-(\\mu_{\\textrm{oxy}}h_{\\textrm{oxy}}(t) + \\mu_{\\textrm{deoxy}}h_{\\textrm{deoxy}}(t))}\n\\]\n\n\n\n\nPrahl, Scott. 1998. “Optical Spectra of Hemoglobin.” url: https://omlc.org/spectra/hemoglobin/summary.html."
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Prahl, Scott. 1998. “Optical Spectra of Hemoglobin.” url: https://omlc.org/spectra/hemoglobin/summary.html."
+  }
+]
