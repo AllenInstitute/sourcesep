@@ -154,14 +154,14 @@ ul.task-list li input[type="checkbox"] {
 <h2 data-number="2.1" class="anchored" data-anchor-id="training-a-conv-net"><span class="header-section-number">2.1</span> Training a conv-net</h2>
 <ol type="1">
 <li>The raw signal is simulated with the generative model in <a href="00_simulations.html#eq-observation">Equation&nbsp;<span>1.1</span></a></li>
-<li>A conv-net is trained to reconstruct sensor activity <span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in\)</span> sensors, and terms describing hemodynamics <span class="math inline">\(h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)\)</span> by minimizing mean-squared error at each time.</li>
-<li>We consider the input organized into <span class="math inline">\(j \times \lambda\)</span> channels for the each fixed-interval of time <span class="math inline">\(t\)</span></li>
+<li>A conv-net is trained to reconstruct sensor activity <span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in\)</span> sensors, and terms describing hemodynamics <span class="math inline">\(h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)\)</span> by minimizing mean-squared error at each <span class="math inline">\(t\)</span>.</li>
+<li>The input is organized into <code>n_lasers x n_wavelengths</code> channels for the each fixed time intervals</li>
 </ol>
 </section>
 <section id="next-steps" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">2.2</span> Next steps</h2>
 <ul>
-<li>Include autocorrelation data</li>
+<li>Include autofluorescence data</li>
 <li>Train with larger batchsizes/ regularize the model</li>
 <li>Updates to the loss function/ generative model to incorporate Poisson noise</li>
 <li>Correlation across laser/wavelengths for generative model suggests high redundancy</li>

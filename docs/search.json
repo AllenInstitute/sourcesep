@@ -25,14 +25,14 @@
     "href": "01_methods.html#training-a-conv-net",
     "title": "2  Methods",
     "section": "2.1 Training a conv-net",
-    "text": "2.1 Training a conv-net\n\nThe raw signal is simulated with the generative model in Equation 1.1\nA conv-net is trained to reconstruct sensor activity \\(a_{i}(t)\\) for \\(i \\in\\) sensors, and terms describing hemodynamics \\(h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t)\\) by minimizing mean-squared error at each time.\nWe consider the input organized into \\(j \\times \\lambda\\) channels for the each fixed-interval of time \\(t\\)"
+    "text": "2.1 Training a conv-net\n\nThe raw signal is simulated with the generative model in Equation 1.1\nA conv-net is trained to reconstruct sensor activity \\(a_{i}(t)\\) for \\(i \\in\\) sensors, and terms describing hemodynamics \\(h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t)\\) by minimizing mean-squared error at each \\(t\\).\nThe input is organized into n_lasers x n_wavelengths channels for the each fixed time intervals"
   },
   {
     "objectID": "01_methods.html#next-steps",
     "href": "01_methods.html#next-steps",
     "title": "2  Methods",
     "section": "2.2 Next steps",
-    "text": "2.2 Next steps\n\nInclude autocorrelation data\nTrain with larger batchsizes/ regularize the model\nUpdates to the loss function/ generative model to incorporate Poisson noise\nCorrelation across laser/wavelengths for generative model suggests high redundancy"
+    "text": "2.2 Next steps\n\nInclude autofluorescence data\nTrain with larger batchsizes/ regularize the model\nUpdates to the loss function/ generative model to incorporate Poisson noise\nCorrelation across laser/wavelengths for generative model suggests high redundancy"
   },
   {
     "objectID": "01_methods.html#ideas-to-generalizing-model-to-real-data",
