@@ -15,7 +15,7 @@ This chapter documents ideas to analyze the raw signals.
  - Updates to the loss function/ generative model to incorporate Poisson noise
  - Correlation across laser/wavelengths for generative model suggests high redundancy
 
-## Ideas to generalizing model to real data
+## Generalizing model to real data
 
  - Adversarial training to learn parameters of the generative model 
  - Autoencoding objective (perhaps some specific channels) for regularization while training and transfer learning (fine tuning for real data)

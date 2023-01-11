@@ -35,11 +35,11 @@
     "text": "2.2 Next steps\n\nInclude autofluorescence data\nTrain with larger batchsizes/ regularize the model\nUpdates to the loss function/ generative model to incorporate Poisson noise\nCorrelation across laser/wavelengths for generative model suggests high redundancy"
   },
   {
-    "objectID": "01_methods.html#ideas-to-generalizing-model-to-real-data",
-    "href": "01_methods.html#ideas-to-generalizing-model-to-real-data",
+    "objectID": "01_methods.html#generalizing-model-to-real-data",
+    "href": "01_methods.html#generalizing-model-to-real-data",
     "title": "2  Methods",
-    "section": "2.3 Ideas to generalizing model to real data",
-    "text": "2.3 Ideas to generalizing model to real data\n\nAdversarial training to learn parameters of the generative model\nAutoencoding objective (perhaps some specific channels) for regularization while training and transfer learning (fine tuning for real data)"
+    "section": "2.3 Generalizing model to real data",
+    "text": "2.3 Generalizing model to real data\n\nAdversarial training to learn parameters of the generative model\nAutoencoding objective (perhaps some specific channels) for regularization while training and transfer learning (fine tuning for real data)"
   },
   {
     "objectID": "references.html",
