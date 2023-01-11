@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.0.37">
+<meta name="generator" content="quarto-1.2.280">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,10 +11,15 @@
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
@@ -44,7 +49,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./references.html" rel="next">
+<link href="./01_methods.html" rel="next">
 <link href="./index.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -120,6 +125,11 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./01_methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
   </div>
 </li>
@@ -128,12 +138,12 @@ div.csl-indent {
 </nav>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc">
+        <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#generative-model-for-observed-signal" id="toc-generative-model-for-observed-signal" class="nav-link active" data-scroll-target="#generative-model-for-observed-signal"> <span class="header-section-number">1.1</span> Generative model for observed signal</a></li>
-  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"> <span class="header-section-number">1.2</span> Model for hemodynamics</a></li>
+  <li><a href="#generative-model-for-observed-signal" id="toc-generative-model-for-observed-signal" class="nav-link active" data-scroll-target="#generative-model-for-observed-signal"><span class="toc-section-number">1.1</span>  Generative model for observed signal</a></li>
+  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"><span class="toc-section-number">1.2</span>  Model for hemodynamics</a></li>
   </ul>
 </nav>
     </div>
@@ -150,6 +160,7 @@ div.csl-indent {
 <div class="quarto-title-meta">
 
     
+  
     
   </div>
   
@@ -251,14 +262,14 @@ div.csl-indent {
 </tr>
 </tbody>
 </table>
-<p><span class="math display">\[
+<p><span id="eq-observation"><span class="math display">\[
 \begin{align*}
 O_{j}(t,\lambda)  &amp;= \{ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluorescence}\}}{\left(a_{i}(t)s_{i}({\lambda})w_{ij}\right)} + e_{j}(\lambda) \right) &amp;\\
 &amp; \times \exp \left[ -\left[ h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lambda)
 + h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lambda) \right]\right] \times m(t) &amp;\\
 &amp;+ b_{j}(\lambda) \} \times n_{j}(t)
 \end{align*}
-\]</span></p>
+\tag{1.1}\]</span></span></p>
 <ul>
 <li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{autofluorescence}\)</span> is slow</li>
 <li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{sensors}\)</span> can be fast (prior: 50 ms to 1 s) or slow (prior: 10 s to 50 s)</li>
@@ -294,11 +305,10 @@ h_\textrm{deoxy}(t) &amp;= (1 - f(t))h_{\textrm{total}}(t) \\
 \end{align*}
 \]</span></p>
 <ul>
-<li>Replacing <span class="math inline">\(A\)</span> in the definition of absorbance: <span class="math inline">\(\frac{I}{I_o} = e^{-A}\)</span>:</li>
-</ul>
-<p><span class="math display">\[
+<li>Replacing <span class="math inline">\(A\)</span> in the definition of absorbance: <span class="math inline">\(\frac{I}{I_o} = e^{-A}\)</span>: <span class="math display">\[
 I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}}h_{\textrm{deoxy}}(t))}
-\]</span></p>
+\]</span></li>
+</ul>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
@@ -350,7 +360,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
     button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
     setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
       button.setAttribute("title", currentTitle);
       button.classList.remove('code-copy-button-checked');
     }, 1000);
@@ -378,31 +405,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   for (var i=0; i<noterefs.length; i++) {
     const ref = noterefs[i];
     tippyHover(ref, function() {
-      let href = ref.getAttribute('href');
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
     });
   }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
   var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
   for (var i=0; i<bibliorefs.length; i++) {
     const ref = bibliorefs[i];
-    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
-    tippyHover(ref, function() {
-      var popup = window.document.createElement('div');
-      cites.forEach(function(cite) {
-        var citeDiv = window.document.createElement('div');
-        citeDiv.classList.add('hanging-indent');
-        citeDiv.classList.add('csl-entry');
-        var biblioDiv = window.document.getElementById('ref-' + cite);
-        if (biblioDiv) {
-          citeDiv.innerHTML = biblioDiv.innerHTML;
-        }
-        popup.appendChild(citeDiv);
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
       });
-      return popup.innerHTML;
-    });
+    }
   }
 });
 </script>
@@ -413,8 +459,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./references.html" class="pagination-link">
-        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./01_methods.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

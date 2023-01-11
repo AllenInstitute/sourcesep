@@ -1,0 +1,18 @@
+# Methods
+
+This chapter documents ideas to analyze the raw signals. 
+
+## Training a conv-net
+1. The raw signal is simulated with the generative model in @eq-observation
+2. A conv-net is trained to reconstruct sensor activity $a_{i}(t)$ for $i \in$ sensors, and terms describing hemodynamics $h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)$ by minimizing mean-squared error at each time.
+3. We consider the input organized into $j \times \lambda$ channels for the each fixed-interval of time $t$
+
+## Next steps
+ - Include autocorrelation data
+ - Train with larger batchsizes/ regularize the model
+ - Updates to the loss function/ generative model to incorporate Poisson noise
+ - Correlation across laser/wavelengths for generative model suggests high redundancy
+
+## Ideas to generalizing model to real data
+ - Adversarial training to learn parameters of the generative model 
+ - Autoencoding objective (perhaps some specific channels) for regularization while training and transfer learning (fine tuning for real data)

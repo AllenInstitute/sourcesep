@@ -27,7 +27,7 @@ O_{j}(t,\lambda)  &= \{ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluore
 + h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lambda) \right]\right] \times m(t) &\\
 &+ b_{j}(\lambda) \} \times n_{j}(t)
 \end{align*}
-$$
+$${#eq-observation}
 
 - $a_{i}(t)$ for  $i \in \textrm{autofluorescence}$ is slow
 - $a_{i}(t)$ for  $i \in \textrm{sensors}$ can be fast (prior: 50 ms to 1 s) or slow (prior: 10 s to 50 s)

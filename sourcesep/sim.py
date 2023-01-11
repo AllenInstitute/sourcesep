@@ -41,6 +41,9 @@ class SimData():
         return
 
     def get_S(self):
+        """Populates self.S with the indicator spectra
+        """
+
         if self.S is None:
             icfg = self.cfg['indicator']
             S = []
@@ -61,6 +64,9 @@ class SimData():
         return self.S
 
     def get_W(self):
+        """Populates self.W with the excitation efficiency
+        """
+
         if self.W is None:
             icfg = self.cfg['indicator']
             lcfg = self.cfg['laser']
@@ -112,15 +118,19 @@ class SimData():
             self.MHg = 64500 # Hemoglobin grams per mole
             self.blood_concentration = 150 # grams per Liter
 
-            df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['pathlength_path'])
-            self.pathlength = np.interp(x=self.L_arr, xp=df['Wavelength (nm)'], fp=df['Estimated average pathlength (cm)']) #
-            
+            #df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['pathlength_path'])
+            #self.pathlength = np.interp(x=self.L_arr, xp=df['Wavelength (nm)'], fp=df['Estimated average pathlength (cm)'])
+            self.pathlength = self.cfg['hemodynamics']['pathlength']
+
             self.Mu_dox = self.blood_concentration * (self.pathlength * self.eps_dox) / self.MHg
             self.Mu_ox = self.blood_concentration * (self.pathlength * self.eps_ox) / self.MHg
 
         return self.Mu_ox, self.Mu_dox
 
     def gen_A_slow(self):
+        """Generates slow component of the activity signal
+        """
+
         A = []
         T_conv = int(0.2*self.T)
         p = self.cfg['sensor']['sampling_freq_Hz'] * 1/self.cfg['activity']['dominant_freq_Hz']
@@ -136,12 +146,15 @@ class SimData():
 
         A = np.hstack(A)
         ind = np.arange(A.shape[1])
-        np.random.shuffle(ind) # inplace op.
+        np.random.shuffle(ind) # inplace op. to shuffle scross channels
         A = A[T_conv:,ind[:self.I]]
         assert A.shape == (self.T, self.I), 'check generated shape of A'
         return A
 
     def gen_A_fast(self):
+        """Generates fast component of the activity signal
+        """
+
         icfg = self.cfg['indicator']
         sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
         A_fast = np.zeros((self.T,self.I))
@@ -159,6 +172,8 @@ class SimData():
         return A_fast
 
     def gen_H(self):
+        """Generate hemodynamic activity
+        """
         # Should be always +ve
         hdyn = self.cfg['hemodynamics']
         cfg = self.cfg['amplitude']
@@ -171,7 +186,7 @@ class SimData():
         # rescaling H_total
         H_total = H_total - np.min(H_total)
         H_total = H_total / np.max(H_total)
-        H_total = cfg['H_total_range']*(H_total - np.mean(H_total)) + 1.0
+        H_total = cfg['H_relative_range']*(H_total - np.mean(H_total)) + 1.0
 
         f = lowpass(xt=self.rng.standard_normal(size=(self.T,)),
                        sampling_interval=sampling_interval,
@@ -218,20 +233,20 @@ class SimData():
 
         # 2nd term
         H_ox, H_dox, H_total, f  = self.gen_H()
-        H_ox = amp['H_ox'] * H_ox
-        H_dox = amp['H_dox'] * H_dox
         HD = np.einsum('td,dl -> tl', H_ox[...,np.newaxis], Mu_ox[np.newaxis,...]) \
             + np.einsum('td,dl -> tl', H_dox[...,np.newaxis], Mu_dox[np.newaxis,...])
         HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), HD)
         HD = np.exp(-1 * HD)
-        M = 1 + amp['M'] * self.gen_M()         # multiplicative; setting mean = 1
+        M = amp['M_mean'] + (amp['M_var'])**0.5 * self.gen_M()  # multiplicative, with specified mean and variance
+        M = clip(M, threshold=0.1)                              # fix to ensure M is positive
         B = amp['B'] * self.gen_B()
         HDM = np.einsum('tjl,t -> tjl', HD, M)
         B_ = np.einsum('t,jl -> tjl', np.ones((self.T,)), B)
         H = HDM + B_
 
         # 3rd term
-        N = 1 + amp['N'] * self.gen_N()         # multiplicative; setting mean = 1
+        N = amp['N_mean'] + (amp['N_var'])**0.5 * self.gen_N()   # multiplicative, with specified mean and variance
+        N = clip(N, threshold=0.1)                               # fix to ensure N is positive
         N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
         O = np.einsum('tjl,tjl -> tjl', ASWE, H)
         O = np.einsum('tjl,tjl -> tjl', O, N_)
@@ -245,3 +260,10 @@ class SimData():
                    H_ox=H_ox,
                    H_dox=H_dox)
         return dat
+
+
+def clip(x, threshold=0.0):
+    """Clip values below threshold to threshold
+    """
+    x[x<threshold] = threshold
+    return x
