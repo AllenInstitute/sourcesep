@@ -27,7 +27,9 @@ class BaseUnet(nn.Module):
         self.up_conv_2 = nn.ConvTranspose1d(32, 16, kernel_size=2, stride=2)
         self.up_conv_1 = nn.ConvTranspose1d(32, 8, kernel_size=2, stride=2)
         self.up_conv_0 = nn.ConvTranspose1d(16, out_channels, kernel_size=4, stride=4)
-        self.out_conv = nn.Conv1d(out_channels, out_channels, 3, padding='same', padding_mode='reflect')
+        self.out_pre_conv = nn.Conv1d(out_channels, 20, 3, padding='same', padding_mode='reflect')
+        self.out_conv = nn.Conv1d(20, out_channels, 3, padding='same', padding_mode='reflect')
+        self.lrelu = nn.LeakyReLU()
         return
 
     def forward(self, input):
@@ -38,10 +40,11 @@ class BaseUnet(nn.Module):
         x1_ = self.up_conv_2(x2)
         x1_cat = torch.cat([x1, x1_], dim=1)
 
-        x0_ = self.up_conv_1(x1_cat)
+        x0_ = self.lrelu(self.up_conv_1(x1_cat))
         x0_cat = torch.cat([x0, x0_], dim=1)
-        x0_pre = self.up_conv_0(x0_cat)
-        output = self.out_conv(x0_pre)
+        x0_pre = self.lrelu(self.up_conv_0(x0_cat))
+        x0_out = self.lrelu(self.out_pre_conv(x0_pre))
+        output = self.lrelu(self.out_conv(x0_out))
         return output
 
     @staticmethod

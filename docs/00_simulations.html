@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.280">
+<meta name="generator" content="quarto-1.0.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,15 +11,10 @@
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
-ul.task-list li input[type="checkbox"] {
-  width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
-  vertical-align: middle;
-}
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
@@ -138,12 +133,14 @@ div.csl-indent {
 </nav>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#generative-model-for-observed-signal" id="toc-generative-model-for-observed-signal" class="nav-link active" data-scroll-target="#generative-model-for-observed-signal"><span class="toc-section-number">1.1</span>  Generative model for observed signal</a></li>
-  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"><span class="toc-section-number">1.2</span>  Model for hemodynamics</a></li>
+  <li><a href="#generative-model-for-observed-signal" id="toc-generative-model-for-observed-signal" class="nav-link active" data-scroll-target="#generative-model-for-observed-signal"> <span class="header-section-number">1.1</span> Generative model for observed signal</a></li>
+  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"> <span class="header-section-number">1.2</span> Model for hemodynamics</a></li>
+  <li><a href="#autofluorescence" id="toc-autofluorescence" class="nav-link" data-scroll-target="#autofluorescence"> <span class="header-section-number">1.3</span> Autofluorescence</a></li>
+  <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions"> <span class="header-section-number">1.4</span> Open questions</a></li>
   </ul>
 </nav>
     </div>
@@ -160,7 +157,6 @@ div.csl-indent {
 <div class="quarto-title-meta">
 
     
-  
     
   </div>
   
@@ -270,6 +266,15 @@ O_{j}(t,\lambda)  &amp;= \{ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofl
 &amp;+ b_{j}(\lambda) \} \times n_{j}(t)
 \end{align*}
 \tag{1.1}\]</span></span></p>
+<p>Update: 2023-01-19</p>
+<p><span id="eq-observation"><span class="math display">\[
+\begin{align*}
+O_{j}(t,\lambda)  &amp;= [ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluorescence}\}}{a_{i}(t)s_{i}({\lambda})w_{ij}} \right) &amp;\\
+&amp; \times e ^ {\left( - \sum_{k \in \{\textrm{oxy},\textrm{deoxy}\}}
+h_{k}(t)\mu_{k}(\lambda) \right)} \times m(t)
++ b_{j}(\lambda) ] \times n_{j}(t)
+\end{align*}
+\tag{1.2}\]</span></span></p>
 <ul>
 <li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{autofluorescence}\)</span> is slow</li>
 <li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{sensors}\)</span> can be fast (prior: 50 ms to 1 s) or slow (prior: 10 s to 50 s)</li>
@@ -305,15 +310,36 @@ h_\textrm{deoxy}(t) &amp;= (1 - f(t))h_{\textrm{total}}(t) \\
 \end{align*}
 \]</span></p>
 <ul>
-<li>Replacing <span class="math inline">\(A\)</span> in the definition of absorbance: <span class="math inline">\(\frac{I}{I_o} = e^{-A}\)</span>: <span class="math display">\[
+<li>Replacing <span class="math inline">\(A\)</span> in the definition of absorbance: <span class="math inline">\(\frac{I}{I_o} = e^{-A}\)</span>:</li>
+</ul>
+<p><span class="math display">\[
 I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}}h_{\textrm{deoxy}}(t))}
-\]</span></li>
+\]</span></p>
+</section>
+<section id="autofluorescence" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="autofluorescence"><span class="header-section-number">1.3</span> Autofluorescence</h2>
+<p>Autofluorescence has a spectrum <span class="citation" data-cites="autofluorescencepectra">Unknown (<a href="references.html#ref-autofluorescencepectra" role="doc-biblioref">2022</a>)</span>, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400nm-700nm range, see measurements in aqueous solutions in <span class="citation" data-cites="islam2013ph">Islam et al. (<a href="references.html#ref-islam2013ph" role="doc-biblioref">2013</a>)</span>.</p>
+</section>
+<section id="open-questions" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="open-questions"><span class="header-section-number">1.4</span> Open questions</h2>
+<ul>
+<li>Laser noise: Are there regions of the spectrum this can be read out from?</li>
+<li>Measure <span class="math inline">\(n_j(t)\)</span>, fit a Gaussian process to it for simulations? Can data from individual indicators be helpful for this?</li>
+<li>Time independent sensor + autofluorescence measurement?</li>
+<li>debug time domain UNet</li>
+<li>develop frequency domain model</li>
 </ul>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="ref-islam2013ph" class="csl-entry" role="doc-biblioentry">
+Islam, Md Serajul, Masato Honma, Takakazu Nakabayashi, Masataka Kinjo, and Nobuhiro Ohta. 2013. <span>“pH Dependence of the Fluorescence Lifetime of FAD in Solution and in Cells.”</span> <em>International Journal of Molecular Sciences</em> 14 (1): 1952–63.
+</div>
 <div id="ref-hemoglobinspectra" class="csl-entry" role="doc-biblioentry">
 Prahl, Scott. 1998. <span>“Optical Spectra of Hemoglobin.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://omlc.org/spectra/hemoglobin/summary.html" class="uri">https://omlc.org/spectra/hemoglobin/summary.html</a>.
+</div>
+<div id="ref-autofluorescencepectra" class="csl-entry" role="doc-biblioentry">
+Unknown. 2022. <span>“Autofluorescence Spectra.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://www.becker-hickl.com/applications/metabolic-imaging/#application-principles" class="uri">https://www.becker-hickl.com/applications/metabolic-imaging/#application-principles</a>.
 </div>
 </div>
 </section>
@@ -360,24 +386,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
     button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
     setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
       button.setAttribute("title", currentTitle);
       button.classList.remove('code-copy-button-checked');
     }, 1000);
@@ -405,50 +414,31 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   for (var i=0; i<noterefs.length; i++) {
     const ref = noterefs[i];
     tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      let href = ref.getAttribute('href');
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
     });
   }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
-      }
-    } else {
-      return undefined;
-    }
-  };
   var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
   for (var i=0; i<bibliorefs.length; i++) {
     const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
-          }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
       });
-    }
+      return popup.innerHTML;
+    });
   }
 });
 </script>

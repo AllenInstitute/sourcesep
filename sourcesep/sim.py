@@ -127,27 +127,35 @@ class SimData():
 
         return self.Mu_ox, self.Mu_dox
 
-    def gen_A_slow(self):
+    def gen_A_slow(self, how='attractor'):
         """Generates slow component of the activity signal
         """
+        sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
 
-        A = []
-        T_conv = int(0.2*self.T)
-        p = self.cfg['sensor']['sampling_freq_Hz'] * 1/self.cfg['activity']['dominant_freq_Hz']
-        p = p*2 # for the lorenz attractor, the period is roughly around both orbits.
-        p = self.rng.integers(low=int(0.8*p), high=int(1.2*p))
-        assert p > 1, 'Check number of points per period'
-        for i in range(self.I % self.A_model.embedding_dimension + 1):
-            self.A_model.ic = self.rng.integers(low=-100, high=100)*self.rng.random(3)
-            A.append(self.A_model.make_trajectory(self.T + T_conv,
-                                                pts_per_period=p,
-                                                resample=True,
-                                                standardize=True))
+        if how=='attractor':
+            A = []
+            T_conv = int(0.2*self.T)
+            p = self.cfg['sensor']['sampling_freq_Hz'] * 1/self.cfg['activity']['dominant_freq_Hz']
+            p = p*2 # for the lorenz attractor, the period is roughly around both orbits.
+            p = self.rng.integers(low=int(0.8*p), high=int(1.2*p))
+            assert p > 1, 'Check number of points per period'
+            for i in range(self.I % self.A_model.embedding_dimension + 1):
+                self.A_model.ic = self.rng.integers(low=-100, high=100)*self.rng.random(3)
+                A.append(self.A_model.make_trajectory(self.T + T_conv,
+                                                    pts_per_period=p,
+                                                    resample=True,
+                                                    standardize=True))
 
-        A = np.hstack(A)
-        ind = np.arange(A.shape[1])
-        np.random.shuffle(ind) # inplace op. to shuffle scross channels
-        A = A[T_conv:,ind[:self.I]]
+            A = np.hstack(A)
+            ind = np.arange(A.shape[1])
+            np.random.shuffle(ind) # inplace op. to shuffle scross channels
+            A = A[T_conv:,ind[:self.I]]
+
+        elif how=='random_lowpass':
+            A = lowpass(xt=self.rng.standard_normal(size=(self.T,self.I)),
+                       sampling_interval=sampling_interval,
+                       pass_below=self.cfg['activity']['threshold_freq_Hz'],
+                       axis=0)
         assert A.shape == (self.T, self.I), 'check generated shape of A'
         return A
 
@@ -181,7 +189,8 @@ class SimData():
 
         H_total = lowpass(xt=self.rng.standard_normal(size=(self.T,)),
                        sampling_interval=sampling_interval,
-                       pass_below=hdyn['lowpass_thr_Hz'])
+                       pass_below=hdyn['lowpass_thr_Hz'],
+                       axis=0)
         
         # rescaling H_total
         H_total = H_total - np.min(H_total)
@@ -205,9 +214,6 @@ class SimData():
         return H_ox, H_dox, H_total, f
 
     def gen_N(self):
-        # Simulating N - this can be estimated from diffraction pattern around saturated pixels. 
-        # For now we can treat this as a known 'constant' (i.e. doesn't need to be fit) in the model
-        # Simulated with amplitude of 2% compared to that for activity
         return self.rng.standard_normal(size=(self.T,self.J))
 
     def gen_M(self):
@@ -225,7 +231,7 @@ class SimData():
         E = self.get_E()
         Mu_ox, Mu_dox = self.get_Mu()
 
-        A = amp['A_slow'] * self.gen_A_slow() + amp['A_fast'] * self.gen_A_fast()
+        A = amp['A_slow'] * self.gen_A_slow(how='random_lowpass') + amp['A_fast'] * self.gen_A_fast() + 1.0
         AS = np.einsum('ti,il->til', A, S)
         ASW = np.einsum('til,ij->tjl', AS, W)
         E = np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
