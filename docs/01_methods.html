@@ -118,9 +118,8 @@ ul.task-list{list-style: none;}
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link active" data-scroll-target="#training-a-conv-net"><span class="toc-section-number">2.1</span>  Training a conv-net</a></li>
-  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="toc-section-number">2.2</span>  Next steps</a></li>
-  <li><a href="#generalizing-model-to-real-data" id="toc-generalizing-model-to-real-data" class="nav-link" data-scroll-target="#generalizing-model-to-real-data"><span class="toc-section-number">2.3</span>  Generalizing model to real data</a></li>
+  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link active" data-scroll-target="#training-a-conv-net"> <span class="header-section-number">2.1</span> Training a conv-net</a></li>
+  <li><a href="#strategies-to-model-real-data" id="toc-strategies-to-model-real-data" class="nav-link" data-scroll-target="#strategies-to-model-real-data"> <span class="header-section-number">2.2</span> Strategies to model real data</a></li>
   </ul>
 </nav>
     </div>
@@ -148,24 +147,15 @@ ul.task-list{list-style: none;}
 <h2 data-number="2.1" class="anchored" data-anchor-id="training-a-conv-net"><span class="header-section-number">2.1</span> Training a conv-net</h2>
 <ol type="1">
 <li>The raw signal is simulated with the generative model in <a href="00_simulations.html#eq-observation">Equation&nbsp;<span>1.1</span></a></li>
-<li>A conv-net is trained to reconstruct sensor activity <span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in\)</span> sensors, and terms describing hemodynamics <span class="math inline">\(h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)\)</span> by minimizing mean-squared error at each <span class="math inline">\(t\)</span>.</li>
-<li>The input is organized into <code>n_lasers x n_wavelengths</code> channels for the each fixed time intervals</li>
+<li>A conv-net is trained to reconstruct sensor activity <span class="math inline">\(a(i,t), h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t), m(t)\)</span></li>
+<li>Assume <span class="math inline">\(n(t,j)\)</span> is given</li>
 </ol>
 </section>
-<section id="next-steps" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">2.2</span> Next steps</h2>
+<section id="strategies-to-model-real-data" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="strategies-to-model-real-data"><span class="header-section-number">2.2</span> Strategies to model real data</h2>
 <ul>
-<li>Include autofluorescence data</li>
-<li>Train with larger batchsizes/ regularize the model</li>
-<li>Updates to the loss function/ generative model to incorporate Poisson noise</li>
-<li>Correlation across laser/wavelengths for generative model suggests high redundancy</li>
-</ul>
-</section>
-<section id="generalizing-model-to-real-data" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="generalizing-model-to-real-data"><span class="header-section-number">2.3</span> Generalizing model to real data</h2>
-<ul>
-<li>Adversarial training to learn parameters of the generative model</li>
-<li>Autoencoding objective (perhaps some specific channels) for regularization while training and transfer learning (fine tuning for real data)</li>
+<li>Adversarial approach could samples of <span class="math inline">\(a(i,t), h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t), m(t)\)</span>, which can then be combined as per phenomenological model</li>
+<li>Autoencoding objective (perhaps restricted to specific channels) could be used to fine-tune model on real data.</li>
 </ul>
 
 

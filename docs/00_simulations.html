@@ -137,10 +137,9 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#generative-model-for-observed-signal" id="toc-generative-model-for-observed-signal" class="nav-link active" data-scroll-target="#generative-model-for-observed-signal"> <span class="header-section-number">1.1</span> Generative model for observed signal</a></li>
+  <li><a href="#phenomenological-model-for-observed-signal" id="toc-phenomenological-model-for-observed-signal" class="nav-link active" data-scroll-target="#phenomenological-model-for-observed-signal"> <span class="header-section-number">1.1</span> Phenomenological model for observed signal</a></li>
   <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"> <span class="header-section-number">1.2</span> Model for hemodynamics</a></li>
   <li><a href="#autofluorescence" id="toc-autofluorescence" class="nav-link" data-scroll-target="#autofluorescence"> <span class="header-section-number">1.3</span> Autofluorescence</a></li>
-  <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions"> <span class="header-section-number">1.4</span> Open questions</a></li>
   </ul>
 </nav>
     </div>
@@ -163,8 +162,8 @@ div.csl-indent {
 
 </header>
 
-<section id="generative-model-for-observed-signal" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="generative-model-for-observed-signal"><span class="header-section-number">1.1</span> Generative model for observed signal</h2>
+<section id="phenomenological-model-for-observed-signal" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="phenomenological-model-for-observed-signal"><span class="header-section-number">1.1</span> Phenomenological model for observed signal</h2>
 <p><span class="math display">\[
 \def\lexc{\lambda^{\dagger}_{j}}
 \]</span></p>
@@ -186,19 +185,19 @@ div.csl-indent {
 <tbody>
 <tr class="odd">
 <td style="text-align: left;"></td>
-<td style="text-align: center;"><span class="math inline">\(O_{j}(t,\lambda)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(O(t,\lambda,j)\)</span></td>
 <td style="text-align: left;">O</td>
 <td style="text-align: left;">observed signal from the <span class="math inline">\(j\)</span>-th laser at time <span class="math inline">\(t\)</span> at spectral wavelength <span class="math inline">\(\lambda\)</span></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Const</td>
-<td style="text-align: center;"><span class="math inline">\(s_{i}(\lambda)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(s(i,\lambda)\)</span></td>
 <td style="text-align: left;">S</td>
 <td style="text-align: left;">emission spectrum of sensor associated with <span class="math inline">\(i\)</span>-th neuromodulator</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Const</td>
-<td style="text-align: center;"><span class="math inline">\(e_{j}(\lambda)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(e(\lambda,j)\)</span></td>
 <td style="text-align: left;">E</td>
 <td style="text-align: left;">time-invariant spectral signature of <span class="math inline">\(j\)</span>-th excitation laser</td>
 </tr>
@@ -216,27 +215,27 @@ div.csl-indent {
 </tr>
 <tr class="even">
 <td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">\(w_{ij}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(w(i,j)\)</span></td>
 <td style="text-align: left;">W</td>
 <td style="text-align: left;">emission efficiency of <span class="math inline">\(i\)</span>-th neuromodulator excited by <span class="math inline">\(j\)</span>-th laser</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">\(a_{i}(t)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(a(i,t)\)</span></td>
 <td style="text-align: left;">A</td>
 <td style="text-align: left;">sensor signal from time varying amount for the <span class="math inline">\(i\)</span>-th neuromodulator</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">\(n_{j}(t)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(n(t,j)\)</span></td>
 <td style="text-align: left;">N</td>
 <td style="text-align: left;">noise from <span class="math inline">\(j\)</span>-th laser</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">\(b_{j}(\lambda)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(b(\lambda,j)\)</span></td>
 <td style="text-align: left;">B</td>
-<td style="text-align: left;">fiber fluorescence triggered by <span class="math inline">\(j\)</span>-th laser</td>
+<td style="text-align: left;">patch cord + laser fluorescence spectrum <span class="math inline">\(j\)</span>-th laser</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Param</td>
@@ -259,36 +258,17 @@ div.csl-indent {
 </tbody>
 </table>
 <p><span id="eq-observation"><span class="math display">\[
-\begin{align*}
-O_{j}(t,\lambda)  &amp;= \{ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluorescence}\}}{\left(a_{i}(t)s_{i}({\lambda})w_{ij}\right)} + e_{j}(\lambda) \right) &amp;\\
-&amp; \times \exp \left[ -\left[ h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lambda)
-+ h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lambda) \right]\right] \times m(t) &amp;\\
-&amp;+ b_{j}(\lambda) \} \times n_{j}(t)
-\end{align*}
+\begin{align}
+O(t,\lambda,j) &amp;= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b_(\lambda,j) ] n(t,j) \\
+H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
+\end{align}
 \tag{1.1}\]</span></span></p>
-<p>Update: 2023-01-19</p>
-<p><span id="eq-observation"><span class="math display">\[
-\begin{align*}
-O_{j}(t,\lambda)  &amp;= [ \left( \sum_{i \in \{\textrm{sensors},\textrm{autofluorescence}\}}{a_{i}(t)s_{i}({\lambda})w_{ij}} \right) &amp;\\
-&amp; \times e ^ {\left( - \sum_{k \in \{\textrm{oxy},\textrm{deoxy}\}}
-h_{k}(t)\mu_{k}(\lambda) \right)} \times m(t)
-+ b_{j}(\lambda) ] \times n_{j}(t)
-\end{align*}
-\tag{1.2}\]</span></span></p>
 <ul>
-<li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{autofluorescence}\)</span> is slow</li>
-<li><span class="math inline">\(a_{i}(t)\)</span> for <span class="math inline">\(i \in \textrm{sensors}\)</span> can be fast (prior: 50 ms to 1 s) or slow (prior: 10 s to 50 s)</li>
-<li><span class="math inline">\(a_{i}(t) := c_{i}\{f(t)s_\textrm{bright}(\lambda) + (1-f(t))s_\textrm{dark}(\lambda)\}\)</span> : a single sensor with concentration <span class="math inline">\(c_i\)</span> exists in two states (e.g.&nbsp;bright, dark or bound, unbound) that have their own emission spectra.</li>
-<li>Isosbestic point is the particular <span class="math inline">\(\lambda\)</span> where the two populations cannot be distinguished. This does not always exist for all sensors, but when it does exist it can be used to infer noise parameters that also corrupt measurements at other <span class="math inline">\(\lambda\)</span> values.</li>
-<li><span class="math inline">\(n_{j}(t)\)</span> : laser specific uncorrelated (in time) gaussian noise dominated by high frequency components.</li>
-<li><span class="math inline">\(h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)\)</span> : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time. The fastest dynamics occur at 0.5 Hz</li>
-<li>For each <span class="math inline">\(j\)</span>, a spectral band (around excitation wavelength <span class="math inline">\(\lambda^{\dagger}_{j}\)</span> ) has no information because the pixels are saturated. The diffraction pattern around these pixels is dominated by signal from the laser itself. This might provide an approximation for terms like <span class="math inline">\(h_{\textrm{oxy}}(t)\)</span> … etc. These could be used as inputs to the model.</li>
+<li><span class="math inline">\(a(i,t)\)</span> for <span class="math inline">\(i \in \textrm{I}\)</span> has fast and slow components</li>
+<li><span class="math inline">\(a(t) = c\{f(t)s_\textrm{bound}(\lambda) + (1-f(t))s_\textrm{free}(\lambda)\}\)</span> : an indicator with concentration <span class="math inline">\(c\)</span> exists in two states (e.g.&nbsp;bright, dark or bound, free) that have their own emission spectra.</li>
+<li>Isosbestic point is the particular <span class="math inline">\(\lambda\)</span> where the two populations cannot be distinguished. This does not always exist for all indicators, but when it does exist it might be possible to use it for corrections related to Hemodynamics, see <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span></li>
+<li><span class="math inline">\(h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)\)</span> : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time</li>
 </ul>
-<p><span class="math display">\[
-O_{j}(t,\lexc) = [e_{j}(\lexc) \times\ \exp[-([
-h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lexc)
-+h_{\textrm{deoxy}}(t)\mu_{\textrm{deoxy}}(\lexc)])] \times m(t) + b_{j}(\lexc)] \times{n_{j}(t)}
-\]</span></p>
 </section>
 <section id="model-for-hemodynamics" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="model-for-hemodynamics"><span class="header-section-number">1.2</span> Model for hemodynamics</h2>
@@ -305,41 +285,34 @@ h_{\textrm{oxy}}(t)\mu_{\textrm{oxy}}(\lexc)
 \begin{align*}
 h_\textrm{oxy}(t) &amp;= f(t)h_{\textrm{total}}(t) \\
 h_\textrm{deoxy}(t) &amp;= (1 - f(t))h_{\textrm{total}}(t) \\
-\mu_\textrm{oxy} &amp;= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
-\mu_\textrm{deoxy} &amp;= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
+\mu_\textrm{oxy}(\lambda) &amp;= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
+\mu_\textrm{deoxy}(\lambda) &amp;= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
 \end{align*}
 \]</span></p>
 <ul>
 <li>Replacing <span class="math inline">\(A\)</span> in the definition of absorbance: <span class="math inline">\(\frac{I}{I_o} = e^{-A}\)</span>:</li>
 </ul>
 <p><span class="math display">\[
-I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}}h_{\textrm{deoxy}}(t))}
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
 \]</span></p>
 </section>
 <section id="autofluorescence" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="autofluorescence"><span class="header-section-number">1.3</span> Autofluorescence</h2>
-<p>Autofluorescence has a spectrum <span class="citation" data-cites="autofluorescencepectra">Unknown (<a href="references.html#ref-autofluorescencepectra" role="doc-biblioref">2022</a>)</span>, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400nm-700nm range, see measurements in aqueous solutions in <span class="citation" data-cites="islam2013ph">Islam et al. (<a href="references.html#ref-islam2013ph" role="doc-biblioref">2013</a>)</span>.</p>
-</section>
-<section id="open-questions" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="open-questions"><span class="header-section-number">1.4</span> Open questions</h2>
-<ul>
-<li>Laser noise: Are there regions of the spectrum this can be read out from?</li>
-<li>Measure <span class="math inline">\(n_j(t)\)</span>, fit a Gaussian process to it for simulations? Can data from individual indicators be helpful for this?</li>
-<li>Time independent sensor + autofluorescence measurement?</li>
-<li>debug time domain UNet</li>
-<li>develop frequency domain model</li>
-</ul>
+<p>Autofluorescence has a spectrum <span class="citation" data-cites="autofluorescencepectra">Hickl co. (<a href="references.html#ref-autofluorescencepectra" role="doc-biblioref">2022</a>)</span>, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400 nm - 700 nm range, see measurements in aqueous solutions in <span class="citation" data-cites="islam2013ph">Islam et al. (<a href="references.html#ref-islam2013ph" role="doc-biblioref">2013</a>)</span>.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="ref-autofluorescencepectra" class="csl-entry" role="doc-biblioentry">
+Hickl co., Becker &amp;. 2022. <span>“Autofluorescence Spectra.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://www.becker-hickl.com/applications/metabolic-imaging/#application-principles" class="uri">https://www.becker-hickl.com/applications/metabolic-imaging/#application-principles</a>.
+</div>
 <div id="ref-islam2013ph" class="csl-entry" role="doc-biblioentry">
 Islam, Md Serajul, Masato Honma, Takakazu Nakabayashi, Masataka Kinjo, and Nobuhiro Ohta. 2013. <span>“pH Dependence of the Fluorescence Lifetime of FAD in Solution and in Cells.”</span> <em>International Journal of Molecular Sciences</em> 14 (1): 1952–63.
 </div>
 <div id="ref-hemoglobinspectra" class="csl-entry" role="doc-biblioentry">
 Prahl, Scott. 1998. <span>“Optical Spectra of Hemoglobin.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://omlc.org/spectra/hemoglobin/summary.html" class="uri">https://omlc.org/spectra/hemoglobin/summary.html</a>.
 </div>
-<div id="ref-autofluorescencepectra" class="csl-entry" role="doc-biblioentry">
-Unknown. 2022. <span>“Autofluorescence Spectra.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://www.becker-hickl.com/applications/metabolic-imaging/#application-principles" class="uri">https://www.becker-hickl.com/applications/metabolic-imaging/#application-principles</a>.
+<div id="ref-zhang2022spectral" class="csl-entry" role="doc-biblioentry">
+Zhang, Wei-Ting, Tzu-Hao Harry Chao, Yue Yang, Tzu-Wen Wang, Sung-Ho Lee, Esteban A Oyarzabal, Jingheng Zhou, et al. 2022. <span>“Spectral Fiber Photometry Derives Hemoglobin Concentration Changes for Accurate Measurement of Fluorescent Sensor Activity.”</span> <em>Cell Reports Methods</em> 2 (7): 100243.
 </div>
 </div>
 </section>
