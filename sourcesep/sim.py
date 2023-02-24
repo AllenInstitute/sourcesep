@@ -9,6 +9,12 @@ from sourcesep.utils.compute import lowpass
 
 class SimData():
     def __init__(self, T=None, cfg_path=None):
+        """Class to generate samples for the simulation
+
+        Args:
+            T (int): Number of samples in time
+            cfg_path (Path or str): config for simulation parameters
+        """
         self.cfg = toml.load(cfg_path)
         
         self.J = len(self.cfg['laser'])            # Number of excitation lasers (input channels)
@@ -86,8 +92,7 @@ class SimData():
                     W[i, :] = np.interp(
                         x=laser_freq, xp=df['wavelength'], fp=df['exc'])
                     indicator.append(k)
-            W_df = pd.DataFrame(
-                W, columns=laser_freq.astype(int), index=indicator)
+            W_df = pd.DataFrame(W, columns=laser_freq.astype(int), index=indicator)
             self.W = W
             self.W_df = W_df
         return self.W
@@ -128,7 +133,10 @@ class SimData():
         return self.Mu_ox, self.Mu_dox
 
     def gen_A_slow(self, how='attractor'):
-        """Generates slow component of the activity signal
+        """Generates slow component of the activity signal. 
+
+        Args:
+            how (str, optional): 'attractor' or 'random_lowpass'
         """
         sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
 
@@ -222,6 +230,17 @@ class SimData():
     def gen_B(self):
         return self.rng.random((self.J,self.L))
 
+    def get_T_arr_ind(self, timestamp):
+        """Get timestamp index in T array
+
+        Args:
+            timestamp (float): time in s
+        """
+        return np.argmin(np.abs(self.T_arr - timestamp))
+    
+    def arr_lookup(arr, x):
+        return np.argmin(np.abs(arr -x))
+
     def compose(self):
         amp = self.cfg['amplitude']
 
@@ -232,17 +251,18 @@ class SimData():
         Mu_ox, Mu_dox = self.get_Mu()
 
         A = amp['A_slow'] * self.gen_A_slow(how='random_lowpass') + amp['A_fast'] * self.gen_A_fast() + 1.0
-        AS = np.einsum('ti,il->til', A, S)
-        ASW = np.einsum('til,ij->tjl', AS, W)
-        E = np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
-        ASWE = ASW + E
+        #AS = np.einsum('ti,il->til', A, S)
+        #ASW = np.einsum('til,ij->tjl', AS, W)
+        # memory efficient alternative
+        ASWE = np.einsum('ti,il,ij->tjl', A, S, W) \
+              + np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
 
         # 2nd term
-        H_ox, H_dox, H_total, f  = self.gen_H()
-        HD = np.einsum('td,dl -> tl', H_ox[...,np.newaxis], Mu_ox[np.newaxis,...]) \
-            + np.einsum('td,dl -> tl', H_dox[...,np.newaxis], Mu_dox[np.newaxis,...])
-        HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), HD)
-        HD = np.exp(-1 * HD)
+        H_ox, H_dox, H_total, f = self.gen_H()
+        HD = np.einsum('td,dl -> tl', H_ox[..., np.newaxis], Mu_ox[np.newaxis, ...]) \
+            + np.einsum('td,dl -> tl', H_dox[..., np.newaxis], Mu_dox[np.newaxis, ...])
+        HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), np.exp(-HD))
+
         M = amp['M_mean'] + (amp['M_var'])**0.5 * self.gen_M()  # multiplicative, with specified mean and variance
         M = clip(M, threshold=0.1)                              # fix to ensure M is positive
         B = amp['B'] * self.gen_B()
@@ -258,7 +278,6 @@ class SimData():
         O = np.einsum('tjl,tjl -> tjl', O, N_)
 
         dat = dict(O=O,
-                   E=E,
                    A=A,
                    N=N,
                    B=B,
