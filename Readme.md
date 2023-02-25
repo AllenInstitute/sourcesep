@@ -8,7 +8,7 @@ Source separation for multiplexed spectral fiber photometry neuromodulator imagi
 conda create -n sourcesep python=3.8
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 conda install scipy scikit-learn statsmodels jupyterlab pandas seaborn h5py pytables
-pip install timebudget rich tqdm autopep8 
+pip install timebudget rich tqdm autopep8 tensorboard
 pip install dysts sdeint 
 pip install librosa 
 pip install -e .
@@ -33,6 +33,9 @@ data
   │   ├── GCaMP8s_2.csv
   │   ├── GCaMP8s_3.csv
   │   └── test.hdf5
+  ├── sims
+  │   ├── 2023-02-24.h5
+  │   └── 2023-02-24.toml
   ├── sim_config.toml
   ├── calibrate_px_to_nm.tif
   └── spectra
