@@ -1,78 +1,159 @@
 import torch
 import torch.nn as nn
-
-# input is (T=1024, J=5, L=300) (time, laser, lambda)
-# input should be re-organized as (batch, J * L, T) (batch, channels, time)
-# output is of shape (T=1024, I=8) (time, sources={indicators, hemodynamics, noise})
-
-# T = 1024
-# J = 5
-# L = 300
+import pytorch_lightning as pl
+import matplotlib.pyplot as plt
 
 class BaseUnet(nn.Module):
     """Base Unet model for comparisons
 
     Args:
-        in_channels (int, optional): Defaults to 1500.
+        in_channels (int, optional): Time axis.
         out_channels (int, optional): Defaults to 8.
     """
-    def __init__(self, in_channels=1500, out_channels=8):
+    def __init__(self, in_channels=60, out_channels=8):
         super().__init__()
-        self.conv_0 = self.double_conv(in_channels, 8, kernel_size=8)
+        self.conv_0 = self.double_conv(in_channels=in_channels, out_channels=16, kernel_size=16)
         self.mp_0 = nn.MaxPool1d(kernel_size=4)
-        self.conv_1 = self.double_conv(8, 16, kernel_size=8)
+        self.conv_1 = self.double_conv(16, 32, kernel_size=15)
         self.mp_1 = nn.MaxPool1d(kernel_size=2)
-        self.conv_2 = self.double_conv(16, 32, kernel_size=8)
+        self.conv_2 = self.double_conv(32, 64, kernel_size=16)
         self.mp_2 = nn.MaxPool1d(kernel_size=2)
-        self.up_conv_2 = nn.ConvTranspose1d(32, 16, kernel_size=2, stride=2)
-        self.up_conv_1 = nn.ConvTranspose1d(32, 8, kernel_size=2, stride=2)
-        self.up_conv_0 = nn.ConvTranspose1d(16, out_channels, kernel_size=4, stride=4)
-        self.out_pre_conv = nn.Conv1d(out_channels, 20, 3, padding='same', padding_mode='reflect')
-        self.out_conv = nn.Conv1d(20, out_channels, 3, padding='same', padding_mode='reflect')
+        self.conv_3 = self.double_conv(64, 64, kernel_size=8)
+
+        self.up_conv_2 = nn.Sequential(nn.ConvTranspose1d(64, 32, kernel_size=8, stride=2))
+        self.conv_2_ = self.double_conv(96, 32, kernel_size=3)
+
+        self.up_conv_1 = nn.ConvTranspose1d(32, 16, kernel_size=8, stride=2)
+        self.conv_1_ = self.double_conv(48, 16, kernel_size=3)
+
+        self.up_conv_0 = nn.ConvTranspose1d(16, 8, kernel_size=8, stride=4)
+        self.conv_0_ = self.double_conv(24, 8, kernel_size=3)
+        self.out_conv = nn.Conv1d(8, 8, 3, padding='valid')
         self.lrelu = nn.LeakyReLU()
         return
 
     def forward(self, input):
-        x0 = self.mp_0(self.conv_0(input))
-        x1 = self.mp_1(self.conv_1(x0))
-        x2 = self.mp_2(self.conv_2(x1))
+        x0 = self.conv_0(input)
+        #print('x0', x0.shape)
+        x0_mp = self.mp_0(x0)
+        #print('x0_mp', x0_mp.shape)
+        x1 = self.conv_1(x0_mp)
+        #print('x1', x1.shape)
+        x1_mp = self.mp_1(x1)
+        #print('x1_mp', x1_mp.shape)
+        x2 = self.conv_2(x1_mp)
+        #print('x2', x2.shape)
+        x2_mp = self.mp_2(x2)
+        #print('x2_mp', x2_mp.shape)
+        x3 = self.conv_3(x2_mp)
+        #print('x3', x3.shape)
+        x2_ = self.lrelu(self.up_conv_2(x3))
+        #print('x2_', x2_.shape)
+        x2_cat = torch.cat([self.crop(input=x2,  target=x2_, dim=2), x2_], dim=1)
+        #print('x2_cat', x2_cat.shape)
+        x2_ = self.conv_2_(x2_cat)
+        #print('x2_ conv', x2_.shape)
+        x1_ = self.lrelu(self.up_conv_1(x2_))
+        #print('x1_', x1_.shape)
+        x1_cat = torch.cat([self.crop(input=x1,  target=x1_, dim=2), x1_], dim=1)
+        #print('x1_cat', x1_cat.shape)
+        x1_ = self.conv_1_(x1_cat)
+        #print('x1_', x1_.shape)
 
-        x1_ = self.up_conv_2(x2)
-        x1_cat = torch.cat([x1, x1_], dim=1)
+        x0_ = self.lrelu(self.up_conv_0(x1_))
+        #print('x0_', x0_.shape)
 
-        x0_ = self.lrelu(self.up_conv_1(x1_cat))
-        x0_cat = torch.cat([x0, x0_], dim=1)
-        x0_pre = self.lrelu(self.up_conv_0(x0_cat))
-        x0_out = self.lrelu(self.out_pre_conv(x0_pre))
-        output = self.lrelu(self.out_conv(x0_out))
+        x0_cat = torch.cat([self.crop(input=x0,  target=x0_, dim=2), x0_], dim=1)
+        #print('x0_cat', x0_cat.shape)
+        x0_ = self.conv_0_(x0_cat)
+        #print('x0_', x0_.shape)
+
+        output = self.lrelu(self.out_conv(x0_))
         return output
+    
+    def test(self):
+        # make random input
+        input = torch.rand(20, 60, 2048)
+        output = self.forward(input)
+        return
 
     @staticmethod
     def double_conv(in_channels, out_channels, kernel_size):
-        """Performm 2 successive convolution operations.
-
-        Args:
-            in_channels (int)
-            out_channels (int)
-            kernel_size (int)
-
-        Returns:
-            nn.Seqeuntial object
-        """
         conv = nn.Sequential(
             nn.Conv1d(in_channels,
                       out_channels,
                       kernel_size,
-                      padding='same',
-                      padding_mode='reflect'),
-            #nn.BatchNorm1d(out_channels),
+                      padding='valid'),
+            nn.BatchNorm1d(out_channels),
             nn.LeakyReLU(inplace=True),
             nn.Conv1d(out_channels,
                       out_channels,
                       kernel_size,
-                      padding='same',
-                      padding_mode='reflect'),
-            #nn.BatchNorm1d(out_channels),
+                      padding='valid'),
+            nn.BatchNorm1d(out_channels),
             nn.LeakyReLU(inplace=True)
         )
         return conv
+    
+    def crop(self, input, target, dim):
+        """Crop input to match target size along a given dimension
+        """
+        delta = input.shape[dim] - target.shape[dim]
+        delta = delta // 2
+        index = torch.arange(delta, input.shape[dim]-delta, 1, device=input.device)
+        return torch.index_select(input, dim, index)
+
+class LitBaseUnet(pl.LightningModule):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.model = BaseUnet(**kwargs)
+        self.A_loss = nn.L1Loss(reduction='mean')
+        self.H_loss = nn.L1Loss(reduction='mean')
+        self.pad = 293 # to sidestep boundary issues for now
+        self.save_hyperparameters() # saves all kwargs passed to the model
+
+
+    def loss_A(self, input, target):
+        return nn.functional.l1_loss(input, target, reduction='mean')
+
+
+    def loss_H(self, input, target):
+        return nn.functional.l1_loss(input, target, reduction='mean')
+
+
+    def training_step(self, batch, batch_idx):
+        output = self.model(batch['O'])
+        Ar = torch.squeeze(output[:, 0:3, ...])
+        A = batch['A'][:,:,self.pad:-self.pad]
+        H_oxr = torch.squeeze(output[:, 3, ...])
+        H_doxr = torch.squeeze(output[:, 4, ...])
+
+
+        loss = self.loss_A(Ar[:,0,:], A[:,0,:]) 
+            #+ self.loss_A(Ar[:,1,:], A[:,1,:]) \
+            #+ self.loss_A(Ar[:,2,:], A[:,2,:])
+
+        self.log('train_loss', loss)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        output = self.model(batch['O'])
+        Ar = torch.squeeze(output[:, 0:3, ...])
+        A = batch['A'][:,:,self.pad:-self.pad]
+        H_oxr = torch.squeeze(output[:, 3, ...])
+        H_doxr = torch.squeeze(output[:, 4, ...])
+
+        loss = self.loss_A(Ar[:,0,:], A[:,0,:]) \
+            #+ self.loss_A(Ar[:,1,:], A[:,1,:]) \
+            #+ self.loss_A(Ar[:,2,:], A[:,2,:])
+
+        f, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.plot(torch.squeeze(A[0].T[:,0]).to('cpu'), label='data')
+        ax.plot(torch.squeeze(Ar[0].T[:,0]).to('cpu'), label='recon')
+        ax.legend()
+        self.logger.experiment.add_figure('A reconstruction', f, self.current_epoch)
+        self.log('val_loss', loss)
+        return
+    
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=1e-3)

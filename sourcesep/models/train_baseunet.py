@@ -1,31 +1,35 @@
-from sourcesep.models.baseunet import BaseUnet
-from sourcesep.models.helpers import H5Dataset
+#%%
+from sourcesep.models.baseunet import LitBaseUnet
+from sourcesep.models.helpers import H5DataModule
 from sourcesep.utils.config import load_config
-from torch.utils.data import DataLoader, Subset
-import torch
-import numpy as np
+
+from pytorch_lightning import Trainer
+from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
+from timebudget import timebudget
+
 
 def main():
-    n_epochs = 2
-    steps_per_epoch = 400
 
-    #data 
+    n_epochs = 2000
+    train_steps_per_epoch = 1000
+    val_steps_per_epoch = 20
+    batch_size = 100
+
+    #data paths
     paths = load_config(dataset_key='all')
-    h5_file=str(paths['root'] / "sims" / "2023-02-24.h5")
-    dataset = H5Dataset(filename=h5_file, n_per_sample=2000)
+    sim_name = '2023-02-24'
+    h5_file=str(paths['root'] / "sims" / f"{sim_name}.h5")
 
-    for epoch in range(n_epochs):
-        subset_idx = np.random.choice(len(dataset), steps_per_epoch, replace=False)
-        sub_dataset = torch.utils.data.Subset(dataset, subset_idx)
-        sub_dataloader = DataLoader(sub_dataset, batch_size=20, shuffle=True)
-
-        for step, batch in enumerate(iter(sub_dataloader)):
-            print(batch['O'].shape)
-            pass
-        print('epoch done')
-
-    print('training done')
-    return
+    datamodule = H5DataModule(filename=h5_file, 
+                              n_per_sample=2048, 
+                              train_steps_per_epoch=train_steps_per_epoch,
+                              val_steps_per_epoch = 20, 
+                              batch_size=batch_size)
+    logger = TensorBoardLogger(paths['root'] / 'results', name='lt_logs', version='version_101', log_graph=False, default_hp_metric=True, prefix='', sub_dir='DEBUG')
+    trainer = Trainer(logger=logger, log_every_n_steps=1, max_epochs=n_epochs, reload_dataloaders_every_n_epochs=1, accelerator='gpu', devices=1, check_val_every_n_epoch=2)
+    model = LitBaseUnet(in_channels=300, out_channels=8).float()
+    with timebudget('training'):
+        trainer.fit(model, datamodule=datamodule)
 
 if __name__ == '__main__':
     main()

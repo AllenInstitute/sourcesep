@@ -9,6 +9,7 @@ conda create -n sourcesep python=3.8
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 conda install scipy scikit-learn statsmodels jupyterlab pandas seaborn h5py pytables
 pip install timebudget rich tqdm autopep8 tensorboard
+conda install pytorch-lightning -c conda-forge
 pip install dysts sdeint 
 pip install librosa 
 pip install -e .
