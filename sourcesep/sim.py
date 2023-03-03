@@ -229,17 +229,45 @@ class SimData():
 
     def gen_B(self):
         return self.rng.random((self.J,self.L))
-
-    def get_T_arr_ind(self, timestamp):
-        """Get timestamp index in T array
-
-        Args:
-            timestamp (float): time in s
-        """
-        return np.argmin(np.abs(self.T_arr - timestamp))
     
     def arr_lookup(arr, x):
         return np.argmin(np.abs(arr -x))
+
+    def to_disk(self, filepath=None):
+        """
+        Generate and save data to disk.
+
+        Args:
+            filepath (str or Path): Full path to save the h5 file.
+        """
+        
+        import os
+        import h5py 
+
+        dat = self.compose()
+        assert filepath is not None, 'filepath is None'
+        max_chunk_size = 1000
+        if os.path.exists(filepath):
+                print(f"Removing {filepath}")
+                os.remove(filepath)
+
+        with h5py.File(filepath, "a") as f:
+            for key in dat.keys():
+                print(f"Creating {key}")
+                chunk_size = min(max_chunk_size, dat[key].shape[0])
+                f.create_dataset(key, data=dat[key], 
+                                shape=dat[key].shape, 
+                                maxshape=dat[key].shape, 
+                                chunks=(chunk_size, *dat[key].shape[1:]), 
+                                dtype='float')
+        print(f"Saved to {filepath}")
+
+        # save the config with toml
+        with open(filepath.replace('.h5', '.toml'), 'w') as f:
+            f.write(toml.dumps(self.cfg))
+
+        print(f"Saved config to {filepath.replace('.h5', '.toml')}")
+        return
 
     def compose(self):
         amp = self.cfg['amplitude']
