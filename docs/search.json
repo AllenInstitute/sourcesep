@@ -11,7 +11,7 @@
     "href": "00_simulations.html",
     "title": "1  Simulating hyperspectral fiber photometry signals",
     "section": "",
-    "text": "\\[\n\\def\\lexc{\\lambda^{\\dagger}_{j}}\n\\]\n\n\n\n\n\n\n\n\n\nType\nSymbol\nCode\nDescription\n\n\n\n\n\n\\(O(t,\\lambda,j)\\)\nO\nobserved signal from the \\(j\\)-th laser at time \\(t\\) at spectral wavelength \\(\\lambda\\)\n\n\nConst\n\\(s(i,\\lambda)\\)\nS\nemission spectrum of sensor associated with \\(i\\)-th neuromodulator\n\n\nConst\n\\(e(\\lambda,j)\\)\nE\ntime-invariant spectral signature of \\(j\\)-th excitation laser\n\n\nConst\n\\(\\mu_\\textrm{oxy}(\\lambda)\\)\nMu_ox\nSpectrum of oxygenated hemolobin\n\n\nConst\n\\(\\mu_\\textrm{deoxy}(\\lambda)\\)\nMu_dox\nSpectrum of deoxygenated hemolobin\n\n\nParam\n\\(w(i,j)\\)\nW\nemission efficiency of \\(i\\)-th neuromodulator excited by \\(j\\)-th laser\n\n\nParam\n\\(a(i,t)\\)\nA\nsensor signal from time varying amount for the \\(i\\)-th neuromodulator\n\n\nParam\n\\(n(t,j)\\)\nN\nnoise from \\(j\\)-th laser\n\n\nParam\n\\(b(\\lambda,j)\\)\nB\npatch cord + laser fluorescence spectrum \\(j\\)-th laser\n\n\nParam\n\\(m(t)\\)\nM\nmotion correction (potentially depends on \\(i\\))\n\n\nParam\n\\(h_\\textrm{oxy}(t)\\)\nH_ox\nHemodynamics (oxygenated component)\n\n\nParam\n\\(h_\\textrm{deoxy}(t)\\)\nH_dox\nHemodynamics (deoxygenated component)\n\n\n\n\\[\n\\begin{align}\nO(t,\\lambda,j) &= [ \\left( \\sum_{i \\in \\{\\textrm{I},\\textrm{AF}\\}}{a(i,t) s(i,\\lambda) w(i,j)} \\right) H(t, \\lambda) m(t) + b_(\\lambda,j) ] n(t,j) \\\\\nH(t, \\lambda) &= e^{-(\\mu_{\\textrm{oxy}(\\lambda)}h_{\\textrm{oxy}}(t) + \\mu_{\\textrm{deoxy}(\\lambda)}h_{\\textrm{deoxy}}(t))}\n\\end{align}\n\\tag{1.1}\\]\n\n\\(a(i,t)\\) for \\(i \\in \\textrm{I}\\) has fast and slow components\n\\(a(t) = c\\{f(t)s_\\textrm{bound}(\\lambda) + (1-f(t))s_\\textrm{free}(\\lambda)\\}\\) : an indicator with concentration \\(c\\) exists in two states (e.g. bright, dark or bound, free) that have their own emission spectra.\nIsosbestic point is the particular \\(\\lambda\\) where the two populations cannot be distinguished. This does not always exist for all indicators, but when it does exist it might be possible to use it for corrections related to Hemodynamics, see Zhang et al. (2022)\n\\(h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t)\\) : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time"
+    "text": "\\[\n\\def\\lexc{\\lambda^{\\dagger}_{j}}\n\\]\n\n\n\n\n\n\n\n\n\nType\nSymbol\nCode\nDescription\n\n\n\n\n\n\\(O(t,\\lambda,j)\\)\nO\nobserved signal from the \\(j\\)-th laser at time \\(t\\) at spectral wavelength \\(\\lambda\\)\n\n\nConst\n\\(s(i,\\lambda)\\)\nS\nemission spectrum of sensor associated with \\(i\\)-th neuromodulator\n\n\nConst\n\\(e(\\lambda,j)\\)\nE\ntime-invariant spectral signature of \\(j\\)-th excitation laser\n\n\nConst\n\\(\\mu_\\textrm{oxy}(\\lambda)\\)\nMu_ox\nSpectrum of oxygenated hemolobin\n\n\nConst\n\\(\\mu_\\textrm{deoxy}(\\lambda)\\)\nMu_dox\nSpectrum of deoxygenated hemolobin\n\n\nParam\n\\(w(i,j)\\)\nW\nemission efficiency of \\(i\\)-th neuromodulator excited by \\(j\\)-th laser\n\n\nParam\n\\(a(i,t)\\)\nA\nsensor signal from time varying amount for the \\(i\\)-th neuromodulator\n\n\nParam\n\\(n(t,j)\\)\nN\nnoise from \\(j\\)-th laser\n\n\nParam\n\\(b(\\lambda,j)\\)\nB\npatch cord + laser fluorescence spectrum \\(j\\)-th laser\n\n\nParam\n\\(m(t)\\)\nM\nmotion correction (potentially depends on \\(i\\))\n\n\nParam\n\\(h_\\textrm{oxy}(t)\\)\nH_ox\nHemodynamics (oxygenated component)\n\n\nParam\n\\(h_\\textrm{deoxy}(t)\\)\nH_dox\nHemodynamics (deoxygenated component)\n\n\n\n\\[\n\\begin{align}\nO(t,\\lambda,j) &= [ \\left( \\sum_{i \\in \\{\\textrm{I},\\textrm{AF}\\}}{a(i,t) s(i,\\lambda) w(i,j)} \\right) H(t, \\lambda) m(t) + b_(\\lambda,j) ] n(t,j) \\\\\nH(t, \\lambda) &= e^{-(\\mu_{\\textrm{oxy}(\\lambda)}h_{\\textrm{oxy}}(t) + \\mu_{\\textrm{deoxy}(\\lambda)}h_{\\textrm{deoxy}}(t))}\n\\end{align}\n\\tag{1.1}\\]\n\n\\(a(i,t)\\) for \\(i \\in \\textrm{I}\\) has fast and slow components\n\\(a(t) = c\\{f(t)s_\\textrm{bound}(\\lambda) + (1-f(t))s_\\textrm{free}(\\lambda)\\}\\) : an indicator with concentration \\(c\\) exists in two states (e.g. bright, dark or bound, free) that have their own emission spectra.\nIsosbestic point is the particular \\(\\lambda\\) where the two populations cannot be distinguished. This does not always exist for all indicators, but when it does exist it might be possible to use it for corrections related to Hemodynamics, see Zhang et al. (2022)\n\\(h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t)\\) : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time\n\\(a(i,t)\\) is multiplied by a decay term \\(d(i,t)\\) associated with bleaching. \\(d(i,t) = d_\\textrm{fast}(i)e^{-\\frac{t}{\\tau_\\textrm{fast}}} + d_\\textrm{slow}(i)e^{-\\frac{t}{\\tau_\\textrm{slow}}} + d_\\textrm{constant}(i)\\)"
   },
   {
     "objectID": "00_simulations.html#model-for-hemodynamics",
@@ -35,18 +35,25 @@
     "text": "This chapter documents ideas to analyze the raw signals."
   },
   {
+    "objectID": "01_methods.html#baselines",
+    "href": "01_methods.html#baselines",
+    "title": "2  Methods",
+    "section": "2.1 Baselines",
+    "text": "2.1 Baselines\n\nNon-negative matrix factorization. TODO: Formulate the problem and get results from NMF solvers."
+  },
+  {
     "objectID": "01_methods.html#training-a-conv-net",
     "href": "01_methods.html#training-a-conv-net",
     "title": "2  Methods",
-    "section": "2.1 Training a conv-net",
-    "text": "2.1 Training a conv-net\n\nThe raw signal is simulated with the generative model in Equation 1.1\nA conv-net is trained to reconstruct sensor activity \\(a(i,t), h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t), m(t)\\)\nAssume \\(n(t,j)\\) is given"
+    "section": "2.2 Training a conv-net",
+    "text": "2.2 Training a conv-net\n\nThe raw signal is simulated with the generative model in Equation 1.1\nA conv-net is trained to reconstruct sensor activity \\(a(i,t), h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t), m(t)\\)\nAssume \\(n(t,j)\\) is given"
   },
   {
     "objectID": "01_methods.html#strategies-to-model-real-data",
     "href": "01_methods.html#strategies-to-model-real-data",
     "title": "2  Methods",
-    "section": "2.2 Strategies to model real data",
-    "text": "2.2 Strategies to model real data\n\nAdversarial approach could samples of \\(a(i,t), h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t), m(t)\\), which can then be combined as per phenomenological model\nAutoencoding objective (perhaps restricted to specific channels) could be used to fine-tune model on real data."
+    "section": "2.3 Strategies to model real data",
+    "text": "2.3 Strategies to model real data\n\nAdversarial approach could samples of \\(a(i,t), h_{\\textrm{oxy}}(t), h_{\\textrm{deoxy}}(t), m(t)\\), which can then be combined as per phenomenological model\nAutoencoding objective (perhaps restricted to specific channels) could be used to fine-tune model on real data."
   },
   {
     "objectID": "references.html",
