@@ -186,6 +186,20 @@ class SimData():
             A_fast[:,i] = signal.convolve(A_fast[:,i], kernel, mode='same')
 
         return A_fast
+    
+    def bleach(self, A):
+        """Bleaches the activity signal
+        """
+        # bleaching
+        
+        icfg = self.cfg['indicator']
+        for i,k in enumerate(icfg.keys()):
+            bcfg = icfg[k]['bleaching']
+            if bcfg['bleach']:
+                A[:, i] = (bcfg['B_slow']*np.exp(-self.T_arr/bcfg['tau_slow']) \
+                    + bcfg['B_fast']*np.exp(-self.T_arr/bcfg['tau_fast']) \
+                    + bcfg['B_const'])*A[:, i]
+        return A
 
     def gen_H(self):
         """Generate hemodynamic activity
@@ -279,6 +293,7 @@ class SimData():
         Mu_ox, Mu_dox = self.get_Mu()
 
         A = amp['A_slow'] * self.gen_A_slow(how='random_lowpass') + amp['A_fast'] * self.gen_A_fast() + 1.0
+        A = self.bleach(A)
         #AS = np.einsum('ti,il->til', A, S)
         #ASW = np.einsum('til,ij->tjl', AS, W)
         # memory efficient alternative
