@@ -167,21 +167,23 @@ class LitBaseUnet(pl.LightningModule):
         output = self.model(batch['O'])
         Ar = torch.squeeze(output[:, 0:3, ...])
         H_oxr = torch.squeeze(output[:, 3, ...])
-        H_doxr = torch.squeeze(output[:, 4, ...]
+        H_doxr = torch.squeeze(output[:, 4, ...])
+
         # cropped ground truth
-        A = batch['A'][:,:,self.pad:-self.pad])
-        H_ox = torch.squeeze(batch['H_ox'][:,:,self.pad:-self.pad]))
+        A = batch['A'][:,:,self.pad:-self.pad]
+        H_ox = torch.squeeze(batch['H_ox'][:,:,self.pad:-self.pad])
         H_dox = torch.squeeze(batch['H_dox'][:,:,self.pad:-self.pad])
         M = torch.squeeze(batch['M'][:,:,self.pad:-self.pad])
         N = batch['N'][:,:,self.pad:-self.pad]
+        O = batch['O'][:,:,self.pad:-self.pad]
 
         # reconstruct with phenomenological model
         Or = self.compose(Ar, H_oxr, H_doxr, M, N)
+
         # reconstruct with ground truth
         # Ox = self.compose(A, H_ox, H_dox, M, N)
         # assert torch.allclose(Ox, O), 'compose test failed'
-        
-        O = batch['O'][:,:,self.pad:-self.pad]
+
         loss = self.loss_A(Ar[:,0,:], A[:,0,:]) 
             #+ self.loss_A(Ar[:,1,:], A[:,1,:]) \
             #+ self.loss_A(Ar[:,2,:], A[:,2,:])
