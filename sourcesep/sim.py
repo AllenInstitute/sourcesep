@@ -259,6 +259,8 @@ class SimData():
         import h5py 
 
         dat = self.compose()
+        dat['L_arr'] = self.L_arr
+        dat['T_arr'] = self.T_arr
         assert filepath is not None, 'filepath is None'
         max_chunk_size = 1000
         if os.path.exists(filepath):
@@ -326,7 +328,12 @@ class SimData():
                    B=B,
                    M=M,
                    H_ox=H_ox,
-                   H_dox=H_dox)
+                   H_dox=H_dox,
+                   S=S,
+                   W=W,
+                   E=E,
+                   Mu_ox=Mu_ox,
+                   Mu_dox=Mu_dox)
         return dat
 
 
@@ -335,3 +342,11 @@ def clip(x, threshold=0.0):
     """
     x[x<threshold] = threshold
     return x
+
+
+if __name__ == '__main__':
+    from sourcesep.sim import SimData
+    from sourcesep.utils.config import load_config
+    paths = load_config(dataset_key='all')
+    sim = SimData(T=3600, cfg_path=paths['root'] / "sim_config.toml")
+    sim.compose_torch()

@@ -10,7 +10,7 @@ class BaseUnet(nn.Module):
         in_channels (int, optional): Time axis.
         out_channels (int, optional): Defaults to 8.
     """
-    def __init__(self, in_channels=60, out_channels=8):
+    def __init__(self, in_channels=60, out_channels=8, cfg=None, **kwargs):
         super().__init__()
         self.conv_0 = self.double_conv(in_channels=in_channels, out_channels=16, kernel_size=16)
         self.mp_0 = nn.MaxPool1d(kernel_size=4)
@@ -103,35 +103,89 @@ class BaseUnet(nn.Module):
         index = torch.arange(delta, input.shape[dim]-delta, 1, device=input.device)
         return torch.index_select(input, dim, index)
 
+
+class Compose(nn.Module):
+    def __init__(self, S, E, W, Mu_ox, Mu_dox, B, **kwargs):
+        super().__init__()
+        self.register_buffer('S', torch.tensor(S), persistent=True)             # shape = (I,L)
+        self.register_buffer('E', torch.tensor(E), persistent=True)             # shape = (J,L)
+        self.register_buffer('W', torch.tensor(W), persistent=True)             # shape = (I,J)
+        self.register_buffer('B', torch.tensor(B), persistent=True)             # shape = (J,L)
+        self.register_buffer('Mu_ox', torch.tensor(Mu_ox), persistent=True)     # shape=(L,)
+        self.register_buffer('Mu_dox', torch.tensor(Mu_dox), persistent=True)   # shape=(L,)
+
+    def forward(self, A, H_ox, H_dox, M, N):
+        device = self.S.device
+        T = A.shape[-1]
+        J = self.E.shape[0]
+        L = self.E.shape[1]
+        batch_size = A.shape[0]
+
+        AS = torch.einsum('bit,il -> btil', A, self.S)
+        ASW = torch.einsum('btil,ij -> btjl', AS, self.W)
+        ASWE = ASW + self.E[None, ...].expand(batch_size, T, -1, -1)
+
+        HD = torch.exp(-( \
+             torch.einsum('btd,dl -> btl', H_ox[..., None], self.Mu_ox[None, ...]) \
+             + torch.einsum('btd,dl -> btl', H_dox[..., None], self.Mu_dox[None, ...])))
+
+        HDM = torch.einsum('btjl,bt -> btjl', HD[:, :, None, :].expand(-1, -1, J, -1), M)
+        H = HDM + self.B[None, None, ...].expand_as(HDM)
+
+        N = N[:,:,:,None].expand(-1, -1, -1, L)
+        N = torch.einsum('bjtl -> btjl', N)
+
+        # Combining all the terms
+        O_pred = torch.einsum('btjl,btjl -> btjl', ASWE, H)
+        O_pred = torch.einsum('btjl,btjl -> btjl', O_pred, N)
+        O_pred = O_pred.reshape(batch_size, T, J*L)
+        O_pred = torch.einsum('btc -> bct', O_pred)
+        return O_pred
+
+
 class LitBaseUnet(pl.LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
         self.model = BaseUnet(**kwargs)
+        self.compose = Compose(**kwargs)
+
         self.A_loss = nn.L1Loss(reduction='mean')
         self.H_loss = nn.L1Loss(reduction='mean')
         self.pad = 293 # to sidestep boundary issues for now
         self.save_hyperparameters() # saves all kwargs passed to the model
 
-
     def loss_A(self, input, target):
         return nn.functional.l1_loss(input, target, reduction='mean')
 
-
     def loss_H(self, input, target):
         return nn.functional.l1_loss(input, target, reduction='mean')
-
+    
+    def loss_recon(self, input, target):
+        return nn.functional.l1_loss(input, target, reduction='mean')
 
     def training_step(self, batch, batch_idx):
         output = self.model(batch['O'])
         Ar = torch.squeeze(output[:, 0:3, ...])
-        A = batch['A'][:,:,self.pad:-self.pad]
         H_oxr = torch.squeeze(output[:, 3, ...])
-        H_doxr = torch.squeeze(output[:, 4, ...])
+        H_doxr = torch.squeeze(output[:, 4, ...]
+        # cropped ground truth
+        A = batch['A'][:,:,self.pad:-self.pad])
+        H_ox = torch.squeeze(batch['H_ox'][:,:,self.pad:-self.pad]))
+        H_dox = torch.squeeze(batch['H_dox'][:,:,self.pad:-self.pad])
+        M = torch.squeeze(batch['M'][:,:,self.pad:-self.pad])
+        N = batch['N'][:,:,self.pad:-self.pad]
 
-
+        # reconstruct with phenomenological model
+        Or = self.compose(Ar, H_oxr, H_doxr, M, N)
+        # reconstruct with ground truth
+        # Ox = self.compose(A, H_ox, H_dox, M, N)
+        # assert torch.allclose(Ox, O), 'compose test failed'
+        
+        O = batch['O'][:,:,self.pad:-self.pad]
         loss = self.loss_A(Ar[:,0,:], A[:,0,:]) 
             #+ self.loss_A(Ar[:,1,:], A[:,1,:]) \
             #+ self.loss_A(Ar[:,2,:], A[:,2,:])
+            #+ self.loss_O(Or, O)
 
         self.log('train_loss', loss)
         return loss
