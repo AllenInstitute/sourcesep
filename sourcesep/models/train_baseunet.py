@@ -27,7 +27,7 @@ def main():
                               val_steps_per_epoch=20,
                               batch_size=batch_size)
     S, W, E, Mu_ox, Mu_dox, B = datamodule.get_sim_arrays()
-    logger = TensorBoardLogger(paths['root'] / 'results', name='lt_logs', version='version_102',
+    logger = TensorBoardLogger(paths['root'] / 'results', name='lt_logs', version='version_103',
                                log_graph=False, default_hp_metric=True, prefix='', sub_dir='DEBUG')
     trainer = Trainer(logger=logger, log_every_n_steps=1, max_epochs=n_epochs,
                       reload_dataloaders_every_n_epochs=1, accelerator='gpu', devices=1, check_val_every_n_epoch=2)

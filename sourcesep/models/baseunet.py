@@ -27,9 +27,13 @@ class BaseUnet(nn.Module):
         self.conv_1_ = self.double_conv(48, 16, kernel_size=3)
 
         self.up_conv_0 = nn.ConvTranspose1d(16, 8, kernel_size=8, stride=4)
-        self.conv_0_ = self.double_conv(24, 8, kernel_size=3)
-        self.out_conv = nn.Conv1d(8, 8, 3, padding='valid')
+
+        self.outheads = nn.ModuleDict({
+                'A0': nn.Sequential(self.double_conv(24, 8, kernel_size=3),nn.Conv1d(8, 1, 3, padding='valid')),
+                'A1': nn.Sequential(self.double_conv(24, 8, kernel_size=3),nn.Conv1d(8, 1, 3, padding='valid')),
+                'A2': nn.Sequential(self.double_conv(24, 8, kernel_size=3),nn.Conv1d(8, 1, 3, padding='valid'))})
         self.lrelu = nn.LeakyReLU()
+        self.relu = nn.ReLU()
         return
 
     def forward(self, input):
@@ -65,10 +69,20 @@ class BaseUnet(nn.Module):
 
         x0_cat = torch.cat([self.crop(input=x0,  target=x0_, dim=2), x0_], dim=1)
         #print('x0_cat', x0_cat.shape)
-        x0_ = self.conv_0_(x0_cat)
-        #print('x0_', x0_.shape)
+        
+        # Previous
+        # x0_ = self.conv_0_(x0_cat)
+        # #print('x0_', x0_.shape)
+        
+        # output = self.lrelu(self.out_conv(x0_))
 
-        output = self.lrelu(self.out_conv(x0_))
+        # Now 
+
+        A0 = self.relu(self.outheads['A0'](x0_cat))
+        A1 = self.relu(self.outheads['A1'](x0_cat))
+        A2 = self.relu(self.outheads['A2'](x0_cat))
+        output = torch.cat([A0, A1, A2], dim=1)
+
         return output
     
     def test(self):
@@ -154,6 +168,9 @@ class LitBaseUnet(pl.LightningModule):
         self.pad = 293 # to sidestep boundary issues for now
         self.save_hyperparameters() # saves all kwargs passed to the model
 
+    def dfoverf(self, x):
+        return (x - x.mean()) / x.mean()
+
     def loss_A(self, input, target):
         return nn.functional.l1_loss(input, target, reduction='mean')
 
@@ -166,50 +183,77 @@ class LitBaseUnet(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         output = self.model(batch['O'])
         Ar = torch.squeeze(output[:, 0:3, ...])
-        H_oxr = torch.squeeze(output[:, 3, ...])
-        H_doxr = torch.squeeze(output[:, 4, ...])
 
         # cropped ground truth
-        A = batch['A'][:,:,self.pad:-self.pad]
-        H_ox = torch.squeeze(batch['H_ox'][:,:,self.pad:-self.pad])
-        H_dox = torch.squeeze(batch['H_dox'][:,:,self.pad:-self.pad])
-        M = torch.squeeze(batch['M'][:,:,self.pad:-self.pad])
-        N = batch['N'][:,:,self.pad:-self.pad]
-        O = batch['O'][:,:,self.pad:-self.pad]
+        A = batch['A'][:, :, self.pad:-self.pad]
+        H_ox = torch.squeeze(batch['H_ox'][:, :, self.pad:-self.pad])
+        H_dox = torch.squeeze(batch['H_dox'][:, :, self.pad:-self.pad])
+        M = torch.squeeze(batch['M'][:, :, self.pad:-self.pad])
+        N = batch['N'][:, :, self.pad:-self.pad]
+        O = batch['O'][:, :, self.pad:-self.pad]
 
         # reconstruct with phenomenological model
-        Or = self.compose(Ar, H_oxr, H_doxr, M, N)
+        Or = self.compose(0.1*Ar + 1, H_ox, H_dox, M, N)
 
         # reconstruct with ground truth
         # Ox = self.compose(A, H_ox, H_dox, M, N)
         # assert torch.allclose(Ox, O), 'compose test failed'
 
-        loss = self.loss_A(Ar[:,0,:], A[:,0,:]) 
-            #+ self.loss_A(Ar[:,1,:], A[:,1,:]) \
-            #+ self.loss_A(Ar[:,2,:], A[:,2,:])
-            #+ self.loss_O(Or, O)
+        loss_A0 = self.loss_A(Ar[:, 0, :], 10*(A[:, 0, :]-1))
+        loss_A1 = self.loss_A(Ar[:, 1, :], 10*(A[:, 1, :]-1))
+        loss_A2 = self.loss_A(Ar[:, 2, :], 10*(A[:, 2, :]-1))
+        loss_O = self.loss_recon(Or, O)
 
+        self.log('train_loss_A0', loss_A0)
+        self.log('train_loss_A1', loss_A1)
+        self.log('train_loss_A2', loss_A2)
+        self.log('train_loss_O', loss_O)
+        loss = loss_A0 + loss_A1 + loss_A2
         self.log('train_loss', loss)
         return loss
     
     def validation_step(self, batch, batch_idx):
         output = self.model(batch['O'])
         Ar = torch.squeeze(output[:, 0:3, ...])
-        A = batch['A'][:,:,self.pad:-self.pad]
-        H_oxr = torch.squeeze(output[:, 3, ...])
-        H_doxr = torch.squeeze(output[:, 4, ...])
+        #H_oxr = torch.squeeze(output[:, 3, ...])
+        #H_doxr = torch.squeeze(output[:, 4, ...])
 
-        loss = self.loss_A(Ar[:,0,:], A[:,0,:]) \
-            #+ self.loss_A(Ar[:,1,:], A[:,1,:]) \
-            #+ self.loss_A(Ar[:,2,:], A[:,2,:])
+        # cropped ground truth
+        A = batch['A'][:, :, self.pad:-self.pad]
+        H_ox = torch.squeeze(batch['H_ox'][:, :, self.pad:-self.pad])
+        H_dox = torch.squeeze(batch['H_dox'][:, :, self.pad:-self.pad])
+        M = torch.squeeze(batch['M'][:, :, self.pad:-self.pad])
+        N = batch['N'][:, :, self.pad:-self.pad]
+        O = batch['O'][:, :, self.pad:-self.pad]
 
-        f, ax = plt.subplots(1, 1, figsize=(10, 5))
-        ax.plot(torch.squeeze(A[0].T[:,0]).to('cpu'), label='data')
-        ax.plot(torch.squeeze(Ar[0].T[:,0]).to('cpu'), label='recon')
-        ax.legend()
+        # reconstruct with phenomenological model
+        Or = self.compose(0.1*Ar + 1, H_ox, H_dox, M, N)
+
+        # reconstruct with ground truth
+        # Ox = self.compose(A, H_ox, H_dox, M, N)
+        # assert torch.allclose(Ox, O), 'compose test failed'
+
+        loss_A0 = self.loss_A(Ar[:, 0, :], 10*(A[:, 0, :]-1))
+        loss_A1 = self.loss_A(Ar[:, 1, :], 10*(A[:, 1, :]-1))
+        loss_A2 = self.loss_A(Ar[:, 2, :], 10*(A[:, 2, :]-1))
+        loss_O = self.loss_recon(Or, O)
+
+        self.log('val_loss_A0', loss_A0)
+        self.log('val_loss_A1', loss_A1)
+        self.log('val_loss_A2', loss_A2)
+        self.log('val_loss_O', loss_O)
+        loss = loss_A0 + loss_A1 + loss_A2 + loss_O
+        self.log('train_loss', loss)
+
+        f, ax = plt.subplots(3, 1, figsize=(10, 12))
+        for i in range(3):
+            
+            ax[i].plot(torch.squeeze(10*(A[:, 0, :]-1).T[:,i] - 1).to('cpu'), label='data', c='dodgerblue', alpha=0.8)
+            ax[i].plot(torch.squeeze(Ar[i].T[:,i]).to('cpu'), label='recon', c='crimson', alpha=0.5)
+            ax[i].legend()
+
         self.logger.experiment.add_figure('A reconstruction', f, self.current_epoch)
-        self.log('val_loss', loss)
         return
     
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=1e-5) # default is 1e-3
