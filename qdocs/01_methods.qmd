@@ -1,6 +1,192 @@
+$$
+\newcommand{\tr}{\textrm{tr}}
+\newcommand{\vec}{\textrm{vec}}
+$$
+
 # Methods
 
 This chapter documents ideas to analyze the raw signals. 
+
+## Baselines
+
+### Non-negative matrix factorization (NMF)
+
+  - Let $\mathbb{R_+}$ denote non-negative real number set
+  - Data $X \in \mathbb{R_+}^{p \times q}$ 
+  - Let $W \in \mathbb{R_+}^{p \times r}$ and $H \in \mathbb{R_+}^{r \times q}$. 
+  
+  The exact NMF problem $X = WH$ is NP-hard. The approximate problem $X \approx WH$ is non-convex.
+
+### Implementation in scikit-learn
+
+ `scikit-learn` provides implementations of the multiplicative update @lee1999nmf and co-ordinate descent rules to solve the problem, includes regularizers for sparsity and smoothness. The problem considered in scikit-learn is:
+
+$$
+\begin{aligned}
+L(W, H) &= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
+            &+ p \alpha_W \bigg(2f  \|vec(W)\|_1 + (1 - f) \| W \|_{F}^2\bigg) \\
+            &+ q \alpha_H \bigg(2f  \|vec(H)\|_1 + (1 - f) \| H \|_{F}^2\bigg) \bigg]
+\end{aligned}
+$$
+
+- $X \in \mathbb{R_+}^{p \times q}$
+- $\vec(A)$ flattens matrix $A$ into a vector
+- $\alpha_W, \alpha_H , f$ are input parameters that control regularization
+  
+
+::: {.column-margin}
+This sections on projected gradient descent, explanation for multiplicative update, and coordinate descent are reproduced with nominal changes from [lecture notes](https://www.cs.cornell.edu/~bindel/class/sjtu-summer19/lec/2019-05-30.pdf) by [David Bindel](https://github.com/dbindel).
+:::
+
+### Projected gradient descent:
+
+
+To minimize a function $\phi(x)$, we can use gradient descent. We introduce a projection function $\mathcal{P}(x)$ that maps $x$ to the nearest feasible point. For the non-negativity constraint of NMF, $\mathcal{P}(x) = [x]_+$ is the elementwise maximum of $x$ and
+zero. The projected gradient descent iteration is then
+$$
+  x^{k+1} = \mathcal{P}\left( x^{k+1} - \alpha_k \nabla \phi(x^k) \right).
+$$
+
+The convergence properties of projected gradient descent are similar
+to those of the unprojected version.
+
+In order to write the gradient for the NMF objective without
+descending into a morass of indices, it is helpful to introduce
+the Frobenius inner product: for matrices
+$X, Y \in \mathbb{R}^{m \times n}$,
+$$
+  \langle X, Y \rangle_F =
+  \sum_{i,j} y_{ij} x_{ij} =
+  \tr(Y^T X).
+$$
+The Frobenius inner product is the inner product associated with the
+Frobenius norm: $\|X\|_F^2 = \langle X, X \rangle_F$, and we can apply
+the usual product rule for differentiation to compute directional
+derivatives of $\phi(W,H) = \|A-WH\|_F^2/2$ with respect to $W$ and $H$:
+\begin{align*}
+  \delta \phi
+  &= \delta \left[ \frac{1}{2} \langle A-WH, A-WH \rangle_F \right] \\
+  &= \langle \delta(A-WH), A-WH \rangle_F \\
+  &= -\langle (\delta W) H, A-WH \rangle_F
+     -\langle W (\delta H), A-WH \rangle_F.
+\end{align*}
+We let $R = A-WH$, and use the fact that the trace of a product
+of matrices is invariant under cyclic permutations of the matrices:
+\begin{align*}
+  \langle (\delta W) H, R \rangle_F
+  & = \tr(H^T (\delta W)^T R)
+    = \tr((\delta W)^T RH^T)
+    = \langle \delta W, RH^T \rangle_F \\
+  \langle W (\delta H), R \rangle_F
+  &= \tr((\delta H)^T W^T R) = \langle \delta H, W^T R \rangle_F.
+\end{align*}
+Therefore, the projected gradient descent iteration for this
+problem is
+\begin{align*}
+  W^{\mathrm{new}} &=
+  \left[
+    W + \alpha RH^T 
+  \right]_+ \\
+  H^{\mathrm{new}} &=
+  \left[
+    H + \alpha W^T R
+  \right]_+,
+\end{align*}
+where in the interest of legibility we have suppressed the iteration
+index on the right hand side.
+
+### Multiplicative updates
+
+One of the earliest and most popular NMF solvers is the
+multiplicative update scheme of Lee and Seung.  This has the
+form of a scaled gradient descent iteration where we
+replace the uniform step size $\alpha_k$ with a different
+(non-negative) step size for each entry of $W$ and $H$:
+
+$$
+\begin{align*}
+  W^{\mathrm{new}} &=
+  \left[
+    W + S \odot \left( AH^T - W H H^T \right)
+  \right]_+ \\
+  H^{\mathrm{new}} &=
+  \left[
+    H + S' \odot \left( W^T A - W^T W H \right)
+  \right]_+,  
+\end{align*}
+$$
+
+where $\odot$ denotes elementwise multiplication.
+We similarly let $\oslash$ to denote elementwise division
+to define the nonnegative scaling matrices
+
+$$
+\begin{align*}
+S  = W \oslash (WHH^T) \\
+S' = H \oslash (W^TWH)
+\end{align*}
+$$
+
+With these choices, two of the terms in the summation cancel, so that
+$$
+\begin{align*}
+  W^{\mathrm{new}} &= S  \odot (AH^T) = W \oslash (WHH^T) \odot (AH^T) \\
+  H^{\mathrm{new}} &= S' \odot (W^TA) = H \oslash (W^TWH) \odot (W^TA).
+\end{align*}
+$$
+
+At each step of the Lee and Seung scheme, we scale the (non-negative) elements of $W$ and $H$ by non-negative factors, yielding a non-negative result.  There is no need for a non-negative projection because the step sizes are chosen increasingly conservatively as elements of $W$ and $H$ approach zero. But because the steps are very conservative, the Lee and Seung algorithm may require a large
+number of steps to converge.
+
+### Coordinate descent
+
+The block coordinate descent method (also known as
+block relaxation, or nonlinear Gauss-Seidel) for solving
+$\min~\phi(x_1, x_2, \ldots, x_p)$ for $x_i \in \Omega_i$
+
+involves repeatedly optimizing with respect to one coordinate at a time. In the basic method, we iterate through each $i$ and compute
+$$
+  x_i^{k+1} =
+  \textrm{argmin}_\xi \phi(x_1^{k+1}, \ldots, x_{i-1}^{k+1}, \xi, x_{i+1}^k, \ldots, x_p^k)
+$$
+The individual subproblems are often simpler than the full problem. If each subproblem has a unique solution (e.g.~if each subproblem is strongly convex), the iteration converges to a stationary point.
+
+
+### Simple coordinate descent
+
+Perhaps the simplest coordinate descent algorithm for NMF sweeps through all entries of $W$ and $H$.  Let $R = A-WH$; then for the $(i,j)$ coordinate of $W$, we compute the update
+$w_{ij} = w_{ij} + s$ where $s$ minimizes the quadratic
+
+$$
+\begin{align*}
+\frac{1}{2} \|A-(W+se_i e_j^T) H\|_F^s = \\
+\frac{1}{2} \|R\|_F^2 - s \langle (e_i e_j^T) , RH^T \rangle_F + \frac{1}{2} s^2 \|e_i e_j^T H\|_F^2
+\end{align*}
+$$
+
+subject to the constraint that $s \geq -w_{ij}$.  The solution to this optimization is
+
+$$
+  s = \max\left( -w_{ij}, \frac{(RH^T)_{ij}}{(HH^T)_{jj}} \right)
+$$
+
+Therefore, the update for $w_{ij}$ is
+$$
+  s = \max\left( -w_{ij}, \frac{(RH^T)_{ij}}{(HH^T)_{jj}} \right), \quad
+  w_{ij} := w_{ij} + s, \quad
+  R_{i,:} := R_{i,:} - s H_{j,:}
+$$
+A similar computation for the elements of $H$ gives us the update formulas
+
+$$
+\begin{align*}
+  s = \max\left( -h_{ij}, \frac{(W^TR)_{ij}}{(W^TW)_{ii}} \right), \quad
+  h_{ij} := h_{ij} + s, \quad
+  R_{:,j} := R_{:,j} - s W_{:,i}.
+\end{align*}
+$$
+
+Superficially, this looks much like projected gradient descent with scaled step lengths.  However, where in gradient descent (or the multiplicative updates of Lee and Seung) the updates for all entries of $W$ and $H$ are independent, in this coordinate descent algorithm we only have independence of updates for a single column of $W$ or a single row of $H$.  This is a disadvantage for efficient implementation.
 
 ## Training a conv-net
 
