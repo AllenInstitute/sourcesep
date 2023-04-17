@@ -225,16 +225,17 @@ class LitBaseUnet(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         Ar, Or, batch_cropped = self(batch)
 
-        loss_A0 = self.loss_A(Ar[:, 0, :], self.A_transform(batch_cropped['A'][:, 0, :]))
-        loss_A1 = self.loss_A(Ar[:, 1, :], self.A_transform(batch_cropped['A'][:, 1, :]))
-        loss_A2 = self.loss_A(Ar[:, 2, :], self.A_transform(batch_cropped['A'][:, 2, :]))
+        # loss_A0 = self.loss_A(Ar[:, 0, :], self.A_transform(batch_cropped['A'][:, 0, :]))
+        # loss_A1 = self.loss_A(Ar[:, 1, :], self.A_transform(batch_cropped['A'][:, 1, :]))
+        # loss_A2 = self.loss_A(Ar[:, 2, :], self.A_transform(batch_cropped['A'][:, 2, :]))
         loss_O = self.loss_recon(Or, batch_cropped['O'])
-        loss = loss_A0 + loss_A1 + loss_A2
+        #loss = loss_A0 + loss_A1 + loss_A2
+        loss = loss_O
 
-        self.log('train_A0', loss_A0)
-        self.log('train_A1', loss_A1)
-        self.log('train_A2', loss_A2)
-        #self.log('train_O', loss_O)
+        # self.log('train_A0', loss_A0)
+        # self.log('train_A1', loss_A1)
+        # self.log('train_A2', loss_A2)
+        self.log('train_O', loss_O)
         self.log('train_loss', loss)
 
         getx = lambda x: x.detach().cpu().numpy()
@@ -251,7 +252,8 @@ class LitBaseUnet(pl.LightningModule):
 
         self.logger.experiment.add_figure('Train reconstructions', f, self.current_epoch)
 
-        print(f'train_loss_A0 {loss_A0}, train_loss_A1 {loss_A1}, train_loss_A2 {loss_A2}, train_loss_O {loss_O}')
+        # print(f'train_loss_A0 {loss_A0}, train_loss_A1 {loss_A1}, train_loss_A2 {loss_A2}, train_loss_O {loss_O}')
+        print(f'train_loss_O {loss_O}')
         return loss
     
     def validation_step(self, batch, batch_idx):
