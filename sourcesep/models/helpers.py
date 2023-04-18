@@ -36,9 +36,10 @@ class H5DataModule(pl.LightningDataModule):
     def __init__(self, train_h5_filename,
                  val_h5_filename,
                  n_timesamples,
-                 train_steps_per_epoch=400,
-                 val_steps_per_epoch=20,
-                 validation_seed=None,
+                 train_samples_per_epoch=400,
+                 val_samples_per_epoch=20,
+                 train_seed=None,
+                 val_seed=None,
                  batch_size=20,
                  num_workers=8):
         super().__init__()
@@ -46,14 +47,15 @@ class H5DataModule(pl.LightningDataModule):
         self.val_h5_filename = val_h5_filename
         self.n_timesamples = n_timesamples
         self.batch_size = batch_size
-        self.train_steps_per_epoch = train_steps_per_epoch
-        self.val_steps_per_epoch = val_steps_per_epoch
+        self.train_samples_per_epoch = train_samples_per_epoch
+        self.val_samples_per_epoch = val_samples_per_epoch
         self.dataset = None
-        self.validation_seed = validation_seed
+        self.train_seed = train_seed
+        self.val_seed = val_seed
         self.num_workers = num_workers
 
     def get_sim_arrays(self):
-        f = h5py.File(self.h5_filename, "r")
+        f = h5py.File(self.train_h5_filename, "r")
         S = f['S'][:]
         W = f['W'][:]
         E = f['E'][:]
@@ -70,10 +72,11 @@ class H5DataModule(pl.LightningDataModule):
                                          n_timesamples=self.n_timesamples)
 
     def train_dataloader(self):
-        subset_idx = np.random.choice(a=len(self.dataset),
-                                      size=self.train_steps_per_epoch,
-                                      replace=False)
-        sub_dataset = Subset(self.dataset, subset_idx)
+        rng = np.random.RandomState(self.train_seed)
+        subset_idx = rng.choice(a=len(self.train_dataset),
+                                size=self.train_samples_per_epoch,
+                                replace=False)
+        sub_dataset = Subset(self.train_dataset, subset_idx)
         return DataLoader(sub_dataset,
                           batch_size=self.batch_size,
                           shuffle=True,
@@ -81,13 +84,13 @@ class H5DataModule(pl.LightningDataModule):
                           pin_memory=True)
 
     def val_dataloader(self):
-        rng = np.random.RandomState(self.validation_seed)
-        subset_idx = rng.random.choice(a=len(self.dataset),
-                                       size=self.val_steps_per_epoch,
-                                       replace=False)
-        sub_dataset = Subset(self.dataset, subset_idx)
+        rng = np.random.RandomState(self.val_seed)
+        subset_idx = rng.choice(a=len(self.val_dataset),
+                                size=self.val_samples_per_epoch,
+                                replace=False)
+        sub_dataset = Subset(self.val_dataset, subset_idx)
         return DataLoader(sub_dataset,
                           batch_size=self.batch_size,
-                          shuffle=True,
+                          shuffle=False,
                           num_workers=self.num_workers,
                           pin_memory=True)

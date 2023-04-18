@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
+from torchmetrics import Metric, CosineSimilarity, ExplainedVariance, MeanAbsoluteError, MeanSquaredError
+
+
 
 class BaseUnet(nn.Module):
     """Base Unet model for comparisons
@@ -98,8 +101,7 @@ class BaseUnet(nn.Module):
             nn.Tanh(),
             nn.Conv1d(int_channels, int_channels, kernel_size, padding='valid'),
             nn.Tanh(),
-            nn.Conv1d(int_channels, 1, 3, padding='valid'),
-            nn.Tanh()
+            nn.Conv1d(int_channels, 1, 3, padding='valid')
         )
         return conv
 
@@ -165,32 +167,28 @@ class LitBaseUnet(pl.LightningModule):
         super().__init__()
         self.model = BaseUnet(**kwargs)
         self.compose = Compose(**kwargs)
-
-        self.A_loss = nn.L1Loss(reduction='mean')
-        self.H_loss = nn.L1Loss(reduction='mean')
         self.pad = 293 # to sidestep boundary issues for now
         self.save_hyperparameters() # saves all kwargs passed to the model
 
-        # initialize outheads
+        # torchmetrics
+        self.cosinesimilarity = CosineSimilarity(reduction='mean')
+        self.explainedvariance = ExplainedVariance(multioutput='uniform_average')
+        self.meanabsoluteerror = MeanAbsoluteError()
+        self.meansquarederror = MeanSquaredError()
+        self.getx = lambda x: x.detach().cpu().numpy()
+
+        # nn losses
+        self.smoothl1 = nn.SmoothL1Loss(beta=0.1, reduction='mean')
+        self.mse = nn.MSELoss(reduction='mean')
+        
+        # initialize
         for name in ['A0', 'A1', 'A2']:
-            x = list(self.model.outheads[name].children())[-2]
+            x = list(self.model.outheads[name].children())[-1]
             x.bias.data.fill_(0.0) # 0 is transformed activity mean
-
-    def dfoverf(self, x):
-        return (x - x.mean()) / x.mean()
-
-    def loss_A(self, input, target):
-        return nn.functional.smooth_l1_loss(input, target, beta=0.1, reduction='mean')
-
-    def loss_H(self, input, target):
-        return nn.functional.l1_loss(input, target, reduction='mean')
-    
-    def loss_recon(self, input, target):
-        return nn.functional.l1_loss(input, target, reduction='mean')
     
     @staticmethod
     def A_transform(x):
-        return 5*(x-1)
+        return 5.0*(x-1.0)
     
     @staticmethod
     def A_transform_inv(x):
@@ -220,51 +218,74 @@ class LitBaseUnet(pl.LightningModule):
         # Ox = self.compose(A, H_ox, H_dox, M, N)
         # assert torch.allclose(Ox, O), 'compose test failed'
         return Ar, Or, batch_cropped
+    
+    def get_metrics(self, true, pred):
+        """
+        - Metrics are accumulated over batches and then averaged over epochs
+        """
+        metrics = {}
+        
+        metrics['l1'] = self.meanabsoluteerror(true, pred)
+        metrics['l2'] = self.meansquarederror(true, pred)
+        metrics['exp_var'] = self.explainedvariance(true, pred)
+        metrics['cos_sim'] = (self.cosinesimilarity(true[:, 0, :], pred[:, 0, :]) \
+                                        + self.cosinesimilarity(true[:, 1, :], pred[:, 1, :]) \
+                                        + self.cosinesimilarity(true[:, 2, :], pred[:, 2, :])) / 3.0
+        return metrics
+    
+    def get_losses(self, A_true, A_pred, O_true, O_pred):
+        """
+         - Losses are not averaged over batches in the current form.
+        """
+        loss_activity = self.smoothl1(A_pred[:, 0, :], A_true[:, 0, :]) \
+                        + self.smoothl1(A_pred[:, 1, :], A_true[:, 1, :]) \
+                        + self.smoothl1(A_pred[:, 2, :], A_true[:, 2, :])
+        loss_reconstruction = self.mse(O_pred, O_true)
+        return {'activity_smoothL1': loss_activity, 'reconstruction_mse': loss_reconstruction}
 
+    def make_plot(self, true, pred):
+        f, ax = plt.subplots(3, 1, figsize=(10, 12))
+        for ch in range(3):
+            sample_idx = 0
+            true_arr = self.getx(torch.squeeze(true[sample_idx, ch, :]))
+            pred_arr = self.getx(torch.squeeze(pred[sample_idx, ch, :]))
+            ax[ch].plot(true_arr, label='true', c='dodgerblue', alpha=0.8)
+            ax[ch].plot(pred_arr, label='pred', c='crimson', alpha=0.5)
+            ax[ch].legend()
+        return f
 
     def training_step(self, batch, batch_idx):
         Ar, Or, batch_cropped = self(batch)
+        A_transformed = self.A_transform(batch_cropped['A'])
 
-        # loss_A0 = self.loss_A(Ar[:, 0, :], self.A_transform(batch_cropped['A'][:, 0, :]))
-        # loss_A1 = self.loss_A(Ar[:, 1, :], self.A_transform(batch_cropped['A'][:, 1, :]))
-        # loss_A2 = self.loss_A(Ar[:, 2, :], self.A_transform(batch_cropped['A'][:, 2, :]))
-        loss_O = self.loss_recon(Or, batch_cropped['O'])
-        #loss = loss_A0 + loss_A1 + loss_A2
-        loss = loss_O
+        # separate loss components
+        losses = self.get_losses(A_true=A_transformed, A_pred=Ar, O_pred=Or, O_true=batch_cropped['O'])
+        losses.update({'loss':losses['activity_smoothL1'] + losses['reconstruction_mse']})
+        torchmetrics = self.get_metrics(true=A_transformed, pred=Ar)
+        losses.update(torchmetrics)
+        self.log_dict(losses, prog_bar=True, logger=True, on_step=False, on_epoch=True)
+        if batch_idx == 0:
+            f = self.make_plot(true=A_transformed, pred=Ar)
+            self.logger.experiment.add_figure('Training', f, self.current_epoch)
 
-        # self.log('train_A0', loss_A0)
-        # self.log('train_A1', loss_A1)
-        # self.log('train_A2', loss_A2)
-        self.log('train_O', loss_O)
-        self.log('train_loss', loss)
-
-        getx = lambda x: x.detach().cpu().numpy()
-        f, ax = plt.subplots(3, 1, figsize=(10, 12))
-
-        for i in range(3):
-            batch_idx = 0
-            data = getx(self.A_transform(torch.squeeze(batch_cropped['A'][batch_idx, i, :])))
-            pred = getx(torch.squeeze(Ar[batch_idx, i, :]))
-
-            ax[i].plot(data, label='data', c='dodgerblue', alpha=0.8)
-            ax[i].plot(pred, label='pred', c='crimson', alpha=0.5)
-            ax[i].legend()
-
-        self.logger.experiment.add_figure('Train reconstructions', f, self.current_epoch)
-
-        # print(f'train_loss_A0 {loss_A0}, train_loss_A1 {loss_A1}, train_loss_A2 {loss_A2}, train_loss_O {loss_O}')
-        print(f'train_loss_O {loss_O}')
-        return loss
+        # implicitly uses key 'loss' for backprop
+        return losses
     
     def validation_step(self, batch, batch_idx):
-        pass
+        Ar, Or, batch_cropped = self(batch)
+        A_transformed = self.A_transform(batch_cropped['A'])
+
+        losses = self.get_losses(A_true=A_transformed, A_pred=Ar, O_pred=Or, O_true=batch_cropped['O'])
+        losses.update({'loss':losses['activity_smoothL1'] + losses['reconstruction_mse']})
+        torchmetrics = self.get_metrics(true=A_transformed, pred=Ar)
+        losses.update(torchmetrics)
+        val_losses = {'val_'+k:v for k, v in losses.items()}
+        self.log_dict(val_losses, prog_bar=True, logger=True, on_step=False, on_epoch=True)
+        if batch_idx == 0:
+            f = self.make_plot(true=A_transformed, pred=Ar)
+            self.logger.experiment.add_figure('Validation', f, self.current_epoch)
+
         return
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters()) # default is 1e-3
-
-
-
-if __name__ == '__main__':
-    x = BaseUnet()
-    x.test()
