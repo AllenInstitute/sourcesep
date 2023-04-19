@@ -4,20 +4,24 @@ from sourcesep.models.helpers import H5DataModule
 from sourcesep.utils.config import load_config
 
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, RichProgressBar
 from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
+from pytorch_lightning.profilers import PyTorchProfiler
+from torch.profiler import tensorboard_trace_handler, schedule
+
 from timebudget import timebudget
 import toml
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--expt', type=str, default='unet')
+parser.add_argument('--expt', type=str, default='debug')
 
-def main(expt='unet'):
+def main(expt='debug'):
 
-    n_epochs = 10
+    n_epochs = 10000
+    max_time = '00:13:00:00' # in DD:HH:MM:SS format
     train_samples_per_epoch = 1000
-    val_samples_per_epoch = 100
+    val_samples_per_epoch = 200
     batch_size = 20
 
     # data paths
@@ -38,8 +42,13 @@ def main(expt='unet'):
     #Get constants relevant for reconstruction
     S, W, E, Mu_ox, Mu_dox, B = datamodule.get_sim_arrays()
 
-    ckpt_best_val_loss = ModelCheckpoint(monitor="val_loss", dirpath=expt_path, filename='best-val-loss', verbose=True)
-    ckpt_best_val_exp_var = ModelCheckpoint(monitor="val_exp_var", dirpath=expt_path, filename='best-val-exp-var', verbose=True)
+    ckpt_best_val_loss = ModelCheckpoint(monitor="val_loss", mode='min', dirpath=expt_path, filename='best-val-loss_{epoch}', verbose=True)
+    ckpt_best_val_exp_var = ModelCheckpoint(monitor="val_metric_exp_var", mode='max', dirpath=expt_path, filename='best-val-exp-var_{epoch}', verbose=True)
+
+    # profiler = PyTorchProfiler(on_trace_ready=tensorboard_trace_handler(paths['root'] / 'results' / 'profile' / 'profiler'),
+    #                         output_filename=paths['root'] / 'results' / 'profile' / 'profiler.txt',
+    #                         schedule=schedule(skip_first=10, wait=1, warmup=1, active=20),
+    #                         profile_memory=True, use_cuda=True)
     
     tb_logger = TensorBoardLogger(paths['root'] / 'results',
                                name='lt_logs',
@@ -55,7 +64,9 @@ def main(expt='unet'):
                       log_every_n_steps=1, 
                       reload_dataloaders_every_n_epochs=1,
                       check_val_every_n_epoch=1,
-                      callbacks=[ckpt_best_val_loss])
+                      callbacks=[ckpt_best_val_loss, ckpt_best_val_exp_var, RichProgressBar()],
+                      max_time=max_time)
+                      # include profiler=profiler
 
     model = LitBaseUnet(in_channels=300,
                         S=S,

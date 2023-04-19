@@ -118,9 +118,8 @@ class BaseUnet(nn.Module):
     def crop(self, input, target, dim):
         """Crop input to match target size along a given dimension
         """
-        delta = input.shape[dim] - target.shape[dim]
-        delta = delta // 2
-        index = torch.arange(delta, input.shape[dim]-delta, 1, device=input.device)
+        delta = (input.shape[dim] - target.shape[dim]) // 2
+        index = torch.arange(delta, input.shape[dim]-delta, 1, device=input.device, requires_grad=False)
         return torch.index_select(input, dim, index)
 
 
@@ -170,11 +169,11 @@ class LitBaseUnet(pl.LightningModule):
         self.pad = 293 # to sidestep boundary issues for now
         self.save_hyperparameters() # saves all kwargs passed to the model
 
-        # torchmetrics
-        self.cosinesimilarity = CosineSimilarity(reduction='mean')
-        self.explainedvariance = ExplainedVariance(multioutput='uniform_average')
-        self.meanabsoluteerror = MeanAbsoluteError()
-        self.meansquarederror = MeanSquaredError()
+        # torchmetrics. These are reset implicitly at each epoch end.
+        self.metric_cos_sim = CosineSimilarity(reduction='mean', is_differentiable=False)
+        self.metric_exp_var = ExplainedVariance(multioutput='uniform_average', is_differentiable=False)
+        self.metric_mean_l1 = MeanAbsoluteError(is_differentiable=False)
+        self.metric_mean_l2 = MeanSquaredError(is_differentiable=False)
         self.getx = lambda x: x.detach().cpu().numpy()
 
         # nn losses
@@ -183,8 +182,8 @@ class LitBaseUnet(pl.LightningModule):
         
         # initialize
         for name in ['A0', 'A1', 'A2']:
-            x = list(self.model.outheads[name].children())[-1]
-            x.bias.data.fill_(0.0) # 0 is transformed activity mean
+            layer = list(self.model.outheads[name].children())[-1]
+            layer.bias.data.fill_(0.0) # 0 is transformed activity mean
     
     @staticmethod
     def A_transform(x):
@@ -219,29 +218,38 @@ class LitBaseUnet(pl.LightningModule):
         # assert torch.allclose(Ox, O), 'compose test failed'
         return Ar, Or, batch_cropped
     
-    def get_metrics(self, true, pred):
+    def update_metrics(self, true, pred):
+        """Metrics are accumulated over batches and then averaged over epochs
         """
-        - Metrics are accumulated over batches and then averaged over epochs
-        """
-        metrics = {}
-        
-        metrics['l1'] = self.meanabsoluteerror(true, pred)
-        metrics['l2'] = self.meansquarederror(true, pred)
-        metrics['exp_var'] = self.explainedvariance(true, pred)
-        metrics['cos_sim'] = (self.cosinesimilarity(true[:, 0, :], pred[:, 0, :]) \
-                                        + self.cosinesimilarity(true[:, 1, :], pred[:, 1, :]) \
-                                        + self.cosinesimilarity(true[:, 2, :], pred[:, 2, :])) / 3.0
-        return metrics
+        self.metric_mean_l1.update(true, pred)
+        self.metric_mean_l2.update(true, pred)
+        self.metric_exp_var.update(true, pred)
+        self.metric_cos_sim.update(true[:, 0, :], pred[:, 0, :])
+        self.metric_cos_sim.update(true[:, 1, :], pred[:, 1, :])
+        self.metric_cos_sim.update(true[:, 2, :], pred[:, 2, :])
+        return 
+    
+    def reset_metrics(self):
+        self.metric_mean_l1.reset()
+        self.metric_mean_l2.reset()
+        self.metric_exp_var.reset()
+        self.metric_cos_sim.reset()
+        self.metric_cos_sim.reset()
+        self.metric_cos_sim.reset()
+        return
     
     def get_losses(self, A_true, A_pred, O_true, O_pred):
+        """Losses are not averaged over batches in the current form.
         """
-         - Losses are not averaged over batches in the current form.
-        """
-        loss_activity = self.smoothl1(A_pred[:, 0, :], A_true[:, 0, :]) \
+        loss_activity_smoothL1 = self.smoothl1(A_pred[:, 0, :], A_true[:, 0, :]) \
                         + self.smoothl1(A_pred[:, 1, :], A_true[:, 1, :]) \
                         + self.smoothl1(A_pred[:, 2, :], A_true[:, 2, :])
-        loss_reconstruction = self.mse(O_pred, O_true)
-        return {'activity_smoothL1': loss_activity, 'reconstruction_mse': loss_reconstruction}
+        loss_reconstruction_mse = self.mse(O_pred, O_true)
+
+        # lightning implicitly uses key 'loss' for backprop
+        return {'loss': loss_activity_smoothL1 + loss_reconstruction_mse,
+                'loss_activity_smoothL1': loss_activity_smoothL1,
+                'loss_reconstruction_mse': loss_reconstruction_mse}
 
     def make_plot(self, true, pred):
         f, ax = plt.subplots(3, 1, figsize=(10, 12))
@@ -259,33 +267,46 @@ class LitBaseUnet(pl.LightningModule):
         A_transformed = self.A_transform(batch_cropped['A'])
 
         # separate loss components
-        losses = self.get_losses(A_true=A_transformed, A_pred=Ar, O_pred=Or, O_true=batch_cropped['O'])
-        losses.update({'loss':losses['activity_smoothL1'] + losses['reconstruction_mse']})
-        torchmetrics = self.get_metrics(true=A_transformed, pred=Ar)
-        losses.update(torchmetrics)
-        self.log_dict(losses, prog_bar=True, logger=True, on_step=False, on_epoch=True)
+        losses_metrics = self.get_losses(A_true=A_transformed, A_pred=Ar, O_pred=Or, O_true=batch_cropped['O'])
+        self.update_metrics(true=A_transformed, pred=Ar)
+        losses_metrics.update({'metric_mean_l1':self.metric_mean_l1.compute(), 
+                        'metric_mean_l2':self.metric_mean_l2.compute(), 
+                        'metric_exp_var':self.metric_exp_var.compute(), 
+                        'metric_cos_sim':self.metric_cos_sim.compute()})
+        self.log_dict(losses_metrics, prog_bar=True, logger=True, on_step=False, on_epoch=True)
         if batch_idx == 0:
             f = self.make_plot(true=A_transformed, pred=Ar)
             self.logger.experiment.add_figure('Training', f, self.current_epoch)
 
         # implicitly uses key 'loss' for backprop
-        return losses
-    
+        return losses_metrics
+
+    def on_train_epoch_end(self):
+        self.reset_metrics()
+        return
+
     def validation_step(self, batch, batch_idx):
         Ar, Or, batch_cropped = self(batch)
         A_transformed = self.A_transform(batch_cropped['A'])
 
-        losses = self.get_losses(A_true=A_transformed, A_pred=Ar, O_pred=Or, O_true=batch_cropped['O'])
-        losses.update({'loss':losses['activity_smoothL1'] + losses['reconstruction_mse']})
-        torchmetrics = self.get_metrics(true=A_transformed, pred=Ar)
-        losses.update(torchmetrics)
-        val_losses = {'val_'+k:v for k, v in losses.items()}
-        self.log_dict(val_losses, prog_bar=True, logger=True, on_step=False, on_epoch=True)
+        losses_metrics = self.get_losses(A_true=A_transformed, A_pred=Ar, O_pred=Or, O_true=batch_cropped['O'])
+        self.update_metrics(true=A_transformed, pred=Ar)
+        losses_metrics.update({'metric_mean_l1':self.metric_mean_l1.compute(), 
+                        'metric_mean_l2':self.metric_mean_l2.compute(), 
+                        'metric_exp_var':self.metric_exp_var.compute(), 
+                        'metric_cos_sim':self.metric_cos_sim.compute()})
+
+        losses_metrics = {'val_'+k:v for k, v in losses_metrics.items()}
+        self.log_dict(losses_metrics, prog_bar=True, logger=True, on_step=False, on_epoch=True)
         if batch_idx == 0:
             f = self.make_plot(true=A_transformed, pred=Ar)
             self.logger.experiment.add_figure('Validation', f, self.current_epoch)
 
-        return
+        return losses_metrics
     
+    def on_validation_epoch_end(self):
+        self.reset_metrics()
+        return
+
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters()) # default is 1e-3
