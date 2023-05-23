@@ -23,7 +23,7 @@ $$
 
 $$
 \begin{align}
-O(t,\lambda,j) &= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b_(\lambda,j) ] n(t,j) \\
+O(t,\lambda,j) &= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b(\lambda,j) ] n(t,j) \\
 H(t, \lambda) &= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
 \end{align}
 $${#eq-observation}
