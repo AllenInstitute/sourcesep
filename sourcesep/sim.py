@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import toml
 from scipy import signal
+from scipy.ndimage import uniform_filter1d
 from dysts.flows import Lorenz
 from sourcesep.utils.config import load_config
 from sourcesep.utils.compute import lowpass
@@ -27,6 +28,7 @@ class SimData():
         self.E = None
         self.W = None
         self.S = None
+        self.notches = None
         self.Mu_ox = None
         self.Mu_dox = None
 
@@ -68,6 +70,33 @@ class SimData():
             self.S = S
 
         return self.S
+    
+    def get_notches(self):
+        """Populates self.notches with the effective transmission coefficient over all 
+        notch filters
+        TODO: Create notch config and move parameters to config file
+        """
+
+        if self.notches is None:
+            df_list = []
+            for lam in [473, 514, 561]:
+                df = pd.read_excel(self.paths['spectra'] / f'Semrock_{lam}nm_notch.xlsx', skiprows=13)  # Skip the first 10 rows if they contain headers or metadata
+                df.columns = ['wavelength', 'trans']
+                df_list.append(df)
+
+            assert np.all(df_list[0]['wavelength'].values == df_list[1]['wavelength'].values)
+            assert np.all(df_list[0]['wavelength'].values == df_list[2]['wavelength'].values)
+
+            # transmission of each notch should be multiplied for overall transmission
+            ideal_trans = df_list[0]['trans'] * df_list[1]['trans'] * df_list[2]['trans']
+            wavelength = df_list[0]['wavelength'].values
+
+            conv_window = 15 # in nm
+            lam_sampling_rate = np.mean(np.diff(wavelength))
+            df = pd.DataFrame({'wavelength': wavelength, 'ideal_trans': ideal_trans})
+            df['eff_trans'] = uniform_filter1d(df['ideal_trans'], int(conv_window / lam_sampling_rate))
+            self.notches = np.interp(self.L_arr, df['wavelength'], df['eff_trans'])
+        return self.notches
 
     def get_W(self):
         """Populates self.W with the excitation efficiency
@@ -292,6 +321,7 @@ class SimData():
         S = self.get_S()
         W = self.get_W()
         E = self.get_E()
+        notches = self.get_notches()
         Mu_ox, Mu_dox = self.get_Mu()
 
         A = amp['A_slow'] * self.gen_A_slow(how='random_lowpass') + amp['A_fast'] * self.gen_A_fast() + 1.0
@@ -321,6 +351,8 @@ class SimData():
         N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
         O = np.einsum('tjl,tjl -> tjl', ASWE, H)
         O = np.einsum('tjl,tjl -> tjl', O, N_)
+
+        O = np.einsum('tjl,l -> tjl', O, notches)           # apply notch filter <-- TODO: handle this gracefully if notches aren't used
 
         dat = dict(O=O,
                    A=A,
