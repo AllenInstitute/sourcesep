@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.0.37">
+<meta name="generator" content="quarto-1.2.475">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,10 +11,15 @@
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
@@ -133,21 +138,21 @@ div.csl-indent {
 </nav>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc">
+        <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#baselines" id="toc-baselines" class="nav-link active" data-scroll-target="#baselines"> <span class="header-section-number">2.1</span> Baselines</a>
+  <li><a href="#baselines" id="toc-baselines" class="nav-link active" data-scroll-target="#baselines"><span class="toc-section-number">2.1</span>  Baselines</a>
   <ul class="collapse">
-  <li><a href="#non-negative-matrix-factorization-nmf" id="toc-non-negative-matrix-factorization-nmf" class="nav-link" data-scroll-target="#non-negative-matrix-factorization-nmf"> <span class="header-section-number">2.1.1</span> Non-negative matrix factorization (NMF)</a></li>
-  <li><a href="#implementation-in-scikit-learn" id="toc-implementation-in-scikit-learn" class="nav-link" data-scroll-target="#implementation-in-scikit-learn"> <span class="header-section-number">2.1.2</span> Implementation in scikit-learn</a></li>
-  <li><a href="#projected-gradient-descent" id="toc-projected-gradient-descent" class="nav-link" data-scroll-target="#projected-gradient-descent"> <span class="header-section-number">2.1.3</span> Projected gradient descent:</a></li>
-  <li><a href="#multiplicative-updates" id="toc-multiplicative-updates" class="nav-link" data-scroll-target="#multiplicative-updates"> <span class="header-section-number">2.1.4</span> Multiplicative updates</a></li>
-  <li><a href="#coordinate-descent" id="toc-coordinate-descent" class="nav-link" data-scroll-target="#coordinate-descent"> <span class="header-section-number">2.1.5</span> Coordinate descent</a></li>
-  <li><a href="#simple-coordinate-descent" id="toc-simple-coordinate-descent" class="nav-link" data-scroll-target="#simple-coordinate-descent"> <span class="header-section-number">2.1.6</span> Simple coordinate descent</a></li>
+  <li><a href="#non-negative-matrix-factorization-nmf" id="toc-non-negative-matrix-factorization-nmf" class="nav-link" data-scroll-target="#non-negative-matrix-factorization-nmf"><span class="toc-section-number">2.1.1</span>  Non-negative matrix factorization (NMF)</a></li>
+  <li><a href="#implementation-in-scikit-learn" id="toc-implementation-in-scikit-learn" class="nav-link" data-scroll-target="#implementation-in-scikit-learn"><span class="toc-section-number">2.1.2</span>  Implementation in scikit-learn</a></li>
+  <li><a href="#projected-gradient-descent" id="toc-projected-gradient-descent" class="nav-link" data-scroll-target="#projected-gradient-descent"><span class="toc-section-number">2.1.3</span>  Projected gradient descent:</a></li>
+  <li><a href="#multiplicative-updates" id="toc-multiplicative-updates" class="nav-link" data-scroll-target="#multiplicative-updates"><span class="toc-section-number">2.1.4</span>  Multiplicative updates</a></li>
+  <li><a href="#coordinate-descent" id="toc-coordinate-descent" class="nav-link" data-scroll-target="#coordinate-descent"><span class="toc-section-number">2.1.5</span>  Coordinate descent</a></li>
+  <li><a href="#simple-coordinate-descent" id="toc-simple-coordinate-descent" class="nav-link" data-scroll-target="#simple-coordinate-descent"><span class="toc-section-number">2.1.6</span>  Simple coordinate descent</a></li>
   </ul></li>
-  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link" data-scroll-target="#training-a-conv-net"> <span class="header-section-number">2.2</span> Training a conv-net</a></li>
-  <li><a href="#strategies-to-model-real-data" id="toc-strategies-to-model-real-data" class="nav-link" data-scroll-target="#strategies-to-model-real-data"> <span class="header-section-number">2.3</span> Strategies to model real data</a></li>
+  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link" data-scroll-target="#training-a-conv-net"><span class="toc-section-number">2.2</span>  Training a conv-net</a></li>
+  <li><a href="#strategies-to-model-real-data" id="toc-strategies-to-model-real-data" class="nav-link" data-scroll-target="#strategies-to-model-real-data"><span class="toc-section-number">2.3</span>  Strategies to model real data</a></li>
   </ul>
 </nav>
     </div>
@@ -164,6 +169,7 @@ div.csl-indent {
 <div class="quarto-title-meta">
 
     
+  
     
   </div>
   
@@ -207,18 +213,15 @@ L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
 </div></div></section>
 <section id="projected-gradient-descent" class="level3" data-number="2.1.3">
 <h3 data-number="2.1.3" class="anchored" data-anchor-id="projected-gradient-descent"><span class="header-section-number">2.1.3</span> Projected gradient descent:</h3>
-<p>To minimize a function <span class="math inline">\(\phi(x)\)</span>, we can use gradient descent. We introduce a projection function <span class="math inline">\(\mathcal{P}(x)\)</span> that maps <span class="math inline">\(x\)</span> to the nearest feasible point. For the non-negativity constraint of NMF, <span class="math inline">\(\mathcal{P}(x) = [x]_+\)</span> is the elementwise maximum of <span class="math inline">\(x\)</span> and zero. The projected gradient descent iteration is then</p>
-<p><span class="math display">\[
+<p>To minimize a function <span class="math inline">\(\phi(x)\)</span>, we can use gradient descent. We introduce a projection function <span class="math inline">\(\mathcal{P}(x)\)</span> that maps <span class="math inline">\(x\)</span> to the nearest feasible point. For the non-negativity constraint of NMF, <span class="math inline">\(\mathcal{P}(x) = [x]_+\)</span> is the elementwise maximum of <span class="math inline">\(x\)</span> and zero. The projected gradient descent iteration is then <span class="math display">\[
   x^{k+1} = \mathcal{P}\left( x^{k+1} - \alpha_k \nabla \phi(x^k) \right).
 \]</span></p>
 <p>The convergence properties of projected gradient descent are similar to those of the unprojected version.</p>
-<p>In order to write the gradient for the NMF objective without descending into a morass of indices, it is helpful to introduce the Frobenius inner product: for matrices <span class="math inline">\(X, Y \in \mathbb{R}^{m \times n}\)</span>,</p>
-<p><span class="math display">\[
+<p>In order to write the gradient for the NMF objective without descending into a morass of indices, it is helpful to introduce the Frobenius inner product: for matrices <span class="math inline">\(X, Y \in \mathbb{R}^{m \times n}\)</span>, <span class="math display">\[
   \langle X, Y \rangle_F =
   \sum_{i,j} y_{ij} x_{ij} =
   \tr(Y^T X).
-\]</span></p>
-<p>The Frobenius inner product is the inner product associated with the Frobenius norm: <span class="math inline">\(\|X\|_F^2 = \langle X, X \rangle_F\)</span>, and we can apply the usual product rule for differentiation to compute directional derivatives of <span class="math inline">\(\phi(W,H) = \|A-WH\|_F^2/2\)</span> with respect to <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>: <span class="math display">\[\begin{align*}
+\]</span> The Frobenius inner product is the inner product associated with the Frobenius norm: <span class="math inline">\(\|X\|_F^2 = \langle X, X \rangle_F\)</span>, and we can apply the usual product rule for differentiation to compute directional derivatives of <span class="math inline">\(\phi(W,H) = \|A-WH\|_F^2/2\)</span> with respect to <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>: <span class="math display">\[\begin{align*}
   \delta \phi
   &amp;= \delta \left[ \frac{1}{2} \langle A-WH, A-WH \rangle_F \right] \\
   &amp;= \langle \delta(A-WH), A-WH \rangle_F \\
@@ -264,8 +267,7 @@ S  = W \oslash (WHH^T) \\
 S' = H \oslash (W^TWH)
 \end{align*}
 \]</span></p>
-<p>With these choices, two of the terms in the summation cancel, so that</p>
-<p><span class="math display">\[
+<p>With these choices, two of the terms in the summation cancel, so that <span class="math display">\[
 \begin{align*}
   W^{\mathrm{new}} &amp;= S  \odot (AH^T) = W \oslash (WHH^T) \odot (AH^T) \\
   H^{\mathrm{new}} &amp;= S' \odot (W^TA) = H \oslash (W^TWH) \odot (W^TA).
@@ -276,12 +278,10 @@ S' = H \oslash (W^TWH)
 <section id="coordinate-descent" class="level3" data-number="2.1.5">
 <h3 data-number="2.1.5" class="anchored" data-anchor-id="coordinate-descent"><span class="header-section-number">2.1.5</span> Coordinate descent</h3>
 <p>The block coordinate descent method (also known as block relaxation, or nonlinear Gauss-Seidel) for solving <span class="math inline">\(\min~\phi(x_1, x_2, \ldots, x_p)\)</span> for <span class="math inline">\(x_i \in \Omega_i\)</span></p>
-<p>involves repeatedly optimizing with respect to one coordinate at a time. In the basic method, we iterate through each <span class="math inline">\(i\)</span> and compute</p>
-<p><span class="math display">\[
+<p>involves repeatedly optimizing with respect to one coordinate at a time. In the basic method, we iterate through each <span class="math inline">\(i\)</span> and compute <span class="math display">\[
   x_i^{k+1} =
   \textrm{argmin}_\xi \phi(x_1^{k+1}, \ldots, x_{i-1}^{k+1}, \xi, x_{i+1}^k, \ldots, x_p^k)
-\]</span></p>
-<p>The individual subproblems are often simpler than the full problem. If each subproblem has a unique solution (e.g.~if each subproblem is strongly convex), the iteration converges to a stationary point.</p>
+\]</span> The individual subproblems are often simpler than the full problem. If each subproblem has a unique solution (e.g.~if each subproblem is strongly convex), the iteration converges to a stationary point.</p>
 </section>
 <section id="simple-coordinate-descent" class="level3" data-number="2.1.6">
 <h3 data-number="2.1.6" class="anchored" data-anchor-id="simple-coordinate-descent"><span class="header-section-number">2.1.6</span> Simple coordinate descent</h3>
@@ -296,13 +296,11 @@ S' = H \oslash (W^TWH)
 <p><span class="math display">\[
   s = \max\left( -w_{ij}, \frac{(RH^T)_{ij}}{(HH^T)_{jj}} \right)
 \]</span></p>
-<p>Therefore, the update for <span class="math inline">\(w_{ij}\)</span> is</p>
-<p><span class="math display">\[
+<p>Therefore, the update for <span class="math inline">\(w_{ij}\)</span> is <span class="math display">\[
   s = \max\left( -w_{ij}, \frac{(RH^T)_{ij}}{(HH^T)_{jj}} \right), \quad
   w_{ij} := w_{ij} + s, \quad
   R_{i,:} := R_{i,:} - s H_{j,:}
-\]</span></p>
-<p>A similar computation for the elements of <span class="math inline">\(H\)</span> gives us the update formulas</p>
+\]</span> A similar computation for the elements of <span class="math inline">\(H\)</span> gives us the update formulas</p>
 <p><span class="math display">\[
 \begin{align*}
   s = \max\left( -h_{ij}, \frac{(W^TR)_{ij}}{(W^TW)_{ii}} \right), \quad
@@ -378,7 +376,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
     button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
     setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
       button.setAttribute("title", currentTitle);
       button.classList.remove('code-copy-button-checked');
     }, 1000);
@@ -406,31 +421,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   for (var i=0; i<noterefs.length; i++) {
     const ref = noterefs[i];
     tippyHover(ref, function() {
-      let href = ref.getAttribute('href');
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
     });
   }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
   var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
   for (var i=0; i<bibliorefs.length; i++) {
     const ref = bibliorefs[i];
-    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
-    tippyHover(ref, function() {
-      var popup = window.document.createElement('div');
-      cites.forEach(function(cite) {
-        var citeDiv = window.document.createElement('div');
-        citeDiv.classList.add('hanging-indent');
-        citeDiv.classList.add('csl-entry');
-        var biblioDiv = window.document.getElementById('ref-' + cite);
-        if (biblioDiv) {
-          citeDiv.innerHTML = biblioDiv.innerHTML;
-        }
-        popup.appendChild(citeDiv);
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
       });
-      return popup.innerHTML;
-    });
+    }
   }
 });
 </script>
