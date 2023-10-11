@@ -39,11 +39,13 @@ def do_study(study_name, n_trials):
 
     def objective(trial):
 
-        l1_ratio = trial.suggest_float('l1_ratio', 0.0, 1.0)
+        #l1_ratio = trial.suggest_float('l1_ratio', 0.0, 1.0)
+        l1_ratio = 0.0
         alpha_W = trial.suggest_float('alpha_W', 0.0, 1.0)
-        alpha_H = trial.suggest_float('alpha_H', 0.0, 1.0)
+        #alpha_H = trial.suggest_float('alpha_H', 0.0, 1.0)
+        alpha_H = 0.0
 
-        model = NMF(n_components=3, init='nndsvd',
+        model = NMF(n_components=3, init=None,
                     solver='cd', beta_loss='frobenius',
                     tol=1e-4, max_iter=500, random_state=None,
                     alpha_W=alpha_W, alpha_H=alpha_H, l1_ratio=l1_ratio,
@@ -71,4 +73,4 @@ def do_study(study_name, n_trials):
 
 
 if __name__ == '__main__':
-    do_study(study_name='nmf-optimization', n_trials=10000)
+    do_study(study_name='nmf-opt-aW', n_trials=1000)
