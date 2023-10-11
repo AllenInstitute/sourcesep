@@ -191,10 +191,18 @@ Superficially, this looks much like projected gradient descent with scaled step 
 ## Training a conv-net
 
 1. The raw signal is simulated with the generative model in @eq-observation
-2. A conv-net is trained to reconstruct sensor activity $a(i,t), h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t), m(t)$
+2. A conv-net is trained to reconstruct sensor activity $a(i,t)
 3. Assume $n(t,j)$ is given
 
-## Strategies to model real data
 
- - Adversarial approach could samples of $a(i,t), h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t), m(t)$, which can then be combined as per phenomenological model
- - Autoencoding objective (perhaps restricted to specific channels) could be used to fine-tune model on real data.
+#### What we learnt:
+
+
+ - This strategy was implemented for synthetic data, and it works.
+ - The approach does not directly generalize to real data.
+ - The range of parameters used to generate synthetic data are key.
+ - Ideally we'd set these parameters in a rational range, or learn them from data.
+ - Problems in learning parameters for synthetic data:
+    - Experimental setup is changing.
+    - Position of notch filters must also be modeled (adds to complexity).
+    - Similarity metric (to compare synthetic with real data) must be well-defined to learn parameters through optimization.

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.475">
+<meta name="generator" content="quarto-1.3.450">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -17,14 +17,15 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
 }
-.hanging div.csl-entry {
+.hanging-indent div.csl-entry {
   margin-left:2em;
   text-indent:-2em;
 }
@@ -38,8 +39,7 @@ div.csl-right-inline {
 }
 div.csl-indent {
   margin-left: 2em;
-}
-</style>
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -76,10 +76,12 @@ div.csl-indent {
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
@@ -88,11 +90,16 @@ div.csl-indent {
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-    <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></h1>
-      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
-        <i class="bi bi-chevron-right"></i>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01_methods.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
       </button>
     </div>
   </nav>
@@ -100,59 +107,63 @@ div.csl-indent {
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Source separation</a> 
     </div>
       </div>
-      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
         </div>
-      </div>
+        </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./00_simulations.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></a>
+  <a href="./00_simulations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01_methods.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></a>
+  <a href="./01_methods.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
   </div>
 </li>
     </ul>
     </div>
 </nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#baselines" id="toc-baselines" class="nav-link active" data-scroll-target="#baselines"><span class="toc-section-number">2.1</span>  Baselines</a>
+  <li><a href="#baselines" id="toc-baselines" class="nav-link active" data-scroll-target="#baselines"><span class="header-section-number">2.1</span> Baselines</a>
   <ul class="collapse">
-  <li><a href="#non-negative-matrix-factorization-nmf" id="toc-non-negative-matrix-factorization-nmf" class="nav-link" data-scroll-target="#non-negative-matrix-factorization-nmf"><span class="toc-section-number">2.1.1</span>  Non-negative matrix factorization (NMF)</a></li>
-  <li><a href="#implementation-in-scikit-learn" id="toc-implementation-in-scikit-learn" class="nav-link" data-scroll-target="#implementation-in-scikit-learn"><span class="toc-section-number">2.1.2</span>  Implementation in scikit-learn</a></li>
-  <li><a href="#projected-gradient-descent" id="toc-projected-gradient-descent" class="nav-link" data-scroll-target="#projected-gradient-descent"><span class="toc-section-number">2.1.3</span>  Projected gradient descent:</a></li>
-  <li><a href="#multiplicative-updates" id="toc-multiplicative-updates" class="nav-link" data-scroll-target="#multiplicative-updates"><span class="toc-section-number">2.1.4</span>  Multiplicative updates</a></li>
-  <li><a href="#coordinate-descent" id="toc-coordinate-descent" class="nav-link" data-scroll-target="#coordinate-descent"><span class="toc-section-number">2.1.5</span>  Coordinate descent</a></li>
-  <li><a href="#simple-coordinate-descent" id="toc-simple-coordinate-descent" class="nav-link" data-scroll-target="#simple-coordinate-descent"><span class="toc-section-number">2.1.6</span>  Simple coordinate descent</a></li>
+  <li><a href="#non-negative-matrix-factorization-nmf" id="toc-non-negative-matrix-factorization-nmf" class="nav-link" data-scroll-target="#non-negative-matrix-factorization-nmf">Non-negative matrix factorization (NMF)</a></li>
+  <li><a href="#implementation-in-scikit-learn" id="toc-implementation-in-scikit-learn" class="nav-link" data-scroll-target="#implementation-in-scikit-learn">Implementation in scikit-learn</a></li>
+  <li><a href="#projected-gradient-descent" id="toc-projected-gradient-descent" class="nav-link" data-scroll-target="#projected-gradient-descent">Projected gradient descent:</a></li>
+  <li><a href="#multiplicative-updates" id="toc-multiplicative-updates" class="nav-link" data-scroll-target="#multiplicative-updates">Multiplicative updates</a></li>
+  <li><a href="#coordinate-descent" id="toc-coordinate-descent" class="nav-link" data-scroll-target="#coordinate-descent">Coordinate descent</a></li>
+  <li><a href="#simple-coordinate-descent" id="toc-simple-coordinate-descent" class="nav-link" data-scroll-target="#simple-coordinate-descent">Simple coordinate descent</a></li>
   </ul></li>
-  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link" data-scroll-target="#training-a-conv-net"><span class="toc-section-number">2.2</span>  Training a conv-net</a></li>
-  <li><a href="#strategies-to-model-real-data" id="toc-strategies-to-model-real-data" class="nav-link" data-scroll-target="#strategies-to-model-real-data"><span class="toc-section-number">2.3</span>  Strategies to model real data</a></li>
+  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link" data-scroll-target="#training-a-conv-net"><span class="header-section-number">2.2</span> Training a conv-net</a></li>
   </ul>
 </nav>
     </div>
@@ -161,7 +172,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></h1>
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></h1>
 </div>
 
 
@@ -183,8 +194,8 @@ div.csl-indent {
 <p>This chapter documents ideas to analyze the raw signals.</p>
 <section id="baselines" class="level2 page-columns page-full" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="baselines"><span class="header-section-number">2.1</span> Baselines</h2>
-<section id="non-negative-matrix-factorization-nmf" class="level3" data-number="2.1.1">
-<h3 data-number="2.1.1" class="anchored" data-anchor-id="non-negative-matrix-factorization-nmf"><span class="header-section-number">2.1.1</span> Non-negative matrix factorization (NMF)</h3>
+<section id="non-negative-matrix-factorization-nmf" class="level3">
+<h3 class="anchored" data-anchor-id="non-negative-matrix-factorization-nmf">Non-negative matrix factorization (NMF)</h3>
 <ul>
 <li>Let <span class="math inline">\(\mathbb{R_+}\)</span> denote non-negative real number set</li>
 <li>Data <span class="math inline">\(X \in \mathbb{R_+}^{p \times q}\)</span></li>
@@ -192,8 +203,8 @@ div.csl-indent {
 </ul>
 <p>The exact NMF problem <span class="math inline">\(X = WH\)</span> is NP-hard. The approximate problem <span class="math inline">\(X \approx WH\)</span> is non-convex.</p>
 </section>
-<section id="implementation-in-scikit-learn" class="level3 page-columns page-full" data-number="2.1.2">
-<h3 data-number="2.1.2" class="anchored" data-anchor-id="implementation-in-scikit-learn"><span class="header-section-number">2.1.2</span> Implementation in scikit-learn</h3>
+<section id="implementation-in-scikit-learn" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="implementation-in-scikit-learn">Implementation in scikit-learn</h3>
 <p><code>scikit-learn</code> provides implementations of the multiplicative update <span class="citation" data-cites="lee1999nmf">Lee and Seung (<a href="references.html#ref-lee1999nmf" role="doc-biblioref">1999</a>)</span> and co-ordinate descent rules to solve the problem, includes regularizers for sparsity and smoothness. The problem considered in scikit-learn is:</p>
 <p><span class="math display">\[
 \begin{aligned}
@@ -211,8 +222,8 @@ L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
 <div class="no-row-height column-margin column-container"><div class="">
 <p>This sections on projected gradient descent, explanation for multiplicative update, and coordinate descent are reproduced with nominal changes from <a href="https://www.cs.cornell.edu/~bindel/class/sjtu-summer19/lec/2019-05-30.pdf">lecture notes</a> by <a href="https://github.com/dbindel">David Bindel</a>.</p>
 </div></div></section>
-<section id="projected-gradient-descent" class="level3" data-number="2.1.3">
-<h3 data-number="2.1.3" class="anchored" data-anchor-id="projected-gradient-descent"><span class="header-section-number">2.1.3</span> Projected gradient descent:</h3>
+<section id="projected-gradient-descent" class="level3">
+<h3 class="anchored" data-anchor-id="projected-gradient-descent">Projected gradient descent:</h3>
 <p>To minimize a function <span class="math inline">\(\phi(x)\)</span>, we can use gradient descent. We introduce a projection function <span class="math inline">\(\mathcal{P}(x)\)</span> that maps <span class="math inline">\(x\)</span> to the nearest feasible point. For the non-negativity constraint of NMF, <span class="math inline">\(\mathcal{P}(x) = [x]_+\)</span> is the elementwise maximum of <span class="math inline">\(x\)</span> and zero. The projected gradient descent iteration is then <span class="math display">\[
   x^{k+1} = \mathcal{P}\left( x^{k+1} - \alpha_k \nabla \phi(x^k) \right).
 \]</span></p>
@@ -245,8 +256,8 @@ L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
   \right]_+,
 \end{align*}\]</span> where in the interest of legibility we have suppressed the iteration index on the right hand side.</p>
 </section>
-<section id="multiplicative-updates" class="level3" data-number="2.1.4">
-<h3 data-number="2.1.4" class="anchored" data-anchor-id="multiplicative-updates"><span class="header-section-number">2.1.4</span> Multiplicative updates</h3>
+<section id="multiplicative-updates" class="level3">
+<h3 class="anchored" data-anchor-id="multiplicative-updates">Multiplicative updates</h3>
 <p>One of the earliest and most popular NMF solvers is the multiplicative update scheme of Lee and Seung. This has the form of a scaled gradient descent iteration where we replace the uniform step size <span class="math inline">\(\alpha_k\)</span> with a different (non-negative) step size for each entry of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>:</p>
 <p><span class="math display">\[
 \begin{align*}
@@ -275,16 +286,16 @@ S' = H \oslash (W^TWH)
 \]</span></p>
 <p>At each step of the Lee and Seung scheme, we scale the (non-negative) elements of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span> by non-negative factors, yielding a non-negative result. There is no need for a non-negative projection because the step sizes are chosen increasingly conservatively as elements of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span> approach zero. But because the steps are very conservative, the Lee and Seung algorithm may require a large number of steps to converge.</p>
 </section>
-<section id="coordinate-descent" class="level3" data-number="2.1.5">
-<h3 data-number="2.1.5" class="anchored" data-anchor-id="coordinate-descent"><span class="header-section-number">2.1.5</span> Coordinate descent</h3>
+<section id="coordinate-descent" class="level3">
+<h3 class="anchored" data-anchor-id="coordinate-descent">Coordinate descent</h3>
 <p>The block coordinate descent method (also known as block relaxation, or nonlinear Gauss-Seidel) for solving <span class="math inline">\(\min~\phi(x_1, x_2, \ldots, x_p)\)</span> for <span class="math inline">\(x_i \in \Omega_i\)</span></p>
 <p>involves repeatedly optimizing with respect to one coordinate at a time. In the basic method, we iterate through each <span class="math inline">\(i\)</span> and compute <span class="math display">\[
   x_i^{k+1} =
   \textrm{argmin}_\xi \phi(x_1^{k+1}, \ldots, x_{i-1}^{k+1}, \xi, x_{i+1}^k, \ldots, x_p^k)
 \]</span> The individual subproblems are often simpler than the full problem. If each subproblem has a unique solution (e.g.~if each subproblem is strongly convex), the iteration converges to a stationary point.</p>
 </section>
-<section id="simple-coordinate-descent" class="level3" data-number="2.1.6">
-<h3 data-number="2.1.6" class="anchored" data-anchor-id="simple-coordinate-descent"><span class="header-section-number">2.1.6</span> Simple coordinate descent</h3>
+<section id="simple-coordinate-descent" class="level3">
+<h3 class="anchored" data-anchor-id="simple-coordinate-descent">Simple coordinate descent</h3>
 <p>Perhaps the simplest coordinate descent algorithm for NMF sweeps through all entries of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>. Let <span class="math inline">\(R = A-WH\)</span>; then for the <span class="math inline">\((i,j)\)</span> coordinate of <span class="math inline">\(W\)</span>, we compute the update <span class="math inline">\(w_{ij} = w_{ij} + s\)</span> where <span class="math inline">\(s\)</span> minimizes the quadratic</p>
 <p><span class="math display">\[
 \begin{align*}
@@ -315,23 +326,31 @@ S' = H \oslash (W^TWH)
 <h2 data-number="2.2" class="anchored" data-anchor-id="training-a-conv-net"><span class="header-section-number">2.2</span> Training a conv-net</h2>
 <ol type="1">
 <li>The raw signal is simulated with the generative model in <a href="00_simulations.html#eq-observation">Equation&nbsp;<span>1.1</span></a></li>
-<li>A conv-net is trained to reconstruct sensor activity <span class="math inline">\(a(i,t), h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t), m(t)\)</span></li>
+<li>A conv-net is trained to reconstruct sensor activity $a(i,t)</li>
 <li>Assume <span class="math inline">\(n(t,j)\)</span> is given</li>
 </ol>
-</section>
-<section id="strategies-to-model-real-data" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="strategies-to-model-real-data"><span class="header-section-number">2.3</span> Strategies to model real data</h2>
+<section id="what-we-learnt" class="level4">
+<h4 class="anchored" data-anchor-id="what-we-learnt">What we learnt:</h4>
 <ul>
-<li>Adversarial approach could samples of <span class="math inline">\(a(i,t), h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t), m(t)\)</span>, which can then be combined as per phenomenological model</li>
-<li>Autoencoding objective (perhaps restricted to specific channels) could be used to fine-tune model on real data.</li>
+<li>This strategy was implemented for synthetic data, and it works.</li>
+<li>The approach does not directly generalize to real data.</li>
+<li>The range of parameters used to generate synthetic data are key.</li>
+<li>Ideally we’d set these parameters in a rational range, or learn them from data.</li>
+<li>Problems in learning parameters for synthetic data:
+<ul>
+<li>Experimental setup is changing.</li>
+<li>Position of notch filters must also be modeled (adds to complexity).</li>
+<li>Similarity metric (to compare synthetic with real data) must be well-defined to learn parameters through optimization.</li>
+</ul></li>
 </ul>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
-<div id="ref-lee1999nmf" class="csl-entry" role="doc-biblioentry">
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-lee1999nmf" class="csl-entry" role="listitem">
 Lee, Daniel D, and H Sebastian Seung. 1999. <span>“Learning the Parts of Objects by Non-Negative Matrix Factorization.”</span> <em>Nature</em> 401 (6755): 788–91.
 </div>
 </div>
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -362,9 +381,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -429,6 +462,92 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return note.innerHTML;
     });
   }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
