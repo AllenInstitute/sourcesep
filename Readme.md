@@ -1,18 +1,15 @@
 ### Description
 
-Source separation for multiplexed spectral fiber photometry neuromodulator imaging.
+Source separation and denoising for hyperspectral fiber photometry neuromodulator imaging datasets.
 
 ### Environment
 
 ```
 conda create -n sourcesep python=3.8
-conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
 conda install scipy scikit-learn statsmodels jupyterlab pandas seaborn h5py pytables
-pip install timebudget rich tqdm autopep8 tensorboard
-conda install pytorch-lightning -c conda-forge
-pip install dysts sdeint 
-pip install librosa 
-pip install -e .
+ pip install lightning timebudget rich autopep8 tensorboard dysts sdeint librosa 
+ pip install -e .
 ```
 
 ### Config
@@ -50,22 +47,6 @@ data
 ### Documentation
 
 `./qdocs` contains source files for the quarto project rendered in `./docs`, which can be viewed as a [github pages website](https://alleninstitute.github.io/sourcesep).
-
-### Notes
-
-[Deep Learning approaches for source separation in music/speech](https://www.youtube.com/watch?v=AB-F2JmI9U4) that we might adapt for our problem:
- - [Asteroid](https://asteroid-team.github.io/): Augmentations, model components, model implementations
- - [Sigsep](https://sigsep.github.io/): Tutorials, datasets for audio source separation
-
-Particular models:
- - [Open unmix](https://github.com/sigsep/open-unmix-pytorch)
- - [U-net SVS](https://github.com/ws-choi/ISMIR2020_U_Nets_SVS)
- - [Demucs](https://github.com/facebookresearch/demucs)
-
-Miscellaneous:
-
- - [FFT for non uniformly sampled data](https://github.com/flatironinstitute/finufft)
-
 
 ### Contributors:
 Rohan Gala, Smrithi Sunil, Kaspar Podgorski, Uygar Sümbül
