@@ -10,6 +10,10 @@ class Hyperparameter:
     def value(self, iteration):
         return self.schedule(self.init_val, iteration)
 
+    def __repr__(self):
+        return f'{self.name}={self.init_val}'
+        
+
 def exp_decay(init_val, iteration, rate=0.01):
     return init_val * np.exp(-rate * iteration)
 
@@ -87,6 +91,11 @@ def set_zeros(M, keep):
 def set_norm(M, axis=0, c=1.0):
     norm = np.linalg.norm(M, axis=axis, keepdims=True)
     return c * (M / norm), norm/c
+
+def clip_grad(grad, thr=1e-2):
+    grad[grad>thr] = thr
+    grad[grad<-thr] = -thr
+    return grad
 
 def nmf_recipe_01(Y, A=None, X=None, rank=None,
                   A_keep=None, X_keep=None,
@@ -182,6 +191,84 @@ def test_nmf_recipe_01():
     results = {'A':A, 'X':X, 'err':err}
     return data, results, init
 
+
+def nmf_recipe_02(Y, A=None, X=None, rank=None,
+                  A_keep=None, X_keep=None,
+                  grad_type=None,
+                  step_size_A=0.01, 
+                  step_size_X=0.01,
+                  lam_sparsity_x=0.0,
+                  lam_2norm_x = 0.0, 
+                  lam_deviation_x = 0.0,
+                  fit_A=True,
+                  fit_X=True,
+                  tol=1e-4,
+                  exit_tol=1e-4, 
+                  max_iter=1000):
+
+    A, X, A_keep, X_keep = init_AX(Y, A=A, X=X, rank=rank, A_keep=A_keep, X_keep=X_keep)
+    err_list = []
+    init = {'A':A.copy(), 'X':X.copy()}
+    for _ in tqdm(range(max_iter)):
+        # gradient step for frobenius norm part
+        if fit_X:
+            dX_fro_norm = clip_grad(fro_norm_grad_X(Y, A, X))
+        if fit_A:
+            dA_fro_norm = clip_grad(fro_norm_grad_A(Y, A, X))
+
+        if grad_type == 'mu':
+            mu_step_X = fro_norm_mu_stepsize_X(Y, A, X)
+            mu_step_A = fro_norm_mu_stepsize_A(Y, A, X)
+        else:
+            mu_step_X = 1.0
+            mu_step_A = 1.0
+
+        if fit_X:
+            X += -step_size_X * np.multiply(mu_step_X, dX_fro_norm)
+        if fit_A:
+            A += -step_size_A * np.multiply(mu_step_A, dA_fro_norm)
+
+        # gradient step for deviation
+        #A[:,4] += -lam_deviation_x * step_size_A * deviation_grad(A[:,4], init['A'][:,4])
+
+        # project to non-negative orthant
+        A[A < tol] = tol
+        X[X < tol] = tol
+
+        # gradient step for smoothing. remove mean before using this. 
+        if fit_X:
+            X[3,:] += -lam_2norm_x * step_size_X * clip_grad(grad_2norm_x(X[3,:] - np.mean(X[3,:])))
+            X[4,:] += -lam_2norm_x * step_size_X * clip_grad(grad_2norm_x(X[4,:] - np.mean(X[4,:])))
+
+        # project to non-negative orthant
+        #A[A < tol] = tol
+        #X[X < tol] = tol
+
+        # gradient step for sparsity across columns of A
+        #A += -lam_sparsity_x * step_size_A * vectorized_grad_sparsity_ratio_X(A, axis=1)
+
+        # project to non-negative orthant
+        #A[A < tol] = tol
+        #X[X < tol] = tol
+
+        # setting known zero constraints
+        A = set_zeros(A, A_keep)
+        X = set_zeros(X, X_keep)
+
+        # force columns of A to fixed norm
+        A, factor = set_norm(A, axis=0, c=1.0)
+
+        # rescale rows of X by the same factor
+        X = np.diag(factor.ravel()) @ X
+        err = np.linalg.norm(Y - A @ X, 'fro')
+        err_list.append(err)
+
+        if len(err_list)>1:
+            del_err = np.abs(err_list[-1] - err_list[-2])
+            if del_err<exit_tol:
+                break
+
+    return A, X, err_list, init
 
 if __name__ == '__main__':
     test_nmf_recipe_01()
