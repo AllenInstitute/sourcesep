@@ -22,9 +22,9 @@ bibliography: references.bib
 format:
   html:
     theme: cosmo
+    css: styles.css
+    html-math-method: katex
     number-depth: 2
-
-
 
 editor:
   render-on-save: true

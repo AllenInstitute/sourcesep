@@ -81,9 +81,24 @@ div.csl-indent {
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-sidebar floating slimcontent">
@@ -157,13 +172,18 @@ div.csl-indent {
   <li><a href="#baselines" id="toc-baselines" class="nav-link active" data-scroll-target="#baselines"><span class="header-section-number">2.1</span> Baselines</a>
   <ul class="collapse">
   <li><a href="#non-negative-matrix-factorization-nmf" id="toc-non-negative-matrix-factorization-nmf" class="nav-link" data-scroll-target="#non-negative-matrix-factorization-nmf">Non-negative matrix factorization (NMF)</a></li>
+  <li><a href="#vanilla-gradient-descent-steps" id="toc-vanilla-gradient-descent-steps" class="nav-link" data-scroll-target="#vanilla-gradient-descent-steps">Vanilla gradient descent steps</a></li>
   <li><a href="#implementation-in-scikit-learn" id="toc-implementation-in-scikit-learn" class="nav-link" data-scroll-target="#implementation-in-scikit-learn">Implementation in scikit-learn</a></li>
   <li><a href="#projected-gradient-descent" id="toc-projected-gradient-descent" class="nav-link" data-scroll-target="#projected-gradient-descent">Projected gradient descent:</a></li>
   <li><a href="#multiplicative-updates" id="toc-multiplicative-updates" class="nav-link" data-scroll-target="#multiplicative-updates">Multiplicative updates</a></li>
   <li><a href="#coordinate-descent" id="toc-coordinate-descent" class="nav-link" data-scroll-target="#coordinate-descent">Coordinate descent</a></li>
   <li><a href="#simple-coordinate-descent" id="toc-simple-coordinate-descent" class="nav-link" data-scroll-target="#simple-coordinate-descent">Simple coordinate descent</a></li>
+  <li><a href="#linear-unmixing-approaches" id="toc-linear-unmixing-approaches" class="nav-link" data-scroll-target="#linear-unmixing-approaches">Linear unmixing approaches</a></li>
   </ul></li>
-  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link" data-scroll-target="#training-a-conv-net"><span class="header-section-number">2.2</span> Training a conv-net</a></li>
+  <li><a href="#training-a-conv-net" id="toc-training-a-conv-net" class="nav-link" data-scroll-target="#training-a-conv-net"><span class="header-section-number">2.2</span> Training a conv-net</a>
+  <ul class="collapse">
+  <li><a href="#software-tools" id="toc-software-tools" class="nav-link" data-scroll-target="#software-tools">Software tools</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -187,36 +207,46 @@ div.csl-indent {
 
 </header>
 
-<p><span class="math display">\[
-\newcommand{\tr}{\textrm{tr}}
-\newcommand{\vec}{\textrm{vec}}
-\]</span></p>
+<p><span class="math display">
+\gdef\tr{\textrm{tr}}
+\gdef\vec{\textrm{vec}}
+\gdef\rpos{\mathbb{R_{\geq 0}}}
+</span></p>
 <p>This chapter documents ideas to analyze the raw signals.</p>
 <section id="baselines" class="level2 page-columns page-full" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="baselines"><span class="header-section-number">2.1</span> Baselines</h2>
 <section id="non-negative-matrix-factorization-nmf" class="level3">
 <h3 class="anchored" data-anchor-id="non-negative-matrix-factorization-nmf">Non-negative matrix factorization (NMF)</h3>
 <ul>
-<li>Let <span class="math inline">\(\mathbb{R_+}\)</span> denote non-negative real number set</li>
-<li>Data <span class="math inline">\(X \in \mathbb{R_+}^{p \times q}\)</span></li>
-<li>Let <span class="math inline">\(W \in \mathbb{R_+}^{p \times r}\)</span> and <span class="math inline">\(H \in \mathbb{R_+}^{r \times q}\)</span>.</li>
+<li>Let <span class="math inline">\rpos</span> denote non-negative real number set</li>
+<li>Data <span class="math inline">X \in \rpos^{p \times q}</span></li>
+<li>Let <span class="math inline">W \in \rpos^{p \times r}</span> and <span class="math inline">H \in \rpos^{r \times q}</span>.</li>
 </ul>
-<p>The exact NMF problem <span class="math inline">\(X = WH\)</span> is NP-hard. The approximate problem <span class="math inline">\(X \approx WH\)</span> is non-convex.</p>
+<p>The exact NMF problem <span class="math inline">X = WH</span> is NP-hard. The approximate problem <span class="math inline">X \approx WH</span> is non-convex.</p>
+</section>
+<section id="vanilla-gradient-descent-steps" class="level3">
+<h3 class="anchored" data-anchor-id="vanilla-gradient-descent-steps">Vanilla gradient descent steps</h3>
+<span class="math display">\begin{aligned}
+\frac{\partial{}}{\partial{W}} \bigg[\frac{1}{2} \| Y - AH \|_F^2 \bigg]
+    &amp;= \frac{1}{2}\frac{\partial{}}{\partial{W}}\bigg[\tr(Y^TY - Y^TAX - X^TA^TY + X^TA^TAX)   \bigg] \\
+    &amp;= \frac{1}{2}\frac{\partial{}}{\partial{W}}\bigg[- \tr(Y^TAX) - \tr(X^TA^TY) + \tr(X^TA^TAX)   \bigg] \\
+    
+\end{aligned}</span>
 </section>
 <section id="implementation-in-scikit-learn" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="implementation-in-scikit-learn">Implementation in scikit-learn</h3>
 <p><code>scikit-learn</code> provides implementations of the multiplicative update <span class="citation" data-cites="lee1999nmf">Lee and Seung (<a href="references.html#ref-lee1999nmf" role="doc-biblioref">1999</a>)</span> and co-ordinate descent rules to solve the problem, includes regularizers for sparsity and smoothness. The problem considered in scikit-learn is:</p>
-<p><span class="math display">\[
+<p><span class="math display">
 \begin{aligned}
 L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
-            &amp;+ p \alpha_W \bigg(2f  \|vec(W)\|_1 + (1 - f) \| W \|_{F}^2\bigg) \\
-            &amp;+ q \alpha_H \bigg(2f  \|vec(H)\|_1 + (1 - f) \| H \|_{F}^2\bigg) \bigg]
+            &amp;+ p \alpha_W \bigg(2f  \|\vec(W)\|_1 + (1 - f) \| W \|_{F}^2\bigg) \\
+            &amp;+ q \alpha_H \bigg(2f  \|\vec(H)\|_1 + (1 - f) \| H \|_{F}^2\bigg) \bigg]
 \end{aligned}
-\]</span></p>
+</span></p>
 <ul>
-<li><span class="math inline">\(X \in \mathbb{R_+}^{p \times q}\)</span></li>
-<li><span class="math inline">\(\vec(A)\)</span> flattens matrix <span class="math inline">\(A\)</span> into a vector</li>
-<li><span class="math inline">\(\alpha_W, \alpha_H , f\)</span> are input parameters that control regularization</li>
+<li><span class="math inline">X \in \mathbb{R_+}^{p \times q}</span></li>
+<li><span class="math inline">\vec(A)</span> flattens matrix <span class="math inline">A</span> into a vector</li>
+<li><span class="math inline">\alpha_W, \alpha_H , f</span> are input parameters that control regularization</li>
 </ul>
 
 <div class="no-row-height column-margin column-container"><div class="">
@@ -224,28 +254,28 @@ L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
 </div></div></section>
 <section id="projected-gradient-descent" class="level3">
 <h3 class="anchored" data-anchor-id="projected-gradient-descent">Projected gradient descent:</h3>
-<p>To minimize a function <span class="math inline">\(\phi(x)\)</span>, we can use gradient descent. We introduce a projection function <span class="math inline">\(\mathcal{P}(x)\)</span> that maps <span class="math inline">\(x\)</span> to the nearest feasible point. For the non-negativity constraint of NMF, <span class="math inline">\(\mathcal{P}(x) = [x]_+\)</span> is the elementwise maximum of <span class="math inline">\(x\)</span> and zero. The projected gradient descent iteration is then <span class="math display">\[
+<p>To minimize a function <span class="math inline">\phi(x)</span>, we can use gradient descent. We introduce a projection function <span class="math inline">\mathcal{P}(x)</span> that maps <span class="math inline">x</span> to the nearest feasible point. For the non-negativity constraint of NMF, <span class="math inline">\mathcal{P}(x) = [x]_+</span> is the elementwise maximum of <span class="math inline">x</span> and zero. The projected gradient descent iteration is then <span class="math display">
   x^{k+1} = \mathcal{P}\left( x^{k+1} - \alpha_k \nabla \phi(x^k) \right).
-\]</span></p>
+</span></p>
 <p>The convergence properties of projected gradient descent are similar to those of the unprojected version.</p>
-<p>In order to write the gradient for the NMF objective without descending into a morass of indices, it is helpful to introduce the Frobenius inner product: for matrices <span class="math inline">\(X, Y \in \mathbb{R}^{m \times n}\)</span>, <span class="math display">\[
+<p>In order to write the gradient for the NMF objective without descending into a morass of indices, it is helpful to introduce the Frobenius inner product: for matrices <span class="math inline">X, Y \in \mathbb{R}^{m \times n}</span>, <span class="math display">
   \langle X, Y \rangle_F =
   \sum_{i,j} y_{ij} x_{ij} =
   \tr(Y^T X).
-\]</span> The Frobenius inner product is the inner product associated with the Frobenius norm: <span class="math inline">\(\|X\|_F^2 = \langle X, X \rangle_F\)</span>, and we can apply the usual product rule for differentiation to compute directional derivatives of <span class="math inline">\(\phi(W,H) = \|A-WH\|_F^2/2\)</span> with respect to <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>: <span class="math display">\[\begin{align*}
+</span> The Frobenius inner product is the inner product associated with the Frobenius norm: <span class="math inline">\|X\|_F^2 = \langle X, X \rangle_F</span>, and we can apply the usual product rule for differentiation to compute directional derivatives of <span class="math inline">\phi(W,H) = \|A-WH\|_F^2/2</span> with respect to <span class="math inline">W</span> and <span class="math inline">H</span>: <span class="math display">\begin{align*}
   \delta \phi
   &amp;= \delta \left[ \frac{1}{2} \langle A-WH, A-WH \rangle_F \right] \\
   &amp;= \langle \delta(A-WH), A-WH \rangle_F \\
   &amp;= -\langle (\delta W) H, A-WH \rangle_F
      -\langle W (\delta H), A-WH \rangle_F.
-\end{align*}\]</span> We let <span class="math inline">\(R = A-WH\)</span>, and use the fact that the trace of a product of matrices is invariant under cyclic permutations of the matrices: <span class="math display">\[\begin{align*}
+\end{align*}</span> We let <span class="math inline">R = A-WH</span>, and use the fact that the trace of a product of matrices is invariant under cyclic permutations of the matrices: <span class="math display">\begin{align*}
   \langle (\delta W) H, R \rangle_F
   &amp; = \tr(H^T (\delta W)^T R)
     = \tr((\delta W)^T RH^T)
     = \langle \delta W, RH^T \rangle_F \\
   \langle W (\delta H), R \rangle_F
   &amp;= \tr((\delta H)^T W^T R) = \langle \delta H, W^T R \rangle_F.
-\end{align*}\]</span> Therefore, the projected gradient descent iteration for this problem is <span class="math display">\[\begin{align*}
+\end{align*}</span> Therefore, the projected gradient descent iteration for this problem is <span class="math display">\begin{align*}
   W^{\mathrm{new}} &amp;=
   \left[
     W + \alpha RH^T
@@ -254,12 +284,12 @@ L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
   \left[
     H + \alpha W^T R
   \right]_+,
-\end{align*}\]</span> where in the interest of legibility we have suppressed the iteration index on the right hand side.</p>
+\end{align*}</span> where in the interest of legibility we have suppressed the iteration index on the right hand side.</p>
 </section>
 <section id="multiplicative-updates" class="level3">
 <h3 class="anchored" data-anchor-id="multiplicative-updates">Multiplicative updates</h3>
-<p>One of the earliest and most popular NMF solvers is the multiplicative update scheme of Lee and Seung. This has the form of a scaled gradient descent iteration where we replace the uniform step size <span class="math inline">\(\alpha_k\)</span> with a different (non-negative) step size for each entry of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>:</p>
-<p><span class="math display">\[
+<p>One of the earliest and most popular NMF solvers is the multiplicative update scheme of Lee and Seung. This has the form of a scaled gradient descent iteration where we replace the uniform step size <span class="math inline">\alpha_k</span> with a different (non-negative) step size for each entry of <span class="math inline">W</span> and <span class="math inline">H</span>:</p>
+<p><span class="math display">
 \begin{align*}
   W^{\mathrm{new}} &amp;=
   \left[
@@ -270,64 +300,68 @@ L(W, H) &amp;= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
     H + S' \odot \left( W^T A - W^T W H \right)
   \right]_+,  
 \end{align*}
-\]</span></p>
-<p>where <span class="math inline">\(\odot\)</span> denotes elementwise multiplication. We similarly let <span class="math inline">\(\oslash\)</span> to denote elementwise division to define the nonnegative scaling matrices</p>
-<p><span class="math display">\[
+</span></p>
+<p>where <span class="math inline">\odot</span> denotes elementwise multiplication. We similarly let <span class="math inline">\oslash</span> to denote elementwise division to define the nonnegative scaling matrices</p>
+<p><span class="math display">
 \begin{align*}
 S  = W \oslash (WHH^T) \\
 S' = H \oslash (W^TWH)
 \end{align*}
-\]</span></p>
-<p>With these choices, two of the terms in the summation cancel, so that <span class="math display">\[
+</span></p>
+<p>With these choices, two of the terms in the summation cancel, so that <span class="math display">
 \begin{align*}
   W^{\mathrm{new}} &amp;= S  \odot (AH^T) = W \oslash (WHH^T) \odot (AH^T) \\
   H^{\mathrm{new}} &amp;= S' \odot (W^TA) = H \oslash (W^TWH) \odot (W^TA).
 \end{align*}
-\]</span></p>
-<p>At each step of the Lee and Seung scheme, we scale the (non-negative) elements of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span> by non-negative factors, yielding a non-negative result. There is no need for a non-negative projection because the step sizes are chosen increasingly conservatively as elements of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span> approach zero. But because the steps are very conservative, the Lee and Seung algorithm may require a large number of steps to converge.</p>
+</span></p>
+<p>At each step of the Lee and Seung scheme, we scale the (non-negative) elements of <span class="math inline">W</span> and <span class="math inline">H</span> by non-negative factors, yielding a non-negative result. There is no need for a non-negative projection because the step sizes are chosen increasingly conservatively as elements of <span class="math inline">W</span> and <span class="math inline">H</span> approach zero. But because the steps are very conservative, the Lee and Seung algorithm may require a large number of steps to converge.</p>
 </section>
 <section id="coordinate-descent" class="level3">
 <h3 class="anchored" data-anchor-id="coordinate-descent">Coordinate descent</h3>
-<p>The block coordinate descent method (also known as block relaxation, or nonlinear Gauss-Seidel) for solving <span class="math inline">\(\min~\phi(x_1, x_2, \ldots, x_p)\)</span> for <span class="math inline">\(x_i \in \Omega_i\)</span></p>
-<p>involves repeatedly optimizing with respect to one coordinate at a time. In the basic method, we iterate through each <span class="math inline">\(i\)</span> and compute <span class="math display">\[
+<p>The block coordinate descent method (also known as block relaxation, or nonlinear Gauss-Seidel) for solving <span class="math inline">\min~\phi(x_1, x_2, \ldots, x_p)</span> for <span class="math inline">x_i \in \Omega_i</span></p>
+<p>involves repeatedly optimizing with respect to one coordinate at a time. In the basic method, we iterate through each <span class="math inline">i</span> and compute <span class="math display">
   x_i^{k+1} =
   \textrm{argmin}_\xi \phi(x_1^{k+1}, \ldots, x_{i-1}^{k+1}, \xi, x_{i+1}^k, \ldots, x_p^k)
-\]</span> The individual subproblems are often simpler than the full problem. If each subproblem has a unique solution (e.g.~if each subproblem is strongly convex), the iteration converges to a stationary point.</p>
+</span> The individual subproblems are often simpler than the full problem. If each subproblem has a unique solution (e.g.~if each subproblem is strongly convex), the iteration converges to a stationary point.</p>
 </section>
 <section id="simple-coordinate-descent" class="level3">
 <h3 class="anchored" data-anchor-id="simple-coordinate-descent">Simple coordinate descent</h3>
-<p>Perhaps the simplest coordinate descent algorithm for NMF sweeps through all entries of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span>. Let <span class="math inline">\(R = A-WH\)</span>; then for the <span class="math inline">\((i,j)\)</span> coordinate of <span class="math inline">\(W\)</span>, we compute the update <span class="math inline">\(w_{ij} = w_{ij} + s\)</span> where <span class="math inline">\(s\)</span> minimizes the quadratic</p>
-<p><span class="math display">\[
+<p>Perhaps the simplest coordinate descent algorithm for NMF sweeps through all entries of <span class="math inline">W</span> and <span class="math inline">H</span>. Let <span class="math inline">R = A-WH</span>; then for the <span class="math inline">(i,j)</span> coordinate of <span class="math inline">W</span>, we compute the update <span class="math inline">w_{ij} = w_{ij} + s</span> where <span class="math inline">s</span> minimizes the quadratic</p>
+<p><span class="math display">
 \begin{align*}
 \frac{1}{2} \|A-(W+se_i e_j^T) H\|_F^s = \\
 \frac{1}{2} \|R\|_F^2 - s \langle (e_i e_j^T) , RH^T \rangle_F + \frac{1}{2} s^2 \|e_i e_j^T H\|_F^2
 \end{align*}
-\]</span></p>
-<p>subject to the constraint that <span class="math inline">\(s \geq -w_{ij}\)</span>. The solution to this optimization is</p>
-<p><span class="math display">\[
+</span></p>
+<p>subject to the constraint that <span class="math inline">s \geq -w_{ij}</span>. The solution to this optimization is</p>
+<p><span class="math display">
   s = \max\left( -w_{ij}, \frac{(RH^T)_{ij}}{(HH^T)_{jj}} \right)
-\]</span></p>
-<p>Therefore, the update for <span class="math inline">\(w_{ij}\)</span> is <span class="math display">\[
+</span></p>
+<p>Therefore, the update for <span class="math inline">w_{ij}</span> is <span class="math display">
   s = \max\left( -w_{ij}, \frac{(RH^T)_{ij}}{(HH^T)_{jj}} \right), \quad
   w_{ij} := w_{ij} + s, \quad
   R_{i,:} := R_{i,:} - s H_{j,:}
-\]</span> A similar computation for the elements of <span class="math inline">\(H\)</span> gives us the update formulas</p>
-<p><span class="math display">\[
+</span> A similar computation for the elements of <span class="math inline">H</span> gives us the update formulas</p>
+<p><span class="math display">
 \begin{align*}
   s = \max\left( -h_{ij}, \frac{(W^TR)_{ij}}{(W^TW)_{ii}} \right), \quad
   h_{ij} := h_{ij} + s, \quad
   R_{:,j} := R_{:,j} - s W_{:,i}.
 \end{align*}
-\]</span></p>
-<p>Superficially, this looks much like projected gradient descent with scaled step lengths. However, where in gradient descent (or the multiplicative updates of Lee and Seung) the updates for all entries of <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span> are independent, in this coordinate descent algorithm we only have independence of updates for a single column of <span class="math inline">\(W\)</span> or a single row of <span class="math inline">\(H\)</span>. This is a disadvantage for efficient implementation.</p>
+</span></p>
+<p>Superficially, this looks much like projected gradient descent with scaled step lengths. However, where in gradient descent (or the multiplicative updates of Lee and Seung) the updates for all entries of <span class="math inline">W</span> and <span class="math inline">H</span> are independent, in this coordinate descent algorithm we only have independence of updates for a single column of <span class="math inline">W</span> or a single row of <span class="math inline">H</span>. This is a disadvantage for efficient implementation.</p>
+</section>
+<section id="linear-unmixing-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="linear-unmixing-approaches">Linear unmixing approaches</h3>
+<p>Review <a href="https://www.nature.com/articles/s41467-022-30168-z">PICASSO</a>.</p>
 </section>
 </section>
 <section id="training-a-conv-net" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="training-a-conv-net"><span class="header-section-number">2.2</span> Training a conv-net</h2>
 <ol type="1">
-<li>The raw signal is simulated with the generative model in <a href="00_simulations.html#eq-observation">Equation&nbsp;<span>1.1</span></a></li>
+<li>The raw signal is simulated with the generative model in <a href="00_simulations.html#eq-observation">Equation&nbsp;<span>1.5</span></a></li>
 <li>A conv-net is trained to reconstruct sensor activity $a(i,t)</li>
-<li>Assume <span class="math inline">\(n(t,j)\)</span> is given</li>
+<li>Assume <span class="math inline">n(t,j)</span> is given</li>
 </ol>
 <section id="what-we-learnt" class="level4">
 <h4 class="anchored" data-anchor-id="what-we-learnt">What we learnt:</h4>
@@ -343,11 +377,41 @@ S' = H \oslash (W^TWH)
 <li>Similarity metric (to compare synthetic with real data) must be well-defined to learn parameters through optimization.</li>
 </ul></li>
 </ul>
+</section>
+<section id="software-tools" class="level3">
+<h3 class="anchored" data-anchor-id="software-tools">Software tools</h3>
+<p><span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span> is a recent review of best practices in fiber photometry.</p>
+<p>A list of software tools and algorithms relevant for fiber photometry data analysis.</p>
+<ul>
+<li><span class="citation" data-cites="sherathiya2021guppy">Sherathiya et al. (<a href="references.html#ref-sherathiya2021guppy" role="doc-biblioref">2021</a>)</span>:</li>
+<li><span class="citation" data-cites="bruno2021pmat">Bruno et al. (<a href="references.html#ref-bruno2021pmat" role="doc-biblioref">2021</a>)</span>:</li>
+<li><span class="citation" data-cites="bridge2023fipha">Bridge et al. (<a href="references.html#ref-bridge2023fipha" role="doc-biblioref">2023</a>)</span>:</li>
+<li><span class="citation" data-cites="keevers2023obtaining">Keevers, McNally, and Jean-Richard-dit-Bressel (<a href="references.html#ref-keevers2023obtaining" role="doc-biblioref">2023</a>)</span>: Compare of OLS vs.&nbsp;iteratively reweighted least-squares to use isosbestic signal for artifact removal.</li>
+<li><span class="citation" data-cites="creamer2022correcting">Creamer et al. (<a href="references.html#ref-creamer2022correcting" role="doc-biblioref">2022</a>)</span>: Motion correction for two channel data, where one of the channels has activity independent signals.</li>
+</ul>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bridge2023fipha" class="csl-entry" role="listitem">
+Bridge, Matthew F, Leslie R Wilson, Sambit Panda, Korey D Stevanovic, Ayland C Letsinger, Sandra McBride, and Jesse D Cushman. 2023. <span>“FiPhA: An Open-Source Platform for Fiber Photometry Analysis.”</span> <em>bioRxiv</em>.
+</div>
+<div id="ref-bruno2021pmat" class="csl-entry" role="listitem">
+Bruno, Carissa A, Chris O’Brien, Svetlana Bryant, Jennifer I Mejaes, David J Estrin, Carina Pizzano, and David J Barker. 2021. <span>“pMAT: An Open-Source Software Suite for the Analysis of Fiber Photometry Data.”</span> <em>Pharmacology Biochemistry and Behavior</em> 201: 173093.
+</div>
+<div id="ref-creamer2022correcting" class="csl-entry" role="listitem">
+Creamer, Matthew S, Kevin S Chen, Andrew M Leifer, and Jonathan W Pillow. 2022. <span>“Correcting Motion Induced Fluorescence Artifacts in Two-Channel Neural Imaging.”</span> <em>PLoS Computational Biology</em> 18 (9): e1010421.
+</div>
+<div id="ref-keevers2023obtaining" class="csl-entry" role="listitem">
+Keevers, Luke J, Gavan P McNally, and Philip Jean-Richard-dit-Bressel. 2023. <span>“Obtaining Artifact-Corrected Signals in Fiber Photometry: Isosbestic Signals, Robust Regression and dF/f Calculations.”</span>
+</div>
 <div id="ref-lee1999nmf" class="csl-entry" role="listitem">
 Lee, Daniel D, and H Sebastian Seung. 1999. <span>“Learning the Parts of Objects by Non-Negative Matrix Factorization.”</span> <em>Nature</em> 401 (6755): 788–91.
+</div>
+<div id="ref-sherathiya2021guppy" class="csl-entry" role="listitem">
+Sherathiya, Venus N, Michael D Schaid, Jillian L Seiler, Gabriela C Lopez, and Talia N Lerner. 2021. <span>“GuPPy, a Python Toolbox for the Analysis of Fiber Photometry Data.”</span> <em>Scientific Reports</em> 11 (1): 24212.
+</div>
+<div id="ref-simpson2023lights" class="csl-entry" role="listitem">
+Simpson, Eleanor H, Thomas Akam, Tommaso Patriarchi, Marta Blanco-Pozo, Lauren M Burgeno, Ali Mohebi, Stephanie J Cragg, and Mark E Walton. 2023. <span>“Lights, Fiber, Action! A Primer on in Vivo Fiber Photometry.”</span> <em>Neuron</em>.
 </div>
 </div>
 </section>

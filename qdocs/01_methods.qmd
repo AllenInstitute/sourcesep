@@ -1,6 +1,7 @@
 $$
-\newcommand{\tr}{\textrm{tr}}
-\newcommand{\vec}{\textrm{vec}}
+\gdef\tr{\textrm{tr}}
+\gdef\vec{\textrm{vec}}
+\gdef\rpos{\mathbb{R_{\geq 0}}}
 $$
 
 # Methods
@@ -11,11 +12,24 @@ This chapter documents ideas to analyze the raw signals.
 
 ### Non-negative matrix factorization (NMF)
 
-  - Let $\mathbb{R_+}$ denote non-negative real number set
-  - Data $X \in \mathbb{R_+}^{p \times q}$ 
-  - Let $W \in \mathbb{R_+}^{p \times r}$ and $H \in \mathbb{R_+}^{r \times q}$. 
+  - Let $\rpos$ denote non-negative real number set
+  - Data $X \in \rpos^{p \times q}$ 
+  - Let $W \in \rpos^{p \times r}$ and $H \in \rpos^{r \times q}$. 
   
   The exact NMF problem $X = WH$ is NP-hard. The approximate problem $X \approx WH$ is non-convex.
+
+### Vanilla gradient descent steps
+
+
+\begin{aligned}
+ \frac{\partial{}}{\partial{W}} \bigg[\frac{1}{2} \| Y - AH \|_F^2 \bigg] 
+    &= \frac{1}{2}\frac{\partial{}}{\partial{W}}\bigg[\tr(Y^TY - Y^TAX - X^TA^TY + X^TA^TAX)   \bigg] \\
+    &= \frac{1}{2}\frac{\partial{}}{\partial{W}}\bigg[- \tr(Y^TAX) - \tr(X^TA^TY) + \tr(X^TA^TAX)   \bigg] \\
+    
+\end{aligned}
+
+
+
 
 ### Implementation in scikit-learn
 
@@ -24,8 +38,8 @@ This chapter documents ideas to analyze the raw signals.
 $$
 \begin{aligned}
 L(W, H) &= \frac{1}{2} \bigg[ \| X - WH \|_F^2 \\
-            &+ p \alpha_W \bigg(2f  \|vec(W)\|_1 + (1 - f) \| W \|_{F}^2\bigg) \\
-            &+ q \alpha_H \bigg(2f  \|vec(H)\|_1 + (1 - f) \| H \|_{F}^2\bigg) \bigg]
+            &+ p \alpha_W \bigg(2f  \|\vec(W)\|_1 + (1 - f) \| W \|_{F}^2\bigg) \\
+            &+ q \alpha_H \bigg(2f  \|\vec(H)\|_1 + (1 - f) \| H \|_{F}^2\bigg) \bigg]
 \end{aligned}
 $$
 
@@ -188,15 +202,17 @@ $$
 
 Superficially, this looks much like projected gradient descent with scaled step lengths.  However, where in gradient descent (or the multiplicative updates of Lee and Seung) the updates for all entries of $W$ and $H$ are independent, in this coordinate descent algorithm we only have independence of updates for a single column of $W$ or a single row of $H$.  This is a disadvantage for efficient implementation.
 
+### Linear unmixing approaches
+
+Review [PICASSO](https://www.nature.com/articles/s41467-022-30168-z).
+
 ## Training a conv-net
 
 1. The raw signal is simulated with the generative model in @eq-observation
 2. A conv-net is trained to reconstruct sensor activity $a(i,t)
 3. Assume $n(t,j)$ is given
 
-
 #### What we learnt:
-
 
  - This strategy was implemented for synthetic data, and it works.
  - The approach does not directly generalize to real data.
@@ -206,3 +222,16 @@ Superficially, this looks much like projected gradient descent with scaled step 
     - Experimental setup is changing.
     - Position of notch filters must also be modeled (adds to complexity).
     - Similarity metric (to compare synthetic with real data) must be well-defined to learn parameters through optimization.
+
+### Software tools
+
+@simpson2023lights is a recent review of best practices in fiber photometry.
+
+A list of software tools and algorithms relevant for fiber photometry data analysis.
+
+ - @sherathiya2021guppy:
+ - @bruno2021pmat:
+ - @bridge2023fipha: 
+ - @keevers2023obtaining: Compare of OLS vs. iteratively reweighted least-squares to use isosbestic signal for artifact removal.
+ - @creamer2022correcting: Motion correction for two channel data, where one of the channels has activity independent signals.
+ 
