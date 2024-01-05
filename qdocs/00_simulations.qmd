@@ -2,28 +2,12 @@
 
 A recap of the basic model for fluorescence signals from protein indicators
 
-## Phenomenological model for observed signal
+## Signal from indicators
 $$
 \def\lexc{\lambda^{\dagger}_{j}}
 \gdef\colA#1{\textcolor{6488EA}{#1}}
 \gdef\colB#1{\textcolor{AA2704}{#1}}
 $$
-
-|Type  | Symbol              | Code     | Description     |
-|:-----|:-------------------:|:---------|:----------------|
-|      | $O(t,\lambda,j)$    | O        | observed signal from the $j$-th laser at time $t$ at spectral wavelength $\lambda$  | 
-|Const | $s(i,\lambda)$      | S        | emission spectrum of sensor associated with $i$-th neuromodulator                   | 
-|Const | $e(\lambda,j)$      | E        | time-invariant spectral signature of $j$-th excitation laser                        | 
-|Const | $\mu_\textrm{oxy}(\lambda)$   | Mu_ox  | Spectrum of oxygenated hemolobin                                            |
-|Const | $\mu_\textrm{deoxy}(\lambda)$ | Mu_dox | Spectrum of deoxygenated hemolobin                                          |
-|Param | $w(i,j)$              | W        | emission efficiency of $i$-th neuromodulator excited by $j$-th laser              | 
-|Param | $a(i,t)$              | A        | sensor signal from time varying amount for the $i$-th neuromodulator              | 
-|Param | $n(t,j)$              | N        | noise from $j$-th laser                                                           | 
-|Param | $b(\lambda,j)$        | B        | patch cord + laser fluorescence spectrum $j$-th laser                             | 
-|Param | $m(t)$                | M        | motion correction (potentially depends on $i$)                                    | 
-|Param | $h_\textrm{oxy}(t)$   | H_ox     | Hemodynamics (oxygenated component)                                               |
-|Param | $h_\textrm{deoxy}(t)$ | H_dox    | Hemodynamics (deoxygenated component)                                             |
-
 
 #### Assumptions / caveats
 
@@ -95,65 +79,91 @@ $$
 Then $[L]$ can be expressed as a function of $f$, and using @eq-bound-fraction, we relate the ligand concentration to the observed fluoresence signal.
 $$
 [L] = K\frac{f}{1-f} = K\frac{F - F_{\min}}{F_{\max} - F} = K\frac{F / F_{\max} − 1 / R}{1 − F / F_{\max}}
-$$
+$$ {#eq-ligand-F}
 
-As a further simplification, for $f \ll 1$, $[L] \approx Kf$ (Taylor expansion of $\frac{f}{1-f}$ around $f=0$). 
+As a further simplification, for $f \ll 1$ (Taylor expansion of $\frac{f}{1-f}$ around $f=0$)
+
+$$
+[L] \approx Kf
+$$ {#eq-ligand-F-approx}
 
 #### Relating ligand concentration to $\Delta F / F$
 
 Measuring $F_{\min}$ can be a problem, because of the presence of a baseline ligand concentration $[L]_\textrm{rest}$, which is associated with a baseline fluorescence signal $F_\textrm{rest}$. Using the equation derived in the section above:
 
+$$
 \begin{align*}
 [L]_\textrm{rest} &= K\frac{F_\textrm{rest} - F_{\min}}{F_{\max} - F_\textrm{rest}}  \\
  F_{\min} &= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{rest}})}{K}   \\
 \end{align*}
+$$
 
 Replace $F_{\min}$ in the expression for $[L]$:
 
+$$
 \begin{align*}
 [L] &= K\frac{F - F_{\min}}{F_{\max} - F} \\
     &= K\frac{F - (F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{rest}})}{K})}{F_{\max} - F} \\
     &= \frac{K(F - F_\textrm{rest}) + [L]_\textrm{rest}({F_{\max} - F_\textrm{rest}})}{F_{\max} - F} \\
     &= \frac{[L]_\textrm{rest} + K\frac{F - F_\textrm{rest}}{F_{\max} - F_\textrm{rest}}}{ 1-\frac{F - F_\textrm{rest}}{F_{\max} - F_\textrm{rest}}} \\
 \end{align*}
+$$
 
 Define $\frac{\Delta F}{F} := \frac{F-F_\textrm{rest}}{F_\textrm{rest}}$ and $(\frac{\Delta F}{F})_{\max} := \frac{F_{\max}-F_\textrm{rest}}{F_\textrm{rest}}$. Then we can rewrite $[L]$ in terms of these quantities:
 
+$$
 \begin{align*}
 [L] &= \frac{[L]_\textrm{rest} + K (\frac{\Delta F}{F}) / (\frac{\Delta F}{F})_{\max}}{ 1-(\frac{\Delta F}{F}) / (\frac{\Delta F}{F})_{\max}} \\
 \end{align*}
+$$ {#eq-ligand-dF}
 
 This equation is of the form $f(x) = \frac{a + bx}{1-x}$. For small $x$, the Taylor series expansion around 0 is $a+(a+b)x+\mathcal{O}(x)^{2}$. 
 
 Therefore for small $(\frac{\Delta F}{F}) / (\frac{\Delta F}{F})_{\max}$ 
 
+$$
 \begin{align*}
 [L] & \approx [L]_\textrm{rest} + ([L]_\textrm{rest} + ({K} / (\frac{\Delta F}{F})_{\max})\frac{\Delta F}{F} \\
 \Delta [L] & := [L] - [L]_\textrm{rest} \\
          & \approx ([L]_\textrm{rest} + {K} / (\frac{\Delta F}{F})_{\max})\frac{\Delta F}{F} \\
          & \approx \textrm{constant} \times \frac{\Delta F}{F}
 \end{align*}
+$$ {#eq-ligand-dF-approx}
 
 The constant has terms $[L]_\textrm{rest}$ (depends on cell/region being imaged), $K$ (property of the indicator) and $(\frac{\Delta F}{F})_{\max}$ (depends on the indicator and optical setup).
 
+#### Multiple indicators
+
+For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum  $f(t) \propto {\Delta F}{F} \propto$ according to @eq-ligand-F-approx and @eq-ligand-dF-approx. 
+
+With multiple indicators, the fluorescence signal would consist of multiple indicator-specific terms as shown for one indicator in @eq-single-indicator. 
+
+Depending on the emission spectrum of the indicators, the signal at particular $\lambda$ would be expected to be dominated by a single indicator. We'll treat this approach to analyzing the data as a baseline strategy. 
+
+#### Autofluorescence
+
+In calculating $\Delta F / F$, we assumed that the baseline fluorescence signal $F_\textrm{rest}$ is only due to a non-zero ligand concentration. Autofluorescence is an important source of noise to this end. 
+
+#### Motion artifacts
+
+ - Isosbestic control measurement
+ - Motion correction approach with a reference e.g. @bridge2023fipha, @creamer2022correcting.
+  
+#### Blooming
+
+Camera blooming effect + notch filters to offset that
+
+#### Patch cord
+
+Autofluoresence contribution is not multiplied by laser noise. 
+
+#### Hemodynamics
+
+Absorption due to oxygenated and deoxygenated hemoglobin attenuates the signal from the indicator. Further details are in a seciton below. 
+
 ---
 
-In conventional Calcium imaging experiments, there are heuristic computational procedures to estimate the second term as $\colB{F_0(t)}$, and calculate $\frac{\Delta F}{F}(t)$ as:
-
-$$
-\frac{\Delta F}{F}(t) = \frac{F(t,\lambda,j) - F_0(t)}{F_0(t)} = \frac{\colA{f(t) S_\textrm{bound}(\lambda)w_\textrm{bound}(j)}}{\colB{S_\textrm{free}(\lambda)w_\textrm{free}(j)}}
-$$ {#eq-dff}
-
-
-For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum, the estimated $\frac{\Delta F}{F} \propto f(t)$ according to this model. This is a common strategy adopted for analysis in fiber photometry experiments.
-
-With multiple indicators, the fluorescence signal would consist of indicator-specific terms as shown for one indicator in @eq-dff. If the terms $S_\textrm{bound}(\lambda)w_\textrm{bound}(j)$ and $S_\textrm{free}(\lambda)w_\textrm{free}(j)$ don't suppress terms from other indicators, the $\frac{\Delta F}{F}$ signal can no longer be interpreted as a measure of $f(t)$ for each indicator.
-
-The workaround is to then look for $\lambda$ where this is going to be largely the case. We'll treat this approach as a baseline strategy. 
-
-
-
-The fraction of molecules in the bright state is $f(t)$, and the fraction in the dark state is $1 - f(t)$. The emission spectrum of the bright state is $s_\textrm{bound}(\lambda)$ and the emission spectrum of the dark state is $s_\textrm{free}(\lambda)$. The total emission spectrum of the indicator is a weighted sum of the two spectra, with weights $f(t)$ and $1 - f(t)$. 
+## Previous approach to modeling the signal
 
 $$
 \begin{align}

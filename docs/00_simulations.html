@@ -169,9 +169,10 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#phenomenological-model-for-observed-signal" id="toc-phenomenological-model-for-observed-signal" class="nav-link active" data-scroll-target="#phenomenological-model-for-observed-signal"><span class="header-section-number">1.1</span> Phenomenological model for observed signal</a></li>
-  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"><span class="header-section-number">1.2</span> Model for hemodynamics</a></li>
-  <li><a href="#autofluorescence" id="toc-autofluorescence" class="nav-link" data-scroll-target="#autofluorescence"><span class="header-section-number">1.3</span> Autofluorescence</a></li>
+  <li><a href="#signal-from-indicators" id="toc-signal-from-indicators" class="nav-link active" data-scroll-target="#signal-from-indicators"><span class="header-section-number">1.1</span> Signal from indicators</a></li>
+  <li><a href="#previous-approach-to-modeling-the-signal" id="toc-previous-approach-to-modeling-the-signal" class="nav-link" data-scroll-target="#previous-approach-to-modeling-the-signal"><span class="header-section-number">1.2</span> Previous approach to modeling the signal</a></li>
+  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"><span class="header-section-number">1.3</span> Model for hemodynamics</a></li>
+  <li><a href="#autofluorescence-1" id="toc-autofluorescence-1" class="nav-link" data-scroll-target="#autofluorescence-1"><span class="header-section-number">1.4</span> Autofluorescence</a></li>
   </ul>
 </nav>
     </div>
@@ -196,103 +197,13 @@ div.csl-indent {
 </header>
 
 <p>A recap of the basic model for fluorescence signals from protein indicators</p>
-<section id="phenomenological-model-for-observed-signal" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="phenomenological-model-for-observed-signal"><span class="header-section-number">1.1</span> Phenomenological model for observed signal</h2>
+<section id="signal-from-indicators" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="signal-from-indicators"><span class="header-section-number">1.1</span> Signal from indicators</h2>
 <p><span class="math display">
 \def\lexc{\lambda^{\dagger}_{j}}
 \gdef\colA#1{\textcolor{6488EA}{#1}}
 \gdef\colB#1{\textcolor{AA2704}{#1}}
 </span></p>
-<table class="table">
-<colgroup>
-<col style="width: 11%">
-<col style="width: 38%">
-<col style="width: 18%">
-<col style="width: 31%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Type</th>
-<th style="text-align: center;">Symbol</th>
-<th style="text-align: left;">Code</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"></td>
-<td style="text-align: center;"><span class="math inline">O(t,\lambda,j)</span></td>
-<td style="text-align: left;">O</td>
-<td style="text-align: left;">observed signal from the <span class="math inline">j</span>-th laser at time <span class="math inline">t</span> at spectral wavelength <span class="math inline">\lambda</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Const</td>
-<td style="text-align: center;"><span class="math inline">s(i,\lambda)</span></td>
-<td style="text-align: left;">S</td>
-<td style="text-align: left;">emission spectrum of sensor associated with <span class="math inline">i</span>-th neuromodulator</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Const</td>
-<td style="text-align: center;"><span class="math inline">e(\lambda,j)</span></td>
-<td style="text-align: left;">E</td>
-<td style="text-align: left;">time-invariant spectral signature of <span class="math inline">j</span>-th excitation laser</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Const</td>
-<td style="text-align: center;"><span class="math inline">\mu_\textrm{oxy}(\lambda)</span></td>
-<td style="text-align: left;">Mu_ox</td>
-<td style="text-align: left;">Spectrum of oxygenated hemolobin</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Const</td>
-<td style="text-align: center;"><span class="math inline">\mu_\textrm{deoxy}(\lambda)</span></td>
-<td style="text-align: left;">Mu_dox</td>
-<td style="text-align: left;">Spectrum of deoxygenated hemolobin</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">w(i,j)</span></td>
-<td style="text-align: left;">W</td>
-<td style="text-align: left;">emission efficiency of <span class="math inline">i</span>-th neuromodulator excited by <span class="math inline">j</span>-th laser</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">a(i,t)</span></td>
-<td style="text-align: left;">A</td>
-<td style="text-align: left;">sensor signal from time varying amount for the <span class="math inline">i</span>-th neuromodulator</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">n(t,j)</span></td>
-<td style="text-align: left;">N</td>
-<td style="text-align: left;">noise from <span class="math inline">j</span>-th laser</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">b(\lambda,j)</span></td>
-<td style="text-align: left;">B</td>
-<td style="text-align: left;">patch cord + laser fluorescence spectrum <span class="math inline">j</span>-th laser</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">m(t)</span></td>
-<td style="text-align: left;">M</td>
-<td style="text-align: left;">motion correction (potentially depends on <span class="math inline">i</span>)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">h_\textrm{oxy}(t)</span></td>
-<td style="text-align: left;">H_ox</td>
-<td style="text-align: left;">Hemodynamics (oxygenated component)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Param</td>
-<td style="text-align: center;"><span class="math inline">h_\textrm{deoxy}(t)</span></td>
-<td style="text-align: left;">H_dox</td>
-<td style="text-align: left;">Hemodynamics (deoxygenated component)</td>
-</tr>
-</tbody>
-</table>
 <section id="assumptions-caveats" class="level4">
 <h4 class="anchored" data-anchor-id="assumptions-caveats">Assumptions / caveats</h4>
 <ul>
@@ -346,53 +257,89 @@ K = \frac{[L][P]}{[LP]} \qquad [P] = \frac{K[LP]}{[L]}
 f = \frac{[LP]}{[P] + [LP]}
 = \frac{[L]}{K + [L]}
 </span></p>
-<p>Then <span class="math inline">[L]</span> can be expressed as a function of <span class="math inline">f</span>, and using <a href="#eq-bound-fraction">Equation&nbsp;<span>1.2</span></a>, we relate the ligand concentration to the observed fluoresence signal. <span class="math display">
+<p>Then <span class="math inline">[L]</span> can be expressed as a function of <span class="math inline">f</span>, and using <a href="#eq-bound-fraction">Equation&nbsp;<span>1.2</span></a>, we relate the ligand concentration to the observed fluoresence signal. <span id="eq-ligand-F"><span class="math display">
 [L] = K\frac{f}{1-f} = K\frac{F - F_{\min}}{F_{\max} - F} = K\frac{F / F_{\max} − 1 / R}{1 − F / F_{\max}}
-</span></p>
-<p>As a further simplification, for <span class="math inline">f \ll 1</span>, <span class="math inline">[L] \approx Kf</span> (Taylor expansion of <span class="math inline">\frac{f}{1-f}</span> around <span class="math inline">f=0</span>).</p>
+\tag{1.4}</span></span></p>
+<p>As a further simplification, for <span class="math inline">f \ll 1</span> (Taylor expansion of <span class="math inline">\frac{f}{1-f}</span> around <span class="math inline">f=0</span>)</p>
+<p><span id="eq-ligand-F-approx"><span class="math display">
+[L] \approx Kf
+\tag{1.5}</span></span></p>
 </section>
 <section id="relating-ligand-concentration-to-delta-f-f" class="level4">
 <h4 class="anchored" data-anchor-id="relating-ligand-concentration-to-delta-f-f">Relating ligand concentration to <span class="math inline">\Delta F / F</span></h4>
 <p>Measuring <span class="math inline">F_{\min}</span> can be a problem, because of the presence of a baseline ligand concentration <span class="math inline">[L]_\textrm{rest}</span>, which is associated with a baseline fluorescence signal <span class="math inline">F_\textrm{rest}</span>. Using the equation derived in the section above:</p>
-<p><span class="math display">\begin{align*}
+<p><span class="math display">
+\begin{align*}
 [L]_\textrm{rest} &amp;= K\frac{F_\textrm{rest} - F_{\min}}{F_{\max} - F_\textrm{rest}}  \\
 F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{rest}})}{K}   \\
-\end{align*}</span></p>
+\end{align*}
+</span></p>
 <p>Replace <span class="math inline">F_{\min}</span> in the expression for <span class="math inline">[L]</span>:</p>
-<p><span class="math display">\begin{align*}
+<p><span class="math display">
+\begin{align*}
 [L] &amp;= K\frac{F - F_{\min}}{F_{\max} - F} \\
     &amp;= K\frac{F - (F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{rest}})}{K})}{F_{\max} - F} \\
     &amp;= \frac{K(F - F_\textrm{rest}) + [L]_\textrm{rest}({F_{\max} - F_\textrm{rest}})}{F_{\max} - F} \\
     &amp;= \frac{[L]_\textrm{rest} + K\frac{F - F_\textrm{rest}}{F_{\max} - F_\textrm{rest}}}{ 1-\frac{F - F_\textrm{rest}}{F_{\max} - F_\textrm{rest}}} \\
-\end{align*}</span></p>
+\end{align*}
+</span></p>
 <p>Define <span class="math inline">\frac{\Delta F}{F} := \frac{F-F_\textrm{rest}}{F_\textrm{rest}}</span> and <span class="math inline">(\frac{\Delta F}{F})_{\max} := \frac{F_{\max}-F_\textrm{rest}}{F_\textrm{rest}}</span>. Then we can rewrite <span class="math inline">[L]</span> in terms of these quantities:</p>
-<p><span class="math display">\begin{align*}
+<p><span id="eq-ligand-dF"><span class="math display">
+\begin{align*}
 [L] &amp;= \frac{[L]_\textrm{rest} + K (\frac{\Delta F}{F}) / (\frac{\Delta F}{F})_{\max}}{ 1-(\frac{\Delta F}{F}) / (\frac{\Delta F}{F})_{\max}} \\
-\end{align*}</span></p>
+\end{align*}
+\tag{1.6}</span></span></p>
 <p>This equation is of the form <span class="math inline">f(x) = \frac{a + bx}{1-x}</span>. For small <span class="math inline">x</span>, the Taylor series expansion around 0 is <span class="math inline">a+(a+b)x+\mathcal{O}(x)^{2}</span>.</p>
 <p>Therefore for small <span class="math inline">(\frac{\Delta F}{F}) / (\frac{\Delta F}{F})_{\max}</span></p>
-<p><span class="math display">\begin{align*}
+<p><span id="eq-ligand-dF-approx"><span class="math display">
+\begin{align*}
 [L] &amp; \approx [L]_\textrm{rest} + ([L]_\textrm{rest} + ({K} / (\frac{\Delta F}{F})_{\max})\frac{\Delta F}{F} \\
 \Delta [L] &amp; := [L] - [L]_\textrm{rest} \\
          &amp; \approx ([L]_\textrm{rest} + {K} / (\frac{\Delta F}{F})_{\max})\frac{\Delta F}{F} \\
          &amp; \approx \textrm{constant} \times \frac{\Delta F}{F}
-\end{align*}</span></p>
+\end{align*}
+\tag{1.7}</span></span></p>
 <p>The constant has terms <span class="math inline">[L]_\textrm{rest}</span> (depends on cell/region being imaged), <span class="math inline">K</span> (property of the indicator) and <span class="math inline">(\frac{\Delta F}{F})_{\max}</span> (depends on the indicator and optical setup).</p>
+</section>
+<section id="multiple-indicators" class="level4">
+<h4 class="anchored" data-anchor-id="multiple-indicators">Multiple indicators</h4>
+<p>For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum <span class="math inline">f(t) \propto {\Delta F}{F} \propto</span> according to <a href="#eq-ligand-F-approx">Equation&nbsp;<span>1.5</span></a> and <a href="#eq-ligand-dF-approx">Equation&nbsp;<span>1.7</span></a>.</p>
+<p>With multiple indicators, the fluorescence signal would consist of multiple indicator-specific terms as shown for one indicator in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>.</p>
+<p>Depending on the emission spectrum of the indicators, the signal at particular <span class="math inline">\lambda</span> would be expected to be dominated by a single indicator. We’ll treat this approach to analyzing the data as a baseline strategy.</p>
+</section>
+<section id="autofluorescence" class="level4">
+<h4 class="anchored" data-anchor-id="autofluorescence">Autofluorescence</h4>
+<p>In calculating <span class="math inline">\Delta F / F</span>, we assumed that the baseline fluorescence signal <span class="math inline">F_\textrm{rest}</span> is only due to a non-zero ligand concentration. Autofluorescence is an important source of noise to this end.</p>
+</section>
+<section id="motion-artifacts" class="level4">
+<h4 class="anchored" data-anchor-id="motion-artifacts">Motion artifacts</h4>
+<ul>
+<li>Isosbestic control measurement</li>
+<li>Motion correction approach with a reference e.g. <span class="citation" data-cites="bridge2023fipha">Bridge et al. (<a href="references.html#ref-bridge2023fipha" role="doc-biblioref">2023</a>)</span>, <span class="citation" data-cites="creamer2022correcting">Creamer et al. (<a href="references.html#ref-creamer2022correcting" role="doc-biblioref">2022</a>)</span>.</li>
+</ul>
+</section>
+<section id="blooming" class="level4">
+<h4 class="anchored" data-anchor-id="blooming">Blooming</h4>
+<p>Camera blooming effect + notch filters to offset that</p>
+</section>
+<section id="patch-cord" class="level4">
+<h4 class="anchored" data-anchor-id="patch-cord">Patch cord</h4>
+<p>Autofluoresence contribution is not multiplied by laser noise.</p>
+</section>
+<section id="hemodynamics" class="level4">
+<h4 class="anchored" data-anchor-id="hemodynamics">Hemodynamics</h4>
+<p>Absorption due to oxygenated and deoxygenated hemoglobin attenuates the signal from the indicator. Further details are in a seciton below.</p>
 <hr>
-<p>In conventional Calcium imaging experiments, there are heuristic computational procedures to estimate the second term as <span class="math inline">\colB{F_0(t)}</span>, and calculate <span class="math inline">\frac{\Delta F}{F}(t)</span> as:</p>
-<p><span id="eq-dff"><span class="math display">
-\frac{\Delta F}{F}(t) = \frac{F(t,\lambda,j) - F_0(t)}{F_0(t)} = \frac{\colA{f(t) S_\textrm{bound}(\lambda)w_\textrm{bound}(j)}}{\colB{S_\textrm{free}(\lambda)w_\textrm{free}(j)}}
-\tag{1.4}</span></span></p>
-<p>For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum, the estimated <span class="math inline">\frac{\Delta F}{F} \propto f(t)</span> according to this model. This is a common strategy adopted for analysis in fiber photometry experiments.</p>
-<p>With multiple indicators, the fluorescence signal would consist of indicator-specific terms as shown for one indicator in <a href="#eq-dff">Equation&nbsp;<span>1.4</span></a>. If the terms <span class="math inline">S_\textrm{bound}(\lambda)w_\textrm{bound}(j)</span> and <span class="math inline">S_\textrm{free}(\lambda)w_\textrm{free}(j)</span> don’t suppress terms from other indicators, the <span class="math inline">\frac{\Delta F}{F}</span> signal can no longer be interpreted as a measure of <span class="math inline">f(t)</span> for each indicator.</p>
-<p>The workaround is to then look for <span class="math inline">\lambda</span> where this is going to be largely the case. We’ll treat this approach as a baseline strategy.</p>
-<p>The fraction of molecules in the bright state is <span class="math inline">f(t)</span>, and the fraction in the dark state is <span class="math inline">1 - f(t)</span>. The emission spectrum of the bright state is <span class="math inline">s_\textrm{bound}(\lambda)</span> and the emission spectrum of the dark state is <span class="math inline">s_\textrm{free}(\lambda)</span>. The total emission spectrum of the indicator is a weighted sum of the two spectra, with weights <span class="math inline">f(t)</span> and <span class="math inline">1 - f(t)</span>.</p>
+</section>
+</section>
+<section id="previous-approach-to-modeling-the-signal" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="previous-approach-to-modeling-the-signal"><span class="header-section-number">1.2</span> Previous approach to modeling the signal</h2>
 <p><span id="eq-observation"><span class="math display">
 \begin{align}
 O(t,\lambda,j) &amp;= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b(\lambda,j) ] n(t,j) \\
 H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
 \end{align}
-\tag{1.5}</span></span></p>
+\tag{1.8}</span></span></p>
 <ul>
 <li><span class="math inline">a(i,t)</span> for <span class="math inline">i \in \textrm{I}</span> has fast and slow components</li>
 <li><span class="math inline">a(t) = c\{f(t)s_\textrm{bound}(\lambda) + (1-f(t))s_\textrm{free}(\lambda)\}</span> : an indicator with concentration <span class="math inline">c</span> exists in two states (e.g.&nbsp;bright, dark or bound, free) that have their own emission spectra.</li>
@@ -401,9 +348,8 @@ H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{
 <li><span class="math inline">a(i,t)</span> is multiplied by a decay term <span class="math inline">d(i,t)</span> associated with bleaching. <span class="math inline">d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)</span></li>
 </ul>
 </section>
-</section>
-<section id="model-for-hemodynamics" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="model-for-hemodynamics"><span class="header-section-number">1.2</span> Model for hemodynamics</h2>
+<section id="model-for-hemodynamics" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="model-for-hemodynamics"><span class="header-section-number">1.3</span> Model for hemodynamics</h2>
 <p>Absorption by hemoglobin corrupts the signal. The Beer-Lambert law is used to model this effect in the generative model above.</p>
 <ul>
 <li><span class="math inline">\varepsilon</span>: extinction coefficient (in <span class="math inline">\textrm{cm}^{-1}\textrm{mole}^{-1}{L}</span>), see <span class="citation" data-cites="hemoglobinspectra">Prahl (<a href="references.html#ref-hemoglobinspectra" role="doc-biblioref">1998</a>)</span>. This is a function of <span class="math inline">\lambda</span></li>
@@ -427,12 +373,18 @@ I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}
 </span></li>
 </ul>
 </section>
-<section id="autofluorescence" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="autofluorescence"><span class="header-section-number">1.3</span> Autofluorescence</h2>
+<section id="autofluorescence-1" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="autofluorescence-1"><span class="header-section-number">1.4</span> Autofluorescence</h2>
 <p>Autofluorescence has a spectrum <span class="citation" data-cites="autofluorescencepectra">Hickl co. (<a href="references.html#ref-autofluorescencepectra" role="doc-biblioref">2022</a>)</span>, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400 nm - 700 nm range, see measurements in aqueous solutions in <span class="citation" data-cites="islam2013ph">Islam et al. (<a href="references.html#ref-islam2013ph" role="doc-biblioref">2013</a>)</span>.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bridge2023fipha" class="csl-entry" role="listitem">
+Bridge, Matthew F, Leslie R Wilson, Sambit Panda, Korey D Stevanovic, Ayland C Letsinger, Sandra McBride, and Jesse D Cushman. 2023. <span>“FiPhA: An Open-Source Platform for Fiber Photometry Analysis.”</span> <em>bioRxiv</em>.
+</div>
+<div id="ref-creamer2022correcting" class="csl-entry" role="listitem">
+Creamer, Matthew S, Kevin S Chen, Andrew M Leifer, and Jonathan W Pillow. 2022. <span>“Correcting Motion Induced Fluorescence Artifacts in Two-Channel Neural Imaging.”</span> <em>PLoS Computational Biology</em> 18 (9): e1010421.
+</div>
 <div id="ref-grynkiewicz1985new" class="csl-entry" role="listitem">
 Grynkiewicz, Grzegorz, Martin Poenie, and Roger Y Tsien. 1985. <span>“A New Generation of Ca2+ Indicators with Greatly Improved Fluorescence Properties.”</span> <em>Journal of Biological Chemistry</em> 260 (6): 3440–50.
 </div>

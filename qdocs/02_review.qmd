@@ -3,3 +3,25 @@ To review list:
 
  - @formozov2023flexible: Multicolor fiber photometry. Figure 5 contains a characterization of signal contributions.
  - @seo2022picasso: Linear unmixing approach for blind source separation in images.
+
+
+$$
+\def\lexc{\lambda^{\dagger}_{j}}
+\gdef\colA#1{\textcolor{6488EA}{#1}}
+\gdef\colB#1{\textcolor{AA2704}{#1}}
+$$
+
+|Type  | Symbol              | Code     | Description     |
+|:-----|:-------------------:|:---------|:----------------|
+|      | $O(t,\lambda,j)$    | O        | observed signal from the $j$-th laser at time $t$ at spectral wavelength $\lambda$  | 
+|Const | $s(i,\lambda)$      | S        | emission spectrum of sensor associated with $i$-th neuromodulator                   | 
+|Const | $e(\lambda,j)$      | E        | time-invariant spectral signature of $j$-th excitation laser                        | 
+|Const | $\mu_\textrm{oxy}(\lambda)$   | Mu_ox  | Spectrum of oxygenated hemolobin                                            |
+|Const | $\mu_\textrm{deoxy}(\lambda)$ | Mu_dox | Spectrum of deoxygenated hemolobin                                          |
+|Param | $w(i,j)$              | W        | emission efficiency of $i$-th neuromodulator excited by $j$-th laser              | 
+|Param | $a(i,t)$              | A        | sensor signal from time varying amount for the $i$-th neuromodulator              | 
+|Param | $n(t,j)$              | N        | noise from $j$-th laser                                                           | 
+|Param | $b(\lambda,j)$        | B        | patch cord + laser fluorescence spectrum $j$-th laser                             | 
+|Param | $m(t)$                | M        | motion correction (potentially depends on $i$)                                    | 
+|Param | $h_\textrm{oxy}(t)$   | H_ox     | Hemodynamics (oxygenated component)                                               |
+|Param | $h_\textrm{deoxy}(t)$ | H_dox    | Hemodynamics (deoxygenated component)                                             |
