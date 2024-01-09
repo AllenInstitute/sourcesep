@@ -313,11 +313,11 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 <section id="isosbestic-control" class="level4">
 <h4 class="anchored" data-anchor-id="isosbestic-control">Isosbestic control</h4>
 <p>Isosbestic control signal <span class="math inline">I</span> refers to a signal that is independent of the ligand bound fraction <span class="math inline">f</span>. The same noise sources that affect the indicator signal also affect the isosbestic control signal. Removing the component shared with <span class="math inline">I</span> is common strategy to denoise fiber photometry data, <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>.</p>
-<p>Note that <span class="math inline">\lambda^{\textrm{exc}}</span> refers to the excitation wavelength.</p>
+<p>Let <span class="math inline">\lambda^{\textrm{exc}}</span> refer to a particular excitation wavelength. From indicator characterization experiments, we have access to the following:</p>
 <ol type="1">
-<li>Excitation spectrum for the bound state <span class="math inline">w_\textrm{b}(\lambda^{\textrm{exc}})</span>.</li>
-<li>Excitation spectrum for the free state <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, normalized to the <strong>bound</strong> state spectrum.</li>
-<li>Emission spectrum of the bound and free states <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span>. Both are normalized such that the integral over <span class="math inline">\lambda</span> is 1.</li>
+<li>Excitation spectrum for the bound state, <span class="math inline">w_\textrm{b}(\lambda^{\textrm{exc}})</span>.</li>
+<li>Excitation spectrum for the free state, <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, normalized to the <strong>bound</strong> state spectrum.</li>
+<li>Normalized emission spectrum of the bound and free states <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span>, such that integral over <span class="math inline">\lambda</span> is 1.</li>
 </ol>
 <p>The emission at two emission wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span> while invoked by exciting the sample at <span class="math inline">\lambda_{1}^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_{2}^{\textrm{{exc}}}</span> (each excitation wavelength corresponds to a different laser <span class="math inline">j</span>):</p>
 <p>Following <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>,</p>

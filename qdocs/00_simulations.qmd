@@ -156,11 +156,11 @@ Isosbestic control signal $I$ refers to a signal that is independent of the liga
 \gdef\lexc{\lambda^{\textrm{exc}}}
 \gdef\lexc{\lambda^{\textrm{exc}}}
 
-Note that $\lexc$ refers to the excitation wavelength. 
+Let $\lexc$ refer to a particular excitation wavelength. From indicator characterization experiments, we have access to the following:
 
-1. Excitation spectrum for the bound state $w_\textrm{b}(\lexc)$.
-2. Excitation spectrum for the free state $w_\textrm{f}(\lexc)$, normalized to the **bound** state spectrum.
-3. Emission spectrum of the bound and free states $S_\textrm{b}(\lambda)$ and $S_\textrm{f}(\lambda)$. Both are normalized such that the integral over $\lambda$ is 1.
+1. Excitation spectrum for the bound state, $w_\textrm{b}(\lexc)$.
+2. Excitation spectrum for the free state, $w_\textrm{f}(\lexc)$, normalized to the **bound** state spectrum.
+3. Normalized emission spectrum of the bound and free states $S_\textrm{b}(\lambda)$ and $S_\textrm{f}(\lambda)$, such that integral over $\lambda$ is 1.
 
 
 The emission at two emission wavelengths $\lambda$ and $\lambda'$ while invoked by exciting the sample at $\lambda_{1}^{\textrm{{exc}}}$ and $\lambda_{2}^{\textrm{{exc}}}$ (each excitation wavelength corresponds to a different laser $j$):
