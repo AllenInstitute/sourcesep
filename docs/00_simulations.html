@@ -196,14 +196,13 @@ div.csl-indent {
 
 </header>
 
-<p>A recap of the basic model for fluorescence signals from protein indicators</p>
+<p>A recap of the basic model for fluorescence signals from protein indicators.</p>
+<p>The challenges of interpreting and simulating fiber photometry data are highlighted in <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>:</p>
+<blockquote class="blockquote">
+<p>In theory, or in a test tube or flow cell, dose-response curves make the relationship between ligand concentration and fluorescence intensity appear straightforward. However, measuring ligand modulated fluorescence in vivo, where photometric signals are neither linear nor absolute measures, is more complicated. Signals are influenced by native factors, including local fluctuations in pH and hemodynamics, and technical factors including the expression level and localization of the sensors, excitation wavelengths, potential photobleaching, and the stability of the optical path, each of which will be discussed.</p>
+</blockquote>
 <section id="signal-from-indicators" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="signal-from-indicators"><span class="header-section-number">1.1</span> Signal from indicators</h2>
-<p><span class="math display">
-\def\lexc{\lambda^{\dagger}_{j}}
-\gdef\colA#1{\textcolor{6488EA}{#1}}
-\gdef\colB#1{\textcolor{AA2704}{#1}}
-</span></p>
 <section id="assumptions-caveats" class="level4">
 <h4 class="anchored" data-anchor-id="assumptions-caveats">Assumptions / caveats</h4>
 <ul>
@@ -221,8 +220,8 @@ div.csl-indent {
 <p>The fluorescing indicator molecules can exist in one of two states, bound to ligand or free. Let the fraction of the bound indicator be <span class="math inline">f_{\textrm{b}}(t)</span>. Assuming emission spectra <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span> for the different indicator states, power of the <span class="math inline">j</span><sup>th</sup> laser <span class="math inline">P(j,t)</span>, and efficiency of the laser to excite populations <span class="math inline">w_\textrm{b}(j)</span> and <span class="math inline">w_\textrm{f}(j)</span>, the fluorescence readout <span class="math inline">F(t,\lambda,j)</span> is modeled as:</p>
 <p><span id="eq-single-indicator"><span class="math display">
 \begin{align*}
-F(t,\lambda,j) = &amp; \colA{f_{\textrm{b}}(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) C(t) P(j,t)} + \\
-                 &amp; \colB{(1 - f_{\textrm{b}}(t)) S_\textrm{f}(\lambda)w_\textrm{f}(j) C(t) P(j,t)}
+F(t,\lambda,j) = &amp; \textcolor{6488EA}{f_{\textrm{b}}(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) C(t) P(j,t)} + \\
+                 &amp; \textcolor{AA2704}{(1 - f_{\textrm{b}}(t)) S_\textrm{f}(\lambda)w_\textrm{f}(j) C(t) P(j,t)}
 \end{align*}
 \tag{1.1}</span></span></p>
 <p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> is analogous to the setup in and in <span class="citation" data-cites="helmchen2011calibration">Helmchen (<a href="references.html#ref-helmchen2011calibration" role="doc-biblioref">2011</a>)</span>. In the following, we’ll refer to <span class="math inline">f_{\textrm{b}}</span> as simply <span class="math inline">f</span>. Assuming a positive indicator (where the bound state is brighter than free state), define <span class="math inline">F_{\max}</span> and <span class="math inline">F_{\min}</span> as the signal when <span class="math inline">f=0</span> and <span class="math inline">f=1</span> respectively. We’ll pack terms other than <span class="math inline">f</span> in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> into <span class="math inline">\eta_\textrm{b}</span> and <span class="math inline">\eta_\textrm{f}</span> for the bound and free components and also drop the arguments for <span class="math inline">t</span>, <span class="math inline">\lambda</span>, <span class="math inline">j</span> for now. Then:</p>
@@ -311,6 +310,82 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 <h4 class="anchored" data-anchor-id="autofluorescence">Autofluorescence</h4>
 <p>In calculating <span class="math inline">\Delta F / F</span>, we assumed that the baseline fluorescence signal <span class="math inline">F_\textrm{rest}</span> is only due to a non-zero ligand concentration. Autofluorescence is an important source of noise to this end.</p>
 </section>
+<section id="isosbestic-control" class="level4">
+<h4 class="anchored" data-anchor-id="isosbestic-control">Isosbestic control</h4>
+<p>Isosbestic control signal <span class="math inline">I</span> refers to a signal that is independent of the ligand bound fraction <span class="math inline">f</span>. The same noise sources that affect the indicator signal also affect the isosbestic control signal. Removing the component shared with <span class="math inline">I</span> is common strategy to denoise fiber photometry data, <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>.</p>
+<p>Note that <span class="math inline">\lambda^{\textrm{exc}}</span> refers to the excitation wavelength.</p>
+<ol type="1">
+<li>Excitation spectrum for the bound state <span class="math inline">w_\textrm{b}(\lambda^{\textrm{exc}})</span>.</li>
+<li>Excitation spectrum for the free state <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, normalized to the <strong>bound</strong> state spectrum.</li>
+<li>Emission spectrum of the bound and free states <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span>. Both are normalized such that the integral over <span class="math inline">\lambda</span> is 1.</li>
+</ol>
+<p>The emission at two emission wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span> while invoked by exciting the sample at <span class="math inline">\lambda_{1}^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_{2}^{\textrm{{exc}}}</span> (each excitation wavelength corresponds to a different laser <span class="math inline">j</span>):</p>
+<p>Following <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>,</p>
+<p><span class="math display">
+\begin{align*}
+F_{1}(\lambda)  &amp;={f_{\textrm{b}}S_{\textrm{b}}(\lambda)w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}})}+{(1-f_{\textrm{b}})S_{\textrm{f}}(\lambda)w_{\textrm{f}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}})} \\
+F_{2}(\lambda') &amp;={f_{\textrm{b}}S_{\textrm{b}}(\lambda')w_{\textrm{b}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}})}+{(1-f_{\textrm{b}})S_{\textrm{f}}(\lambda')w_{\textrm{f}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}})}
+\end{align*}
+</span></p>
+<p>To make things a bit more obvious, we’ll make the following notation changes:</p>
+<p><span class="math display">
+\begin{align*}
+a_{1}   &amp;=S_{\textrm{b}}(\lambda)w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}}) \\
+b_{1}   &amp;=S_{\textrm{f}}(\lambda)w_{\textrm{f}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}}) \\
+a_{2}   &amp;=S_{\textrm{b}}(\lambda')w_{\textrm{b}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}}) \\
+b_{2}   &amp;=S_{\textrm{f}}(\lambda')w_{\textrm{f}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}}) \\
+x(t)    &amp;= f_\textrm{b}(t) \\
+y(t)    &amp;= 1-f_\textrm{b}(t) \\
+\end{align*}
+</span></p>
+<p>Then for observations at two different emission wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span>, we have:</p>
+<p><span class="math display">
+\begin{align*}
+F_{1}(\lambda)  &amp;= {x(t)a_{1}}+{y(t)b_{1}} \\
+F_{2}(\lambda') &amp;= {x(t)a_{2}}+{y(t)b_{2}} \\
+x(t)+y(t)   &amp;= 1 \\
+\end{align*}
+</span></p>
+<p>Consider a linear combination of the observations:</p>
+<p><span id="eq-isosbestic-linear-combo"><span class="math display">
+mF_{1}(\lambda)+nF_{2}(\lambda')    = x(t)(a_{1}m+a_{2}n)+y(t)(b_{1}m+b_{2}n)
+\tag{1.8}</span></span></p>
+<p>This would be independent of <span class="math inline">f(t)</span> if and only if:</p>
+<p><span class="math display">
+\begin{align*}
+a_{1}m+a_{2}n   &amp;= b_{1}m+b_{2}n \\
+m+n &amp;\neq 0 \\
+\end{align*}
+</span></p>
+<p>Then the condition for such a linear combination to be considered as the isosbestic control signal is:</p>
+<p><span id="eq-isosbestic-coeff-ratio"><span class="math display">
+\frac{m}{n} = \frac{b_2-a_2}{a_1-b_1} =\frac{S_{\textrm{f}}(\lambda')w_{\textrm{f}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}})-S_{\textrm{b}}(\lambda')w_{\textrm{b}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}})}{S_{\textrm{b}}(\lambda)w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}})-S_{\textrm{f}}(\lambda)w_{\textrm{f}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}})}
+\tag{1.9}</span></span></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Special cases to obtain an isosbestic control signal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Experimental setups may present various constraints. Here we consider two such special cases.</p>
+<p><strong>Case I</strong></p>
+<p>There is one excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span> and emission spectra of the bound and free states are the same, i.e.&nbsp;<span class="math inline">S_{\textrm{f}}=S_{\textrm{b}}=S</span>. Then based on <a href="#eq-isosbestic-linear-combo">Equation&nbsp;<span>1.8</span></a> and <a href="#eq-isosbestic-coeff-ratio">Equation&nbsp;<span>1.9</span></a>:</p>
+<p><span class="math display">
+\frac{m}{n} =\frac{S(\lambda')w_{\textrm{f}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})-S(\lambda')w_{\textrm{b}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})}{S(\lambda)w_{\textrm{b}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})-S(\lambda)w_{\textrm{f}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})} = -\frac{S(\lambda')}{S(\lambda)}
+</span></p>
+<p><strong>Case II</strong></p>
+<p>There is single excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span>, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typicaly there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties.</p>
+<p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> suggests that for <span class="math inline">F</span> to be independent of <span class="math inline">f</span>, we need <span class="math inline">w_\textrm{b}(\lambda^{\textrm{{exc}}}) = w_\textrm{f}(\lambda^{\textrm{{exc}}})</span>, and for excitation by this laser, any emission wavelength <span class="math inline">\lambda</span> can serve as the isosbestic control.</p>
+</div>
+</div>
+</div>
+</section>
 <section id="motion-artifacts" class="level4">
 <h4 class="anchored" data-anchor-id="motion-artifacts">Motion artifacts</h4>
 <ul>
@@ -339,7 +414,7 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 O(t,\lambda,j) &amp;= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b(\lambda,j) ] n(t,j) \\
 H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
 \end{align}
-\tag{1.8}</span></span></p>
+\tag{1.10}</span></span></p>
 <ul>
 <li><span class="math inline">a(i,t)</span> for <span class="math inline">i \in \textrm{I}</span> has fast and slow components</li>
 <li><span class="math inline">a(t) = c\{f(t)s_\textrm{bound}(\lambda) + (1-f(t))s_\textrm{free}(\lambda)\}</span> : an indicator with concentration <span class="math inline">c</span> exists in two states (e.g.&nbsp;bright, dark or bound, free) that have their own emission spectra.</li>
@@ -399,6 +474,9 @@ Islam, Md Serajul, Masato Honma, Takakazu Nakabayashi, Masataka Kinjo, and Nobuh
 </div>
 <div id="ref-hemoglobinspectra" class="csl-entry" role="listitem">
 Prahl, Scott. 1998. <span>“Optical Spectra of Hemoglobin.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://omlc.org/spectra/hemoglobin/summary.html" class="uri">https://omlc.org/spectra/hemoglobin/summary.html</a>.
+</div>
+<div id="ref-simpson2023lights" class="csl-entry" role="listitem">
+Simpson, Eleanor H, Thomas Akam, Tommaso Patriarchi, Marta Blanco-Pozo, Lauren M Burgeno, Ali Mohebi, Stephanie J Cragg, and Mark E Walton. 2023. <span>“Lights, Fiber, Action! A Primer on in Vivo Fiber Photometry.”</span> <em>Neuron</em>.
 </div>
 <div id="ref-zhang2022spectral" class="csl-entry" role="listitem">
 Zhang, Wei-Ting, Tzu-Hao Harry Chao, Yue Yang, Tzu-Wen Wang, Sung-Ho Lee, Esteban A Oyarzabal, Jingheng Zhou, et al. 2022. <span>“Spectral Fiber Photometry Derives Hemoglobin Concentration Changes for Accurate Measurement of Fluorescent Sensor Activity.”</span> <em>Cell Reports Methods</em> 2 (7): 100243.
