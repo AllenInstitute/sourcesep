@@ -170,9 +170,12 @@ div.csl-indent {
    
   <ul>
   <li><a href="#signal-from-indicators" id="toc-signal-from-indicators" class="nav-link active" data-scroll-target="#signal-from-indicators"><span class="header-section-number">1.1</span> Signal from indicators</a></li>
-  <li><a href="#previous-approach-to-modeling-the-signal" id="toc-previous-approach-to-modeling-the-signal" class="nav-link" data-scroll-target="#previous-approach-to-modeling-the-signal"><span class="header-section-number">1.2</span> Previous approach to modeling the signal</a></li>
-  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"><span class="header-section-number">1.3</span> Model for hemodynamics</a></li>
-  <li><a href="#autofluorescence-1" id="toc-autofluorescence-1" class="nav-link" data-scroll-target="#autofluorescence-1"><span class="header-section-number">1.4</span> Autofluorescence</a></li>
+  <li><a href="#autofluorescence" id="toc-autofluorescence" class="nav-link" data-scroll-target="#autofluorescence"><span class="header-section-number">1.2</span> Autofluorescence</a></li>
+  <li><a href="#isosbestic-control" id="toc-isosbestic-control" class="nav-link" data-scroll-target="#isosbestic-control"><span class="header-section-number">1.3</span> Isosbestic control</a></li>
+  <li><a href="#model-for-hemodynamics" id="toc-model-for-hemodynamics" class="nav-link" data-scroll-target="#model-for-hemodynamics"><span class="header-section-number">1.4</span> Model for hemodynamics</a></li>
+  <li><a href="#previous-approach-to-modeling-the-signal" id="toc-previous-approach-to-modeling-the-signal" class="nav-link" data-scroll-target="#previous-approach-to-modeling-the-signal"><span class="header-section-number">1.5</span> Previous approach to modeling the signal</a></li>
+  <li><a href="#autofluorescence-1" id="toc-autofluorescence-1" class="nav-link" data-scroll-target="#autofluorescence-1"><span class="header-section-number">1.6</span> Autofluorescence</a></li>
+  <li><a href="#experiment-proposals" id="toc-experiment-proposals" class="nav-link" data-scroll-target="#experiment-proposals"><span class="header-section-number">1.7</span> Experiment proposals</a></li>
   </ul>
 </nav>
     </div>
@@ -197,10 +200,11 @@ div.csl-indent {
 </header>
 
 <p>A recap of the basic model for fluorescence signals from protein indicators.</p>
-<p>The challenges of interpreting and simulating fiber photometry data are highlighted in <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>:</p>
+<p>The challenges for <em>in vivo</em> fiber photometry data analysis are highlighted in <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>:</p>
 <blockquote class="blockquote">
 <p>In theory, or in a test tube or flow cell, dose-response curves make the relationship between ligand concentration and fluorescence intensity appear straightforward. However, measuring ligand modulated fluorescence in vivo, where photometric signals are neither linear nor absolute measures, is more complicated. Signals are influenced by native factors, including local fluctuations in pH and hemodynamics, and technical factors including the expression level and localization of the sensors, excitation wavelengths, potential photobleaching, and the stability of the optical path, each of which will be discussed.</p>
 </blockquote>
+<p>We are interested in the case where there there are multiple lasers exciting the samples at different wavelengths (time-division illumination), and the full emission spectrum can be observed.</p>
 <section id="signal-from-indicators" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="signal-from-indicators"><span class="header-section-number">1.1</span> Signal from indicators</h2>
 <section id="assumptions-caveats" class="level4">
@@ -224,7 +228,7 @@ F(t,\lambda,j) = &amp; \textcolor{6488EA}{f_{\textrm{b}}(t) S_\textrm{b}(\lambda
                  &amp; \textcolor{AA2704}{(1 - f_{\textrm{b}}(t)) S_\textrm{f}(\lambda)w_\textrm{f}(j) C(t) P(j,t)}
 \end{align*}
 \tag{1.1}</span></span></p>
-<p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> is analogous to the setup in and in <span class="citation" data-cites="helmchen2011calibration">Helmchen (<a href="references.html#ref-helmchen2011calibration" role="doc-biblioref">2011</a>)</span>. In the following, we’ll refer to <span class="math inline">f_{\textrm{b}}</span> as simply <span class="math inline">f</span>. Assuming a positive indicator (where the bound state is brighter than free state), define <span class="math inline">F_{\max}</span> and <span class="math inline">F_{\min}</span> as the signal when <span class="math inline">f=0</span> and <span class="math inline">f=1</span> respectively. We’ll pack terms other than <span class="math inline">f</span> in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> into <span class="math inline">\eta_\textrm{b}</span> and <span class="math inline">\eta_\textrm{f}</span> for the bound and free components and also drop the arguments for <span class="math inline">t</span>, <span class="math inline">\lambda</span>, <span class="math inline">j</span> for now. Then:</p>
+<p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> is analogous to the setup in and in <span class="citation" data-cites="helmchen2011calibration">Helmchen (<a href="references.html#ref-helmchen2011calibration" role="doc-biblioref">2011</a>)</span>. In the following we refer to <span class="math inline">f_{\textrm{b}}</span> as just <span class="math inline">f</span>. Assuming a positive indicator (where the bound state is brighter than free state), define <span class="math inline">F_{\max}</span> and <span class="math inline">F_{\min}</span> as the signal when <span class="math inline">f=0</span> and <span class="math inline">f=1</span> respectively. We’ll pack terms other than <span class="math inline">f</span> in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> into <span class="math inline">\eta_\textrm{b}</span> and <span class="math inline">\eta_\textrm{f}</span> for the bound and free components, and drop the arguments <span class="math inline">t</span>, <span class="math inline">\lambda</span>, <span class="math inline">j</span> for now. Then:</p>
 <p><span id="eq-bound-fraction"><span class="math display">
 \begin{align*}
 F &amp;= \eta_{\textrm{b}}f + \eta_{\textrm{f}}(1-f)\\
@@ -236,7 +240,7 @@ F &amp;= \eta_{\textrm{b}}f + \eta_{\textrm{f}}(1-f)\\
 <p>Defining <span class="math inline">R := {F_{\max}}/{F_{\min}}</span>, we can rewrite <a href="#eq-bound-fraction">Equation&nbsp;<span>1.2</span></a> as: <span id="eq-bound-fraction-rel"><span class="math display">
 \frac{f}{1-f} = \frac{F / F_{\max} − 1 / R}{1 − F / F_{\max}}
 \tag{1.3}</span></span></p>
-<p><a href="#eq-bound-fraction-rel">Equation&nbsp;<span>1.3</span></a> is only contains ratios of fluorosence; these terms are invariant to indicator concentration (assuming it is non-zero), and laser power as in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a></p>
+<p><a href="#eq-bound-fraction-rel">Equation&nbsp;<span>1.3</span></a> only contains ratios of fluorosence; these terms are invariant to indicator concentration and laser power as in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>.</p>
 </section>
 <section id="relating-ligand-concentration-to-fluorescence" class="level4">
 <h4 class="anchored" data-anchor-id="relating-ligand-concentration-to-fluorescence">Relating ligand concentration to fluorescence</h4>
@@ -302,21 +306,22 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 </section>
 <section id="multiple-indicators" class="level4">
 <h4 class="anchored" data-anchor-id="multiple-indicators">Multiple indicators</h4>
-<p>For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum <span class="math inline">f(t) \propto {\Delta F}{F} \propto</span> according to <a href="#eq-ligand-F-approx">Equation&nbsp;<span>1.5</span></a> and <a href="#eq-ligand-dF-approx">Equation&nbsp;<span>1.7</span></a>.</p>
+<p>For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum, <span class="math inline">\Delta f(t) \propto {\Delta F}/{F}</span> according to <a href="#eq-ligand-F-approx">Equation&nbsp;<span>1.5</span></a> and <a href="#eq-ligand-dF-approx">Equation&nbsp;<span>1.7</span></a>.</p>
 <p>With multiple indicators, the fluorescence signal would consist of multiple indicator-specific terms as shown for one indicator in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>.</p>
 <p>Depending on the emission spectrum of the indicators, the signal at particular <span class="math inline">\lambda</span> would be expected to be dominated by a single indicator. We’ll treat this approach to analyzing the data as a baseline strategy.</p>
 </section>
-<section id="autofluorescence" class="level4">
-<h4 class="anchored" data-anchor-id="autofluorescence">Autofluorescence</h4>
+</section>
+<section id="autofluorescence" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="autofluorescence"><span class="header-section-number">1.2</span> Autofluorescence</h2>
 <p>In calculating <span class="math inline">\Delta F / F</span>, we assumed that the baseline fluorescence signal <span class="math inline">F_\textrm{rest}</span> is only due to a non-zero ligand concentration. Autofluorescence is an important source of noise to this end.</p>
 </section>
-<section id="isosbestic-control" class="level4">
-<h4 class="anchored" data-anchor-id="isosbestic-control">Isosbestic control</h4>
+<section id="isosbestic-control" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="isosbestic-control"><span class="header-section-number">1.3</span> Isosbestic control</h2>
 <p>Isosbestic control signal <span class="math inline">I</span> refers to a signal that is independent of the ligand bound fraction <span class="math inline">f</span>. The same noise sources that affect the indicator signal also affect the isosbestic control signal. Removing the component shared with <span class="math inline">I</span> is common strategy to denoise fiber photometry data, <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>.</p>
 <p>Let <span class="math inline">\lambda^{\textrm{exc}}</span> refer to a particular excitation wavelength. From indicator characterization experiments, we have access to the following:</p>
 <ol type="1">
 <li>Excitation spectrum for the bound state, <span class="math inline">w_\textrm{b}(\lambda^{\textrm{exc}})</span>.</li>
-<li>Excitation spectrum for the free state, <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, normalized to the <strong>bound</strong> state spectrum.</li>
+<li>Excitation spectrum for the free state, <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, relative to the <strong>bound</strong> state spectrum.</li>
 <li>Normalized emission spectrum of the bound and free states <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span>, such that integral over <span class="math inline">\lambda</span> is 1.</li>
 </ol>
 <p>The emission at two emission wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span> while invoked by exciting the sample at <span class="math inline">\lambda_{1}^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_{2}^{\textrm{{exc}}}</span> (each excitation wavelength corresponds to a different laser <span class="math inline">j</span>):</p>
@@ -327,7 +332,7 @@ F_{1}(\lambda)  &amp;={f_{\textrm{b}}S_{\textrm{b}}(\lambda)w_{\textrm{b}}(\lamb
 F_{2}(\lambda') &amp;={f_{\textrm{b}}S_{\textrm{b}}(\lambda')w_{\textrm{b}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}})}+{(1-f_{\textrm{b}})S_{\textrm{f}}(\lambda')w_{\textrm{f}}(\lambda_{2}^{\textrm{{exc}}})P(\lambda_{2}^{\textrm{{exc}}})}
 \end{align*}
 </span></p>
-<p>To make things a bit more obvious, we’ll make the following notation changes:</p>
+<p>We make a few notation changes to make things a bit more obvious:</p>
 <p><span class="math display">
 \begin{align*}
 a_{1}   &amp;=S_{\textrm{b}}(\lambda)w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}}) \\
@@ -380,59 +385,25 @@ Special cases to obtain an isosbestic control signal
 \frac{m}{n} =\frac{S(\lambda')w_{\textrm{f}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})-S(\lambda')w_{\textrm{b}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})}{S(\lambda)w_{\textrm{b}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})-S(\lambda)w_{\textrm{f}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})} = -\frac{S(\lambda')}{S(\lambda)}
 </span></p>
 <p><strong>Case II</strong></p>
-<p>There is single excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span>, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typicaly there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties.</p>
+<p>There is a single excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span>, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typicaly there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties.</p>
 <p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> suggests that for <span class="math inline">F</span> to be independent of <span class="math inline">f</span>, we need <span class="math inline">w_\textrm{b}(\lambda^{\textrm{{exc}}}) = w_\textrm{f}(\lambda^{\textrm{{exc}}})</span>, and for excitation by this laser, any emission wavelength <span class="math inline">\lambda</span> can serve as the isosbestic control.</p>
 </div>
 </div>
 </div>
+<p>Motion-related artifacts are a common source of noise in fiber photometry experiments. Motion (e.g.&nbsp;head movements) disturbs the optical path (e.g.&nbsp;bending of the fiber), and typically attenuates the signal. This is a multiplicative effect which also affects the isosbestic control signal. Regressing out the component common to the isosbestic control signal and the indicator signal can reduce severity of this artifact, see <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span> for an overview and <span class="citation" data-cites="keevers2023obtaining">Keevers, McNally, and Jean-Richard-dit-Bressel (<a href="references.html#ref-keevers2023obtaining" role="doc-biblioref">2023</a>)</span> for an implementation of such a procedure.</p>
+<p><span class="citation" data-cites="creamer2022correcting">Creamer et al. (<a href="references.html#ref-creamer2022correcting" role="doc-biblioref">2022</a>)</span> discuss motion-related artifacts in a different system but may provide inspiration for solutions in mouse fiber photometry experiments.</p>
 </section>
-<section id="motion-artifacts" class="level4">
-<h4 class="anchored" data-anchor-id="motion-artifacts">Motion artifacts</h4>
+<section id="model-for-hemodynamics" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="model-for-hemodynamics"><span class="header-section-number">1.4</span> Model for hemodynamics</h2>
+<p>Absorption by hemoglobin corrupts the signal. For <em>in vivo</em> measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenrated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span>.</p>
+<p>Previous work in <span class="citation" data-cites="ma2016wide">Ma et al. (<a href="references.html#ref-ma2016wide" role="doc-biblioref">2016</a>)</span> may also be relevant to this problem.</p>
 <ul>
-<li>Isosbestic control measurement</li>
-<li>Motion correction approach with a reference e.g. <span class="citation" data-cites="bridge2023fipha">Bridge et al. (<a href="references.html#ref-bridge2023fipha" role="doc-biblioref">2023</a>)</span>, <span class="citation" data-cites="creamer2022correcting">Creamer et al. (<a href="references.html#ref-creamer2022correcting" role="doc-biblioref">2022</a>)</span>.</li>
-</ul>
-</section>
-<section id="blooming" class="level4">
-<h4 class="anchored" data-anchor-id="blooming">Blooming</h4>
-<p>Camera blooming effect + notch filters to offset that</p>
-</section>
-<section id="patch-cord" class="level4">
-<h4 class="anchored" data-anchor-id="patch-cord">Patch cord</h4>
-<p>Autofluoresence contribution is not multiplied by laser noise.</p>
-</section>
-<section id="hemodynamics" class="level4">
-<h4 class="anchored" data-anchor-id="hemodynamics">Hemodynamics</h4>
-<p>Absorption due to oxygenated and deoxygenated hemoglobin attenuates the signal from the indicator. Further details are in a seciton below.</p>
-<hr>
-</section>
-</section>
-<section id="previous-approach-to-modeling-the-signal" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="previous-approach-to-modeling-the-signal"><span class="header-section-number">1.2</span> Previous approach to modeling the signal</h2>
-<p><span id="eq-observation"><span class="math display">
-\begin{align}
-O(t,\lambda,j) &amp;= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b(\lambda,j) ] n(t,j) \\
-H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
-\end{align}
-\tag{1.10}</span></span></p>
-<ul>
-<li><span class="math inline">a(i,t)</span> for <span class="math inline">i \in \textrm{I}</span> has fast and slow components</li>
-<li><span class="math inline">a(t) = c\{f(t)s_\textrm{bound}(\lambda) + (1-f(t))s_\textrm{free}(\lambda)\}</span> : an indicator with concentration <span class="math inline">c</span> exists in two states (e.g.&nbsp;bright, dark or bound, free) that have their own emission spectra.</li>
-<li>Isosbestic point is the particular <span class="math inline">\lambda</span> where the two populations cannot be distinguished. This does not always exist for all indicators, but when it does exist it might be possible to use it for corrections related to Hemodynamics, see <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span></li>
-<li><span class="math inline">h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)</span> : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time</li>
-<li><span class="math inline">a(i,t)</span> is multiplied by a decay term <span class="math inline">d(i,t)</span> associated with bleaching. <span class="math inline">d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)</span></li>
-</ul>
-</section>
-<section id="model-for-hemodynamics" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="model-for-hemodynamics"><span class="header-section-number">1.3</span> Model for hemodynamics</h2>
-<p>Absorption by hemoglobin corrupts the signal. The Beer-Lambert law is used to model this effect in the generative model above.</p>
-<ul>
-<li><span class="math inline">\varepsilon</span>: extinction coefficient (in <span class="math inline">\textrm{cm}^{-1}\textrm{mole}^{-1}{L}</span>), see <span class="citation" data-cites="hemoglobinspectra">Prahl (<a href="references.html#ref-hemoglobinspectra" role="doc-biblioref">1998</a>)</span>. This is a function of <span class="math inline">\lambda</span></li>
+<li><span class="math inline">\varepsilon</span>: extinction coefficient (in <span class="math inline">{\textrm{cm}}^{-1}{\textrm{mole}}^{-1}{L}</span>), see <span class="citation" data-cites="hemoglobinspectra">Prahl (<a href="references.html#ref-hemoglobinspectra" role="doc-biblioref">1998</a>)</span>. This is a function of <span class="math inline">\lambda</span></li>
 <li><span class="math inline">h</span>: concentration (100 to 200 <span class="math inline">gL^{-1}</span> for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity</li>
 <li><span class="math inline">l</span>: effective cuvette length in the Beer-Lambert law. We set this to 1 <span class="math inline">\textrm{cm}</span>, and assume no dependence on <span class="math inline">\lambda</span> here.</li>
 <li><span class="math inline">M_{\textrm{Hg}}</span>: molar mass of Hemoglobin = 64,500 <span class="math inline">g\textrm{mole}^{-1}</span></li>
 <li><span class="math inline">A</span>: absorbance, calculated as per Beer-Lambert’s law <span class="math inline">A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hg}}}</span></li>
-<li>Let <span class="math inline">f(t)</span> be fraction of hemoglobin in the oxygenated state. Define <span class="math inline">h_{\textrm{oxy}}</span>, <span class="math inline">h_{\textrm{deoxy}}</span>, <span class="math inline">\mu_\textrm{oxy}</span> and <span class="math inline">\mu_\textrm{deoxy}</span> as:</li>
+<li>Let <span class="math inline">f(t)</span> be fraction of hemoglobin in the oxygenated state. Define <span class="math inline">h_{\textrm{oxy}}</span>, <span class="math inline">h_{\textrm{deoxy}}</span>, <span class="math inline">\mu_{\textrm{oxy}}</span> and <span class="math inline">\mu_{\textrm{deoxy}}</span> as:</li>
 </ul>
 <p><span class="math display">
 \begin{align*}
@@ -447,16 +418,85 @@ h_\textrm{deoxy}(t) &amp;= (1 - f(t))h_{\textrm{total}}(t) \\
 I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
 </span></li>
 </ul>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Approach in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>As in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>, fluorescence is linearly related to indicator concentration. A ratio of fluorescence measurements at any time <span class="math inline">t</span> relative to reference time <span class="math inline">t_0</span> in the absence of any absorption:</p>
+<p><span class="math display">
+\frac{F(t)}{F(t_0)} = \frac{C(t)}{C(t_0)}
+</span></p>
+<p>Absorption is considered along the path followed by the excitation light, and the path followed by the emission light. In <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>, this amounts to multiplying the incident power by a factor related to the first path, and the overall emission by another factor.</p>
+<p><span class="math display">
+\begin{align*}
+\frac{F(t,\lambda)}{F(t_{0},\lambda)}&amp;=e^{-\Delta\mu(\lambda)\chi(\lambda)}e^{-\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})}\frac{C(t)}{C(t_{0})} \\
+\log\frac{F(t,\lambda)}{F(t_{0},\lambda)}&amp;=-\Delta\mu(\lambda)\chi(\lambda)-\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})+\log(\frac{C(t)}{C(t_{0})})
+\end{align*}
+</span></p>
+<p>Consider the first two terms on the right hand side: <span class="math display">
+\begin{align*}
+\Delta\mu(\lambda)\chi(\lambda)+\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})=&amp; \Delta C_{{\textrm{HbO}}}(t)[\epsilon_{{\textrm{HbO}}}(\lambda)+\epsilon_{{\textrm{HbO}}}(\lambda_{{\textrm{exc}}})] \\
+&amp;+\Delta C_{{\textrm{HbR}}}(t)[\epsilon_{{\textrm{HbR}}}(\lambda)+\epsilon_{{\textrm{HbR}}}(\lambda_{{\textrm{exc}}})]
+\end{align*}
+</span></p>
+<p>If the indicator is known to be activity-independent, then minimizing an equation of the form can yield estimates of <span class="math inline">\Delta C_{{\textrm{HbO}}}(t)</span> and <span class="math inline">\Delta C_{{\textrm{HbR}}}(t)</span>:</p>
+<p><span class="math display">
+\underset{\Delta C_{{\textrm{HbO}}}(t),\Delta C_{{\textrm{HbR}}}(t)}{\tt{argmin}} \sum_{i=1}^{n} [M(t)_i + \Delta C_{{\textrm{HbO}}}(t) A_i + \Delta C_{{\textrm{HbR}}}(t) B_i - \sigma) ]^2
+</span></p>
+</div>
+</div>
+</div>
+<section id="blooming-and-notch-filters" class="level4">
+<h4 class="anchored" data-anchor-id="blooming-and-notch-filters">Blooming and notch filters</h4>
+<p>Large power incident at any particular camera pixel can saturate that pixel, and also cause a spill-over effect at neighboring pixels referred to as blooming.</p>
+<p>For measurements where the camera pixels correspond to different emission wavelengths, the problem is particularly severe around the value of the excitation laser wavelength.</p>
+<p>Notch filters can be used to attenuate the signal at particular wavelengths on it’s way back from the brain to the camera.</p>
+<hr>
 </section>
-<section id="autofluorescence-1" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="autofluorescence-1"><span class="header-section-number">1.4</span> Autofluorescence</h2>
+</section>
+<section id="previous-approach-to-modeling-the-signal" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="previous-approach-to-modeling-the-signal"><span class="header-section-number">1.5</span> Previous approach to modeling the signal</h2>
+<p><span id="eq-observation"><span class="math display">
+\begin{align}
+O(t,\lambda,j) &amp;= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b(\lambda,j) ] n(t,j) \\
+H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
+\end{align}
+\tag{1.10}</span></span></p>
+<ul>
+<li><span class="math inline">a(i,t)</span> for <span class="math inline">i \in \textrm{I}</span> has fast and slow components</li>
+<li><span class="math inline">a(t) = c\{f(t)s_\textrm{bound}(\lambda) + (1-f(t))s_\textrm{free}(\lambda)\}</span> : an indicator with concentration <span class="math inline">c</span> exists in two states (e.g.&nbsp;bright, dark or bound, free) that have their own emission spectra.</li>
+<li>Isosbestic point is the particular <span class="math inline">\lambda</span> where the two populations cannot be distinguished. This does not always exist for all indicators, but when it does exist it might be possible to use it for corrections related to Hemodynamics, see <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span></li>
+<li><span class="math inline">h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)</span> : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time</li>
+<li><span class="math inline">a(i,t)</span> is multiplied by a decay term <span class="math inline">d(i,t)</span> associated with bleaching. <span class="math inline">d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)</span></li>
+</ul>
+</section>
+<section id="autofluorescence-1" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="autofluorescence-1"><span class="header-section-number">1.6</span> Autofluorescence</h2>
 <p>Autofluorescence has a spectrum <span class="citation" data-cites="autofluorescencepectra">Hickl co. (<a href="references.html#ref-autofluorescencepectra" role="doc-biblioref">2022</a>)</span>, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400 nm - 700 nm range, see measurements in aqueous solutions in <span class="citation" data-cites="islam2013ph">Islam et al. (<a href="references.html#ref-islam2013ph" role="doc-biblioref">2013</a>)</span>.</p>
+</section>
+<section id="experiment-proposals" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="experiment-proposals"><span class="header-section-number">1.7</span> Experiment proposals</h2>
+<ol type="1">
+<li>Control experiment with dead sensor (i.e.&nbsp;activity independent measurement of fluorescence from the sensor)</li>
+<li>Control experiment with sensor with some form of triggered activity (stimulation/reward etc)</li>
+<li>Hemodynamics measurement <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span>.
+<ul>
+<li>EYFP expressed in primary somatosensory cortex (using AAV) of the forelimb region.</li>
+<li>Intravenously administered Rhodamine B for cerebral blood volume measurements.</li>
+<li>Electrical stimulation of the contralateral forepaw</li>
+</ul></li>
+</ol>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
-<div id="ref-bridge2023fipha" class="csl-entry" role="listitem">
-Bridge, Matthew F, Leslie R Wilson, Sambit Panda, Korey D Stevanovic, Ayland C Letsinger, Sandra McBride, and Jesse D Cushman. 2023. <span>“FiPhA: An Open-Source Platform for Fiber Photometry Analysis.”</span> <em>bioRxiv</em>.
-</div>
 <div id="ref-creamer2022correcting" class="csl-entry" role="listitem">
 Creamer, Matthew S, Kevin S Chen, Andrew M Leifer, and Jonathan W Pillow. 2022. <span>“Correcting Motion Induced Fluorescence Artifacts in Two-Channel Neural Imaging.”</span> <em>PLoS Computational Biology</em> 18 (9): e1010421.
 </div>
@@ -471,6 +511,12 @@ Hickl co., Becker &amp;. 2022. <span>“Autofluorescence Spectra.”</span> <spa
 </div>
 <div id="ref-islam2013ph" class="csl-entry" role="listitem">
 Islam, Md Serajul, Masato Honma, Takakazu Nakabayashi, Masataka Kinjo, and Nobuhiro Ohta. 2013. <span>“pH Dependence of the Fluorescence Lifetime of FAD in Solution and in Cells.”</span> <em>International Journal of Molecular Sciences</em> 14 (1): 1952–63.
+</div>
+<div id="ref-keevers2023obtaining" class="csl-entry" role="listitem">
+Keevers, Luke J, Gavan P McNally, and Philip Jean-Richard-dit-Bressel. 2023. <span>“Obtaining Artifact-Corrected Signals in Fiber Photometry: Isosbestic Signals, Robust Regression and dF/f Calculations.”</span>
+</div>
+<div id="ref-ma2016wide" class="csl-entry" role="listitem">
+Ma, Ying, Mohammed A Shaik, Sharon H Kim, Mariel G Kozberg, David N Thibodeaux, Hanzhi T Zhao, Hang Yu, and Elizabeth MC Hillman. 2016. <span>“Wide-Field Optical Mapping of Neural Activity and Brain Haemodynamics: Considerations and Novel Approaches.”</span> <em>Philosophical Transactions of the Royal Society B: Biological Sciences</em> 371 (1705): 20150360.
 </div>
 <div id="ref-hemoglobinspectra" class="csl-entry" role="listitem">
 Prahl, Scott. 1998. <span>“Optical Spectra of Hemoglobin.”</span> <span class="smallcaps">url:</span>&nbsp;<a href="https://omlc.org/spectra/hemoglobin/summary.html" class="uri">https://omlc.org/spectra/hemoglobin/summary.html</a>.

@@ -5,14 +5,13 @@
 
 A recap of the basic model for fluorescence signals from protein indicators.
 
-The challenges of interpreting and simulating fiber photometry data are highlighted in @simpson2023lights:
+The challenges for _in vivo_ fiber photometry data analysis are highlighted in @simpson2023lights:
 
 >  In theory, or in a test tube or flow cell, dose-response curves make the relationship between ligand concentration and fluorescence intensity appear straightforward. However, measuring ligand modulated fluorescence in vivo, where photometric signals are neither linear nor absolute measures, is more complicated. Signals are influenced by native factors, including local fluctuations in pH and hemodynamics, and technical factors including the expression level and localization of the sensors, excitation wavelengths, potential photobleaching, and the stability of the optical path, each of which will be discussed.
 
+We are interested in the case where there there are multiple lasers exciting the samples at different wavelengths (time-division illumination), and the full emission spectrum can be observed. 
 
 ## Signal from indicators
-
-
 
 #### Assumptions / caveats
 
@@ -36,7 +35,7 @@ F(t,\lambda,j) = & \colA{f_{\textrm{b}}(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) 
 \end{align*}
 $$ {#eq-single-indicator}
 
-@eq-single-indicator is analogous to the setup in and in @helmchen2011calibration. In the following, we'll refer to $f_{\textrm{b}}$ as simply $f$. Assuming a positive indicator (where the bound state is brighter than free state), define $F_{\max}$ and $F_{\min}$ as the signal when $f=0$ and $f=1$ respectively. We'll pack terms other than $f$ in @eq-single-indicator into $\eta_\textrm{b}$ and $\eta_\textrm{f}$ for the bound and free components and also drop the arguments for $t$, $\lambda$, $j$ for now. Then:
+@eq-single-indicator is analogous to the setup in and in @helmchen2011calibration. In the following we refer to $f_{\textrm{b}}$ as just $f$. Assuming a positive indicator (where the bound state is brighter than free state), define $F_{\max}$ and $F_{\min}$ as the signal when $f=0$ and $f=1$ respectively. We'll pack terms other than $f$ in @eq-single-indicator into $\eta_\textrm{b}$ and $\eta_\textrm{f}$ for the bound and free components, and drop the arguments $t$, $\lambda$, $j$ for now. Then:
 
 $$
 \begin{align*}
@@ -52,7 +51,7 @@ $$
 \frac{f}{1-f} = \frac{F / F_{\max} − 1 / R}{1 − F / F_{\max}}
 $$ {#eq-bound-fraction-rel}
 
-@eq-bound-fraction-rel is only contains ratios of fluorosence; these terms are invariant to indicator concentration (assuming it is non-zero), and laser power as in @eq-single-indicator 
+@eq-bound-fraction-rel only contains ratios of fluorosence; these terms are invariant to indicator concentration and laser power as in @eq-single-indicator.
 
 #### Relating ligand concentration to fluorescence
 
@@ -139,17 +138,17 @@ The constant has terms $[L]_\textrm{rest}$ (depends on cell/region being imaged)
 
 #### Multiple indicators
 
-For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum  $f(t) \propto {\Delta F}{F} \propto$ according to @eq-ligand-F-approx and @eq-ligand-dF-approx. 
+For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum,  $\Delta f(t) \propto {\Delta F}/{F}$ according to @eq-ligand-F-approx and @eq-ligand-dF-approx. 
 
 With multiple indicators, the fluorescence signal would consist of multiple indicator-specific terms as shown for one indicator in @eq-single-indicator. 
 
 Depending on the emission spectrum of the indicators, the signal at particular $\lambda$ would be expected to be dominated by a single indicator. We'll treat this approach to analyzing the data as a baseline strategy. 
 
-#### Autofluorescence
+## Autofluorescence
 
 In calculating $\Delta F / F$, we assumed that the baseline fluorescence signal $F_\textrm{rest}$ is only due to a non-zero ligand concentration. Autofluorescence is an important source of noise to this end. 
 
-#### Isosbestic control
+## Isosbestic control
 
 Isosbestic control signal $I$ refers to a signal that is independent of the ligand bound fraction $f$. The same noise sources that affect the indicator signal also affect the isosbestic control signal. Removing the component shared with $I$ is common strategy to denoise fiber photometry data, @simpson2023lights.
 
@@ -159,9 +158,8 @@ Isosbestic control signal $I$ refers to a signal that is independent of the liga
 Let $\lexc$ refer to a particular excitation wavelength. From indicator characterization experiments, we have access to the following:
 
 1. Excitation spectrum for the bound state, $w_\textrm{b}(\lexc)$.
-2. Excitation spectrum for the free state, $w_\textrm{f}(\lexc)$, normalized to the **bound** state spectrum.
+2. Excitation spectrum for the free state, $w_\textrm{f}(\lexc)$, relative to the **bound** state spectrum.
 3. Normalized emission spectrum of the bound and free states $S_\textrm{b}(\lambda)$ and $S_\textrm{f}(\lambda)$, such that integral over $\lambda$ is 1.
-
 
 The emission at two emission wavelengths $\lambda$ and $\lambda'$ while invoked by exciting the sample at $\lambda_{1}^{\textrm{{exc}}}$ and $\lambda_{2}^{\textrm{{exc}}}$ (each excitation wavelength corresponds to a different laser $j$):
 
@@ -174,7 +172,7 @@ F_{2}(\lambda')	&={f_{\textrm{b}}S_{\textrm{b}}(\lambda')w_{\textrm{b}}(\lambda_
 \end{align*}
 $$
 
-To make things a bit more obvious, we'll make the following notation changes:
+We make a few notation changes to make things a bit more obvious:
 
 $$
 \begin{align*}
@@ -225,7 +223,7 @@ $$ {#eq-isosbestic-coeff-ratio}
 
 Experimental setups may present various constraints. Here we consider two such special cases.
 
-**Case I** 
+**Case I**
 
 There is one excitation laser, $\lambda^{\textrm{{exc}}}$ and emission spectra of the bound and free states are the same, i.e. $S_{\textrm{f}}=S_{\textrm{b}}=S$. Then based on @eq-isosbestic-linear-combo and @eq-isosbestic-coeff-ratio:
 
@@ -234,29 +232,86 @@ $$
 $$
  
 
-**Case II** 
+**Case II**
 
-There is single excitation laser, $\lambda^{\textrm{{exc}}}$, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typicaly there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties. 
+There is a single excitation laser, $\lambda^{\textrm{{exc}}}$, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typicaly there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties. 
 
 @eq-single-indicator suggests that for $F$ to be independent of $f$, we need $w_\textrm{b}(\lambda^{\textrm{{exc}}}) = w_\textrm{f}(\lambda^{\textrm{{exc}}})$, and for excitation by this laser, any emission wavelength $\lambda$ can serve as the isosbestic control.
 :::
 
-#### Motion artifacts
+Motion-related artifacts are a common source of noise in fiber photometry experiments. Motion (e.g. head movements) disturbs the optical path (e.g. bending of the fiber), and typically attenuates the signal. This is a multiplicative effect which also affects the isosbestic control signal. Regressing out the component common to the isosbestic control signal and the indicator signal can reduce severity of this artifact, see @simpson2023lights for an overview and @keevers2023obtaining for an implementation of such a procedure. 
 
- - Isosbestic control measurement
- - Motion correction approach with a reference e.g. @bridge2023fipha, @creamer2022correcting.
-  
-#### Blooming
+@creamer2022correcting discuss motion-related artifacts in a different system but may provide inspiration for solutions in mouse fiber photometry experiments. 
 
-Camera blooming effect + notch filters to offset that
+## Model for hemodynamics
 
-#### Patch cord
+Absorption by hemoglobin corrupts the signal. For _in vivo_ measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenrated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in @zhang2022spectral.
 
-Autofluoresence contribution is not multiplied by laser noise. 
+Previous work in @ma2016wide may also be relevant to this problem.
 
-#### Hemodynamics
+ - $\varepsilon$: extinction coefficient (in ${\textrm{cm}}^{-1}{\textrm{mole}}^{-1}{L}$), see @hemoglobinspectra. This is a function of $\lambda$ 
+ - $h$: concentration (100 to 200 $gL^{-1}$ for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity
+ - $l$: effective cuvette length in the Beer-Lambert law. We set this to 1 $\textrm{cm}$, and assume no dependence on $\lambda$ here.
+ - $M_{\textrm{Hg}}$: molar mass of Hemoglobin = 64,500 $g\textrm{mole}^{-1}$
+ - $A$: absorbance, calculated as per Beer-Lambert's law $A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hg}}}$
+ - Let $f(t)$ be fraction of hemoglobin in the oxygenated state. Define $h_{\textrm{oxy}}$, $h_{\textrm{deoxy}}$, $\mu_{\textrm{oxy}}$ and $\mu_{\textrm{deoxy}}$ as:
 
-Absorption due to oxygenated and deoxygenated hemoglobin attenuates the signal from the indicator. Further details are in a seciton below. 
+
+$$
+\begin{align*}
+h_\textrm{oxy}(t) &= f(t)h_{\textrm{total}}(t) \\
+h_\textrm{deoxy}(t) &= (1 - f(t))h_{\textrm{total}}(t) \\
+\mu_\textrm{oxy}(\lambda) &= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
+\mu_\textrm{deoxy}(\lambda) &= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
+\end{align*}
+$$
+
+ - Replacing $A$ in the definition of absorbance: $\frac{I}{I_o} = e^{-A}$: 
+$$
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
+$$
+
+
+::: {.callout-note collapse=false icon=false}
+# Approach in @zhang2022spectral
+
+As in @eq-single-indicator, fluorescence is linearly related to indicator concentration. A ratio of fluorescence measurements at any time $t$ relative to reference time $t_0$ in the absence of any absorption:
+
+$$
+\frac{F(t)}{F(t_0)} = \frac{C(t)}{C(t_0)}
+$$
+
+Absorption is considered along the path followed by the excitation light, and the path followed by the emission light. In @eq-single-indicator, this amounts to multiplying the incident power by a factor related to the first path, and the overall emission by another factor. 
+
+$$
+\begin{align*}
+\frac{F(t,\lambda)}{F(t_{0},\lambda)}&=e^{-\Delta\mu(\lambda)\chi(\lambda)}e^{-\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})}\frac{C(t)}{C(t_{0})} \\
+\log\frac{F(t,\lambda)}{F(t_{0},\lambda)}&=-\Delta\mu(\lambda)\chi(\lambda)-\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})+\log(\frac{C(t)}{C(t_{0})})
+\end{align*}
+$$
+
+Consider the first two terms on the right hand side:
+$$
+\begin{align*}
+\Delta\mu(\lambda)\chi(\lambda)+\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})=& \Delta C_{{\textrm{HbO}}}(t)[\epsilon_{{\textrm{HbO}}}(\lambda)+\epsilon_{{\textrm{HbO}}}(\lambda_{{\textrm{exc}}})] \\
+&+\Delta C_{{\textrm{HbR}}}(t)[\epsilon_{{\textrm{HbR}}}(\lambda)+\epsilon_{{\textrm{HbR}}}(\lambda_{{\textrm{exc}}})]
+\end{align*}
+$$
+
+If the indicator is known to be activity-independent, then minimizing an equation of the form can yield estimates of $\Delta C_{{\textrm{HbO}}}(t)$ and $\Delta C_{{\textrm{HbR}}}(t)$:
+
+$$
+\underset{\Delta C_{{\textrm{HbO}}}(t),\Delta C_{{\textrm{HbR}}}(t)}{\tt{argmin}} \sum_{i=1}^{n} [M(t)_i + \Delta C_{{\textrm{HbO}}}(t) A_i + \Delta C_{{\textrm{HbR}}}(t) B_i - \sigma) ]^2
+$$
+:::
+
+#### Blooming and notch filters
+
+Large power incident at any particular camera pixel can saturate that pixel, and also cause a spill-over effect at neighboring pixels referred to as blooming. 
+
+For measurements where the camera pixels correspond to different emission wavelengths, the problem is particularly severe around the value of the excitation laser wavelength.
+
+Notch filters can be used to attenuate the signal at particular wavelengths on it's way back from the brain to the camera. 
 
 ---
 
@@ -276,32 +331,17 @@ $${#eq-observation}
 - $a(i,t)$ is multiplied by a decay term $d(i,t)$ associated with bleaching. $d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)$
 
 
-## Model for hemodynamics
 
-Absorption by hemoglobin corrupts the signal. The Beer-Lambert law is used to model this effect in the generative model above.
-
- - $\varepsilon$: extinction coefficient (in $\textrm{cm}^{-1}\textrm{mole}^{-1}{L}$), see @hemoglobinspectra. This is a function of $\lambda$ 
- - $h$: concentration (100 to 200 $gL^{-1}$ for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity
- - $l$: effective cuvette length in the Beer-Lambert law. We set this to 1 $\textrm{cm}$, and assume no dependence on $\lambda$ here. 
- - $M_{\textrm{Hg}}$: molar mass of Hemoglobin = 64,500 $g\textrm{mole}^{-1}$
- - $A$: absorbance, calculated as per Beer-Lambert's law $A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hg}}}$
- - Let $f(t)$ be fraction of hemoglobin in the oxygenated state. Define $h_{\textrm{oxy}}$, $h_{\textrm{deoxy}}$, $\mu_\textrm{oxy}$ and $\mu_\textrm{deoxy}$ as:
-
-
-$$
-\begin{align*}
-h_\textrm{oxy}(t) &= f(t)h_{\textrm{total}}(t) \\
-h_\textrm{deoxy}(t) &= (1 - f(t))h_{\textrm{total}}(t) \\
-\mu_\textrm{oxy}(\lambda) &= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
-\mu_\textrm{deoxy}(\lambda) &= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
-\end{align*}
-$$
-
- - Replacing $A$ in the definition of absorbance: $\frac{I}{I_o} = e^{-A}$: 
-$$
-I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
-$$
 
 ## Autofluorescence
 
 Autofluorescence has a spectrum @autofluorescencepectra, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400 nm - 700 nm range, see measurements in aqueous solutions in @islam2013ph.
+
+## Experiment proposals
+
+1. Control experiment with dead sensor (i.e. activity independent measurement of fluorescence from the sensor)
+2. Control experiment with sensor with some form of triggered activity (stimulation/reward etc)
+3. Hemodynamics measurement @zhang2022spectral. 
+   - EYFP expressed in primary somatosensory cortex (using AAV) of the forelimb region.
+   - Intravenously administered Rhodamine B for cerebral blood volume measurements.
+   - Electrical stimulation of the contralateral forepaw 
