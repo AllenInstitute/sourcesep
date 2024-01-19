@@ -290,7 +290,7 @@ $$
 \end{align*}
 $$
 
-Consider the first two terms on the right hand side:
+The first two terms on the right hand side can be written in terms of contributions from HbO and HbR:
 $$
 \begin{align*}
 \Delta\mu(\lambda)\chi(\lambda)+\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})=& \Delta C_{{\textrm{HbO}}}(t)[\epsilon_{{\textrm{HbO}}}(\lambda)+\epsilon_{{\textrm{HbO}}}(\lambda_{{\textrm{exc}}})] \\
@@ -298,11 +298,26 @@ $$
 \end{align*}
 $$
 
-If the indicator is known to be activity-independent, then minimizing an equation of the form can yield estimates of $\Delta C_{{\textrm{HbO}}}(t)$ and $\Delta C_{{\textrm{HbR}}}(t)$:
+Consider that emission is measured at $n$ different wavelengths, indexed by $i$. Define the following terms:
 
 $$
-\underset{\Delta C_{{\textrm{HbO}}}(t),\Delta C_{{\textrm{HbR}}}(t)}{\tt{argmin}} \sum_{i=1}^{n} [M(t)_i + \Delta C_{{\textrm{HbO}}}(t) A_i + \Delta C_{{\textrm{HbR}}}(t) B_i - \sigma) ]^2
+\begin{align*}
+M_i(t) &= \log\left(\frac{F(t, \lambda_{i})}{F(0, \lambda_{i})}\right) \\
+A_i    &= \epsilon_{\textrm{HbO}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) + 
+          \epsilon_{\textrm{HbO}}(\lambda_{i})\chi(\lambda_{i}) \\
+B_i    &= \epsilon_{\textrm{HbR}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) + 
+          \epsilon_{\textrm{HbR}}(\lambda_{i})\chi(\lambda_{i}) 
+\end{align*}
 $$
+
+If the indicator is known to be activity-independent (i.e. a dead-sensor experiment), then authors propose that change in fluorescence can be attributed primarily to hemodynamics, and therefore $\log \frac{C(t)}{C(0)} \approx 0$. 
+
+Authors propose solving the following optimization problem at each time step (with generalized method of moments) to estimate $\Delta C_{{\textrm{HbO}}}(t)$ and $\Delta C_{{\textrm{HbR}}}(t)$, with $\sigma(t)$ included as an additional parameter. 
+$$
+\underset{\Delta C_{{\textrm{HbO}}}(t),\Delta C_{{\textrm{HbR}}}(t),\sigma(t)}{\textrm{argmin}} \sum_{i=1}^{n} [M(t)_i + \Delta C_{{\textrm{HbO}}}(t) A_i + \Delta C_{{\textrm{HbR}}}(t) B_i - \sigma(t)) ]^2
+$$
+
+In any _in vivo_ experiment, this will be confounded by time-dependent autofluoresence. In our setup, we have multiple values for $\lambda_{\textrm{exc}}$ as well. There is flexibility in choosing $t_0$ as well. 
 :::
 
 #### Blooming and notch filters
@@ -330,9 +345,6 @@ $${#eq-observation}
 - $h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)$ : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time
 - $a(i,t)$ is multiplied by a decay term $d(i,t)$ associated with bleaching. $d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)$
 
-
-
-
 ## Autofluorescence
 
 Autofluorescence has a spectrum @autofluorescencepectra, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400 nm - 700 nm range, see measurements in aqueous solutions in @islam2013ph.
@@ -344,4 +356,4 @@ Autofluorescence has a spectrum @autofluorescencepectra, and it varies with time
 3. Hemodynamics measurement @zhang2022spectral. 
    - EYFP expressed in primary somatosensory cortex (using AAV) of the forelimb region.
    - Intravenously administered Rhodamine B for cerebral blood volume measurements.
-   - Electrical stimulation of the contralateral forepaw 
+   - Electrical stimulation of the contralateral forepaw

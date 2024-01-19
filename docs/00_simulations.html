@@ -441,16 +441,27 @@ Approach in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (
 \log\frac{F(t,\lambda)}{F(t_{0},\lambda)}&amp;=-\Delta\mu(\lambda)\chi(\lambda)-\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})+\log(\frac{C(t)}{C(t_{0})})
 \end{align*}
 </span></p>
-<p>Consider the first two terms on the right hand side: <span class="math display">
+<p>The first two terms on the right hand side can be written in terms of contributions from HbO and HbR: <span class="math display">
 \begin{align*}
 \Delta\mu(\lambda)\chi(\lambda)+\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})=&amp; \Delta C_{{\textrm{HbO}}}(t)[\epsilon_{{\textrm{HbO}}}(\lambda)+\epsilon_{{\textrm{HbO}}}(\lambda_{{\textrm{exc}}})] \\
 &amp;+\Delta C_{{\textrm{HbR}}}(t)[\epsilon_{{\textrm{HbR}}}(\lambda)+\epsilon_{{\textrm{HbR}}}(\lambda_{{\textrm{exc}}})]
 \end{align*}
 </span></p>
-<p>If the indicator is known to be activity-independent, then minimizing an equation of the form can yield estimates of <span class="math inline">\Delta C_{{\textrm{HbO}}}(t)</span> and <span class="math inline">\Delta C_{{\textrm{HbR}}}(t)</span>:</p>
+<p>Consider that emission is measured at <span class="math inline">n</span> different wavelengths, indexed by <span class="math inline">i</span>. Define the following terms:</p>
 <p><span class="math display">
-\underset{\Delta C_{{\textrm{HbO}}}(t),\Delta C_{{\textrm{HbR}}}(t)}{\tt{argmin}} \sum_{i=1}^{n} [M(t)_i + \Delta C_{{\textrm{HbO}}}(t) A_i + \Delta C_{{\textrm{HbR}}}(t) B_i - \sigma) ]^2
+\begin{align*}
+M_i(t) &amp;= \log\left(\frac{F(t, \lambda_{i})}{F(0, \lambda_{i})}\right) \\
+A_i    &amp;= \epsilon_{\textrm{HbO}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) +
+          \epsilon_{\textrm{HbO}}(\lambda_{i})\chi(\lambda_{i}) \\
+B_i    &amp;= \epsilon_{\textrm{HbR}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) +
+          \epsilon_{\textrm{HbR}}(\lambda_{i})\chi(\lambda_{i})
+\end{align*}
 </span></p>
+<p>If the indicator is known to be activity-independent (i.e.&nbsp;a dead-sensor experiment), then authors propose that change in fluorescence can be attributed primarily to hemodynamics, and therefore <span class="math inline">\log \frac{C(t)}{C(0)} \approx 0</span>.</p>
+<p>Authors propose solving the following optimization problem at each time step (with generalized method of moments) to estimate <span class="math inline">\Delta C_{{\textrm{HbO}}}(t)</span> and <span class="math inline">\Delta C_{{\textrm{HbR}}}(t)</span>, with <span class="math inline">\sigma(t)</span> included as an additional parameter. <span class="math display">
+\underset{\Delta C_{{\textrm{HbO}}}(t),\Delta C_{{\textrm{HbR}}}(t),\sigma(t)}{\textrm{argmin}} \sum_{i=1}^{n} [M(t)_i + \Delta C_{{\textrm{HbO}}}(t) A_i + \Delta C_{{\textrm{HbR}}}(t) B_i - \sigma(t)) ]^2
+</span></p>
+<p>In any <em>in vivo</em> experiment, this will be confounded by time-dependent autofluoresence. In our setup, we have multiple values for <span class="math inline">\lambda_{\textrm{exc}}</span> as well. There is flexibility in choosing <span class="math inline">t_0</span> as well.</p>
 </div>
 </div>
 </div>
