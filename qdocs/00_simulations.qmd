@@ -146,7 +146,9 @@ Depending on the emission spectrum of the indicators, the signal at particular $
 
 ## Autofluorescence
 
-In calculating $\Delta F / F$, we assumed that the baseline fluorescence signal $F_\textrm{rest}$ is only due to a non-zero ligand concentration. Autofluorescence is an important source of noise to this end. 
+In calculating $\Delta F / F$, we assumed that the baseline fluorescence signal $F_\textrm{rest}$ is only due to a non-zero ligand concentration. Autofluorescence is an important, time dependent source of noise to this end. 
+
+The time dependence is related to metabolic activity within cells, which dynamically alters concentration of NADH and FAD molecules. These molecules are considered as the main source of autofluoresence. The excitation and emision spectra for these molecules has been measured in earlier work, see @autofluorescencepectra and @islam2013ph.
 
 ## Isosbestic control
 
@@ -159,7 +161,7 @@ Let $\lexc$ refer to a particular excitation wavelength. From indicator characte
 
 1. Excitation spectrum for the bound state, $w_\textrm{b}(\lexc)$.
 2. Excitation spectrum for the free state, $w_\textrm{f}(\lexc)$, relative to the **bound** state spectrum.
-3. Normalized emission spectrum of the bound and free states $S_\textrm{b}(\lambda)$ and $S_\textrm{f}(\lambda)$, such that integral over $\lambda$ is 1.
+3. Bound and free states emission spectra $S_\textrm{b}(\lambda)$ and $S_\textrm{f}(\lambda)$, normalized so that $\int{S_\textrm{f}(\lambda) d\lambda} = 1$ and $\int{S_\textrm{b}(\lambda) d\lambda} = 1$.
 
 The emission at two emission wavelengths $\lambda$ and $\lambda'$ while invoked by exciting the sample at $\lambda_{1}^{\textrm{{exc}}}$ and $\lambda_{2}^{\textrm{{exc}}}$ (each excitation wavelength corresponds to a different laser $j$):
 
@@ -243,7 +245,7 @@ Motion-related artifacts are a common source of noise in fiber photometry experi
 
 @creamer2022correcting discuss motion-related artifacts in a different system but may provide inspiration for solutions in mouse fiber photometry experiments. 
 
-## Model for hemodynamics
+## Hemodynamics {#sec-hemodynamics}
 
 Absorption by hemoglobin corrupts the signal. For _in vivo_ measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenrated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in @zhang2022spectral.
 
@@ -275,7 +277,7 @@ $$
 ::: {.callout-note collapse=false icon=false}
 # Approach in @zhang2022spectral
 
-As in @eq-single-indicator, fluorescence is linearly related to indicator concentration. A ratio of fluorescence measurements at any time $t$ relative to reference time $t_0$ in the absence of any absorption:
+As in @eq-single-indicator, fluorescence is modeled as linearly proportional to indicator concentration. Assuming the bound state fraction is the same across time (e.g. in a dead-sensor experiment), ratio of fluorescence measurements at any time $t$ relative to reference time $t_0$ in the absence of any absorption:
 
 $$
 \frac{F(t)}{F(t_0)} = \frac{C(t)}{C(t_0)}
@@ -293,20 +295,27 @@ $$
 The first two terms on the right hand side can be written in terms of contributions from HbO and HbR:
 $$
 \begin{align*}
-\Delta\mu(\lambda)\chi(\lambda)+\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})=& \Delta C_{{\textrm{HbO}}}(t)[\epsilon_{{\textrm{HbO}}}(\lambda)+\epsilon_{{\textrm{HbO}}}(\lambda_{{\textrm{exc}}})] \\
-&+\Delta C_{{\textrm{HbR}}}(t)[\epsilon_{{\textrm{HbR}}}(\lambda)+\epsilon_{{\textrm{HbR}}}(\lambda_{{\textrm{exc}}})]
+\Delta\mu(\lambda)\chi(\lambda)+\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})=& \Delta C_{{\textrm{HbO}}}(t)[\xi_{{\textrm{HbO}}}(\lambda)+\xi_{{\textrm{HbO}}}(\lambda_{{\textrm{exc}}})] \\
+&+\Delta C_{{\textrm{HbR}}}(t)[\xi_{{\textrm{HbR}}}(\lambda)+\xi_{{\textrm{HbR}}}(\lambda_{{\textrm{exc}}})]
 \end{align*}
 $$
+
+
+Compared to notation in @sec-hemodynamics, here we use:
+
+ - $\xi_{{\textrm{HbO}}} \equiv \varepsilon_{\textrm{oxy}} / M_{\textrm{Hg}}$, $\xi_{{\textrm{HbR}}} \equiv \varepsilon_{\textrm{deoxy}} / M_{\textrm{Hg}}$ 
+ - $\chi(\lambda) \equiv l$ (previously assumed to be fixed (1 cm) for all $\lambda$)
+ - $C_\textrm{HbO}(t) \equiv h_{\textrm{oxy}}(t)$, $C_\textrm{HbR}(t) \equiv h_{\textrm{deoxy}}(t)$, $C_\textrm{HbT}(t) \equiv h_{\textrm{total}}(t)$
 
 Consider that emission is measured at $n$ different wavelengths, indexed by $i$. Define the following terms:
 
 $$
 \begin{align*}
 M_i(t) &= \log\left(\frac{F(t, \lambda_{i})}{F(0, \lambda_{i})}\right) \\
-A_i    &= \epsilon_{\textrm{HbO}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) + 
-          \epsilon_{\textrm{HbO}}(\lambda_{i})\chi(\lambda_{i}) \\
-B_i    &= \epsilon_{\textrm{HbR}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) + 
-          \epsilon_{\textrm{HbR}}(\lambda_{i})\chi(\lambda_{i}) 
+A_i    &= \xi_{\textrm{HbO}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) + 
+          \xi_{\textrm{HbO}}(\lambda_{i})\chi(\lambda_{i}) \\
+B_i    &= \xi_{\textrm{HbR}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{exc}}}) + 
+          \xi_{\textrm{HbR}}(\lambda_{i})\chi(\lambda_{i}) 
 \end{align*}
 $$
 
@@ -320,7 +329,7 @@ $$
 In any _in vivo_ experiment, this will be confounded by time-dependent autofluoresence. In our setup, we have multiple values for $\lambda_{\textrm{exc}}$ as well. There is flexibility in choosing $t_0$ as well. 
 :::
 
-#### Blooming and notch filters
+## Blooming and notch filters
 
 Large power incident at any particular camera pixel can saturate that pixel, and also cause a spill-over effect at neighboring pixels referred to as blooming. 
 
@@ -345,15 +354,13 @@ $${#eq-observation}
 - $h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)$ : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time
 - $a(i,t)$ is multiplied by a decay term $d(i,t)$ associated with bleaching. $d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)$
 
-## Autofluorescence
-
-Autofluorescence has a spectrum @autofluorescencepectra, and it varies with time due to metabolic activity. NADH and FAD are molecules that fluoresce in the 400 nm - 700 nm range, see measurements in aqueous solutions in @islam2013ph.
-
 ## Experiment proposals
 
-1. Control experiment with dead sensor (i.e. activity independent measurement of fluorescence from the sensor)
-2. Control experiment with sensor with some form of triggered activity (stimulation/reward etc)
-3. Hemodynamics measurement @zhang2022spectral. 
+(Under development)
+
+1. Dead sensor experiment: Fluorescence would be independent of neuron activity. Autofluoresence and hemodynamics would be present. Fluctuation in indicator signal could be attributed to motion, hemodynamics, bleaching. Utility: validation of $F_0$ estimation, bleaching correction, motion correction.  
+2. Triggered activity experiment: Activity could be treated as known. Activity-dependent hemodynamic effects could also be considered as known, and used to validate hemodynamic fit.
+3. Direct blood volume measurements as in @zhang2022spectral.
    - EYFP expressed in primary somatosensory cortex (using AAV) of the forelimb region.
-   - Intravenously administered Rhodamine B for cerebral blood volume measurements.
-   - Electrical stimulation of the contralateral forepaw
+   - Intravenously administered Rhodamine B for CBV measurements.
+   - Electrical stimulation of the contralateral forepaw to trigger activity.
