@@ -2,18 +2,18 @@ import numpy as np
 import pandas as pd
 import toml
 from scipy import signal
-from scipy.ndimage import uniform_filter1d
+from scipy.ndimage import convolve, uniform_filter1d
 from dysts.flows import Lorenz
 from sourcesep.utils.config import load_config
-from sourcesep.utils.compute import lowpass
+from sourcesep.utils.compute import lowpass, softplus, custom_sigmoid
 
 
 class SimData():
-    def __init__(self, T=None, cfg_path=None):
+    def __init__(self, n_samples=None, cfg_path=None):
         """Class to generate samples for the simulation
 
         Args:
-            T (int): Number of samples in time
+            n_samples (int): Number of samples in time
             cfg_path (Path or str): config for simulation parameters
         """
         self.cfg = toml.load(cfg_path)
@@ -21,26 +21,28 @@ class SimData():
         self.J = len(self.cfg['laser'])            # Number of excitation lasers (input channels)
         self.L = self.cfg['sensor']['n_channels']  # Number of sensor pixels (output channels)
         self.I = len(self.cfg['indicator'])        # Number of indicators
-        self.T = T                                 # Number of samples --> TODO: rename?
+        self.n_samples = n_samples                 # Duration of signal in seconds
 
         self.set_arrays()                          # set time and wavelength arrays
 
-        self.E = None
-        self.W = None
-        self.S = None
+        self.E = None   # spectra
+        self.W = None   # relative excitation efficiency of different lasers for each indicator
+        self.S = None   
+        self.X = None
         self.notches = None
-        self.Mu_ox = None
-        self.Mu_dox = None
+        self.Mu_HbO = None
+        self.Mu_HbR = None
+        self.notch = None
 
-        self.A_model = Lorenz()                    # Activity model
         self.paths = load_config(dataset_key='all')# Paths for data files
         self.rng = np.random.default_rng()
+
 
     def set_arrays(self):
         # time stamps
         self.T_arr = np.linspace(0,
-                                 (self.T-1) / self.cfg['sensor']['sampling_freq_Hz'],
-                                 self.T)
+                                 (self.n_samples-1) / self.cfg['sensor']['sampling_freq_Hz'],
+                                 self.n_samples)
 
         # wavelengths measured
         self.L_arr = np.linspace(self.cfg['sensor']['lambda_min_nm'],
@@ -62,41 +64,47 @@ class SimData():
                     df.rename(columns=dict(zip(df.columns, ['wavelength', 'exc', 'em', '2p'])), inplace=True)
                     df['em'] = df['em'].fillna(0)
                     S.append(np.interp(x=self.L_arr, xp=df['wavelength'], fp=df['em']))
-                else:
-                    # Implement synthetic spectrum
-                    pass
+
             S = np.vstack(S)
             assert S.shape == (self.I, self.L), 'check spectra shape'
             self.S = S
 
         return self.S
     
+    def get_X(self):
+        """Populates self.Xex and self.Xem with pathlengths from Zhang et al. 2022
+        """
+        if self.X is None:
+            df = pd.read_csv(self.paths['spectra']/self.cfg['sensor']['pathlength_path'])
+            df.columns = ['wavelength', 'Xex', 'Xem']
+            self.X = np.interp(x=self.L_arr, xp=df['wavelength'], fp=df['em'])
+
+        return self.X
+    
+    
     def get_notches(self):
         """Populates self.notches with the effective transmission coefficient over all 
         notch filters
-        TODO: Create notch config and move parameters to config file
+
         """
+        
+        if self.notch is None:
+            ncfg = self.cfg['notch']
+            self.notch = np.ones((self.L,))
+            if (len(ncfg.keys()) > 0):
+                notch_dict = {}
+                for key in ncfg.keys():
+                    lam = ncfg[key]['block_freq_nm']
+                    df = pd.read_excel(self.paths['spectra'] / f'Semrock_{lam}nm_notch.xlsx', skiprows=13)  # Skip the first 10 rows if they contain headers or metadata
+                    df.columns = ['wavelength', 'trans']
+                    df_interp = pd.DataFrame({'wavelength': self.L_arr})
+                    df_interp['trans'] = np.interp(self.L_arr, df['wavelength'], df['trans'])
+                    notch_dict[key] = df_interp
 
-        if self.notches is None:
-            df_list = []
-            for lam in [473, 514, 561]:
-                df = pd.read_excel(self.paths['spectra'] / f'Semrock_{lam}nm_notch.xlsx', skiprows=13)  # Skip the first 10 rows if they contain headers or metadata
-                df.columns = ['wavelength', 'trans']
-                df_list.append(df)
+                for key in notch_dict:
+                    self.notch = self.notch * notch_dict[key]['trans'].values
 
-            assert np.all(df_list[0]['wavelength'].values == df_list[1]['wavelength'].values)
-            assert np.all(df_list[0]['wavelength'].values == df_list[2]['wavelength'].values)
-
-            # transmission of each notch should be multiplied for overall transmission
-            ideal_trans = df_list[0]['trans'] * df_list[1]['trans'] * df_list[2]['trans']
-            wavelength = df_list[0]['wavelength'].values
-
-            conv_window = 15 # in nm
-            lam_sampling_rate = np.mean(np.diff(wavelength))
-            df = pd.DataFrame({'wavelength': wavelength, 'ideal_trans': ideal_trans})
-            df['eff_trans'] = uniform_filter1d(df['ideal_trans'], int(conv_window / lam_sampling_rate))
-            self.notches = np.interp(self.L_arr, df['wavelength'], df['eff_trans'])
-        return self.notches
+        return self.notch
 
     def get_W(self):
         """Populates self.W with the excitation efficiency
@@ -145,7 +153,7 @@ class SimData():
         return self.E
 
     def get_Mu(self):
-        if (self.Mu_ox is None) or (self.Mu_dox is None):
+        if (self.Mu_HbO is None) or (self.Mu_HbR is None):
             df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['spectrum_path'])
             self.eps_ox = np.interp(self.L_arr, df['wavelength'], df['Hb02 (cm-1/M)'])
             self.eps_dox = np.interp(self.L_arr, df['wavelength'], df['Hb (cm-1/M)']) # cm-1 g-1
@@ -156,123 +164,191 @@ class SimData():
             #self.pathlength = np.interp(x=self.L_arr, xp=df['Wavelength (nm)'], fp=df['Estimated average pathlength (cm)'])
             self.pathlength = self.cfg['hemodynamics']['pathlength']
 
-            self.Mu_dox = self.blood_concentration * (self.pathlength * self.eps_dox) / self.MHg
-            self.Mu_ox = self.blood_concentration * (self.pathlength * self.eps_ox) / self.MHg
+            self.Mu_HbR = self.blood_concentration * (self.pathlength * self.eps_dox) / self.MHg
+            self.Mu_HbO = self.blood_concentration * (self.pathlength * self.eps_ox) / self.MHg
 
-        return self.Mu_ox, self.Mu_dox
+        return self.Mu_HbO, self.Mu_HbR
 
-    def gen_A_slow(self, how='attractor'):
-        """Generates slow component of the activity signal. 
+    @staticmethod
+    def _dyn_slow(n_samples, sampling_interval, lowpass_thr_Hz, 
+                  bottom, top, beta, rng=None):
+        """_summary_
 
         Args:
-            how (str, optional): 'attractor' or 'random_lowpass'
+            n_samples (int): _description_
+            sampling_interval (float) 
+            lowpass_thr_Hz (float)
+            bottom (float): roughly the min value of the output
+            top (float): roughly the max value of the output
+            beta (float): controls how saturated the output is
+            rng: Defaults to None.
+
+        Returns:
+            np.array: slowly changing signal
+        """
+        
+        if rng is None:
+            rng = np.random.default_rng()
+
+        x = lowpass(xt=rng.standard_normal(size=(n_samples,)),
+                     sampling_interval=sampling_interval,
+                     pass_below=lowpass_thr_Hz,
+                     axis=0)
+
+        x = x - np.mean(x)
+        x = x / np.std(x)
+
+        x = custom_sigmoid(x, bottom=bottom, top=top, beta=beta)
+        return x
+
+    def gen_f_bound_slow(self):
+        """Generates slow component of the activity signal. 
         """
         sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
 
-        if how=='attractor':
-            A = []
-            T_conv = int(0.2*self.T)
-            p = self.cfg['sensor']['sampling_freq_Hz'] * 1/self.cfg['activity']['dominant_freq_Hz']
-            p = p*2 # for the lorenz attractor, the period is roughly around both orbits.
-            p = self.rng.integers(low=int(0.8*p), high=int(1.2*p))
-            assert p > 1, 'Check number of points per period'
-            for i in range(self.I % self.A_model.embedding_dimension + 1):
-                self.A_model.ic = self.rng.integers(low=-100, high=100)*self.rng.random(3)
-                A.append(self.A_model.make_trajectory(self.T + T_conv,
-                                                    pts_per_period=p,
-                                                    resample=True,
-                                                    standardize=True))
+        icfg = self.cfg['indicator']
+        sampling_freq_Hz = self.cfg['sensor']['sampling_freq_Hz']
+        sampling_interval = 1/sampling_freq_Hz
 
-            A = np.hstack(A)
-            ind = np.arange(A.shape[1])
-            np.random.shuffle(ind) # inplace op. to shuffle scross channels
-            A = A[T_conv:,ind[:self.I]]
+        A_slow = np.zeros((self.n_samples, self.I))
+        for i, key in enumerate(icfg.keys()):
+            lowpass_thr_Hz = icfg[key]['modulator_lowpass_f_Hz']
+            min_amplitude = 0.0
+            max_amplitude = icfg[key]['modulator_slow_amplitude']
+            assert icfg[key]['modulator_slow_amplitude'] + \
+                icfg[key]['modulator_fast_amplitude'] <= 1.0, \
+                f'slow + fast amplitude for {key} should be <= 1.0'
 
-        elif how=='random_lowpass':
-            A = lowpass(xt=self.rng.standard_normal(size=(self.T,self.I)),
-                       sampling_interval=sampling_interval,
-                       pass_below=self.cfg['activity']['threshold_freq_Hz'],
-                       axis=0)
-        assert A.shape == (self.T, self.I), 'check generated shape of A'
-        return A
+            A_slow[:, i] = self._dyn_slow(n_samples=self.n_samples,
+                                          sampling_interval=sampling_interval,
+                                          lowpass_thr_Hz=lowpass_thr_Hz,
+                                          bottom=min_amplitude,
+                                          top=max_amplitude,
+                                          beta=1.0,
+                                          rng=self.rng)
 
-    def gen_A_fast(self):
+        assert A_slow.shape == (self.n_samples, self.I), \
+            'check generated shape of A_slow'
+        return A_slow
+
+    @staticmethod
+    def _dyn_fast(n_samples,
+                  spiking_freq_Hz,
+                  sampling_interval,
+                  decay_const_s,
+                  spike_min=0.64,
+                  spike_max=0.8,
+                  rng=None):
+        if rng is None:
+            rng = np.random.default_rng()
+        A_fast = np.zeros((n_samples,))
+        x_unif = rng.random(n_samples)
+        p_spike = spiking_freq_Hz * sampling_interval
+        # replace ones with randomly sampled values uniformly between 0.64-0.8
+        A_fast = np.where(x_unif <= p_spike, rng.uniform(
+            spike_min, spike_max, size=(n_samples,)), A_fast)
+
+        # convolve with exponential decay kernel
+        t_window = np.arange(0, decay_const_s*10, sampling_interval)
+        kernel = 1 * np.exp(-(1/decay_const_s)*t_window)
+        A_fast = signal.convolve(A_fast, kernel, mode='same')
+        return A_fast
+
+    def gen_f_bound_fast(self):
         """Generates fast component of the activity signal
         """
 
         icfg = self.cfg['indicator']
-        sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
-        A_fast = np.zeros((self.T,self.I))
-        for i,k in enumerate(icfg.keys()):
+        sampling_freq_Hz = self.cfg['sensor']['sampling_freq_Hz']
+        sampling_interval = 1/sampling_freq_Hz
+
+        A_fast = np.zeros((self.n_samples,self.I))
+        for i,key in enumerate(icfg.keys()):
             # instantiate spikes
-            x_unif = self.rng.random(self.T)
-            p_spike = icfg[k]['modulator_spiking_f_Hz'] * sampling_interval
-            A_fast[x_unif <= p_spike, i] = 1
-
-            # convolve with exponential decay kernel
-            t_window = np.arange(0, icfg[k]['exp_decay_const_s']*10, sampling_interval)
-            kernel = 1 * np.exp(-(1/icfg[k]['exp_decay_const_s'])*t_window)
-            A_fast[:,i] = signal.convolve(A_fast[:,i], kernel, mode='same')
-
+            spiking_freq_Hz = icfg[key]['modulator_spiking_f_Hz']
+            spike_max = icfg[key]['modulator_fast_amplitude']
+            decay_const_s = icfg[key]['exp_decay_const_s']
+            A_fast[:,i] = self._dyn_fast(n_samples=self.n_samples,
+                    spiking_freq_Hz=spiking_freq_Hz,
+                    sampling_interval=sampling_interval,
+                    decay_const_s=decay_const_s,
+                    spike_min = 0.8*spike_max,
+                    spike_max = spike_max,
+                    rng=self.rng)
         return A_fast
     
-    def bleach(self, A):
-        """Bleaches the activity signal
-        """
-        # bleaching
+    def fluorescing_population(self):
+        """Fluorescing population at each time decays due to bleaching. 
         
+        Args:
+        """
+        Ct = np.zeros((self.I,self.n_samples))
         icfg = self.cfg['indicator']
+        
         for i,k in enumerate(icfg.keys()):
-            bcfg = icfg[k]['bleaching']
+            bcfg = icfg[k]['bleaching']    
             if bcfg['bleach']:
-                A[:, i] = (bcfg['B_slow']*np.exp(-self.T_arr/bcfg['tau_slow']) \
-                    + bcfg['B_fast']*np.exp(-self.T_arr/bcfg['tau_fast']) \
-                    + bcfg['B_const'])*A[:, i]
-        return A
+                Ct[i,:] = (bcfg['C0_slow']*np.exp(-self.T_arr/bcfg['tau_slow_s']) \
+                    + bcfg['C0_fast']*np.exp(-self.T_arr/bcfg['tau_fast_s']) \
+                    + bcfg['C0_const'])
+        return Ct
 
     def gen_H(self):
-        """Generate hemodynamic activity
+        """Generate hemodynamic activity signal.
+        
+        Args: 
+
+        Returns:
+            HbO (np.array): with shape (n_samples,)
+            HbR (np.array): with shape (n_samples,)
+            HbT (np.array): with shape (n_samples,)
+            f_HbO (np.array): with shape (n_samples,)
         """
-        # Should be always +ve
         hdyn = self.cfg['hemodynamics']
         cfg = self.cfg['amplitude']
         sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
 
-        H_total = lowpass(xt=self.rng.standard_normal(size=(self.T,)),
-                       sampling_interval=sampling_interval,
-                       pass_below=hdyn['lowpass_thr_Hz'],
-                       axis=0)
+        HbT = self._dyn_slow(n_samples=self.n_samples,
+                             sampling_interval=sampling_interval,
+                             lowpass_thr_Hz=0.2,
+                             bottom=hdyn['HbT_min'],
+                             top=hdyn['HbT_max'],
+                             beta=1.0,
+                             rng=self.rng)
+
+        f_HbO = self._dyn_slow(n_samples=self.n_samples,
+                               sampling_interval=sampling_interval,
+                               lowpass_thr_Hz=hdyn['lowpass_thr_Hz'],
+                               bottom=hdyn['HbT_min'],
+                               top=hdyn['HbT_max'],
+                               beta=1.0,
+                               rng=self.rng)
+
+        HbO = f_HbO*HbT
+        HbR = (1-f_HbO)*HbT
+
+        assert HbO.shape == (self.n_samples,), 'check HbO shape'
+        assert HbR.shape == (self.n_samples,), 'check HbR shape'
+        return HbO, HbR, HbT, f_HbO
+
+    def gen_P(self, mean, var):
+        """Simulate laser power as i.i.d Gaussian distributed samples
         
-        # rescaling H_total
-        H_total = H_total - np.min(H_total)
-        H_total = H_total / np.max(H_total)
-        H_total = cfg['H_relative_range']*(H_total - np.mean(H_total)) + 1.0
+        Returns:
+            P (np.array): with shape (n_samples, J)"""
+        return self.rng.normal(loc=mean, scale=var**0.5, size=(self.n_samples,self.J))
 
-        f = lowpass(xt=self.rng.standard_normal(size=(self.T,)),
-                       sampling_interval=sampling_interval,
-                       pass_below=hdyn['lowpass_thr_Hz'])
-
-        # rescaling f
-        f = f - np.min(f)
-        f = f / np.max(f)
-        f = cfg['f_range'] * (f - np.mean(f)) + 0.7
-
-        H_ox = f*H_total
-        H_dox = (1-f)*H_total
-
-        assert H_ox.shape == (self.T,), 'check H_ox shape'
-        assert H_dox.shape == (self.T,), 'check H_dox shape'
-        return H_ox, H_dox, H_total, f
-
-    def gen_N(self):
-        return self.rng.standard_normal(size=(self.T,self.J))
-
-    def gen_M(self):
-        return self.rng.standard_normal(size=(self.T,))
+    def gen_M(self): 
+        """Simulate motion artifacts as i.i.d Gaussian distributed samples
+        
+        Returns:
+            M (np.array): with shape (n_samples, J)"""
+        return self.rng.standard_normal(size=(self.n_samples,))
 
     def gen_B(self):
         return self.rng.random((self.J,self.L))
     
+    @staticmethod
     def arr_lookup(arr, x):
         return np.argmin(np.abs(arr -x))
 
@@ -317,62 +393,76 @@ class SimData():
     def compose(self):
         amp = self.cfg['amplitude']
 
-        # These are all constants:
+        # Read in known constants:
         S = self.get_S()
         W = self.get_W()
         E = self.get_E()
+        Mu_HbO, Mu_HbR = self.get_Mu()
         notches = self.get_notches()
-        Mu_ox, Mu_dox = self.get_Mu()
+        
+        # simulate bound fraction of indicator
+        f_bound = self.gen_f_bound_slow() + self.gen_f_bound_fast()
+        f_bound = 1.0 - softplus(1.0 - f_bound, beta=40, thr=1.0) # ensures f_bound in [0,1]
 
-        A = amp['A_slow'] * self.gen_A_slow(how='random_lowpass') + amp['A_fast'] * self.gen_A_fast() + 1.0
-        A = self.bleach(A)
-        #AS = np.einsum('ti,il->til', A, S)
-        #ASW = np.einsum('til,ij->tjl', AS, W)
-        # memory efficient alternative
-        ASWE = np.einsum('ti,il,ij->tjl', A, S, W) \
-              + np.einsum('td,djl -> tjl', np.ones((self.T,1)), E[np.newaxis,...])
+        # simlulate laser power
+        P = self.gen_P(mean = amp['P_mean'], var = amp['P_var'])
 
-        # 2nd term
-        H_ox, H_dox, H_total, f = self.gen_H()
-        HD = np.einsum('td,dl -> tl', H_ox[..., np.newaxis], Mu_ox[np.newaxis, ...]) \
-            + np.einsum('td,dl -> tl', H_dox[..., np.newaxis], Mu_dox[np.newaxis, ...])
-        HD = np.einsum('j,tl -> tjl', np.ones((self.J,)), np.exp(-HD))
+        # multiply by known spectra, indicator concentration, and laser power
+        fSW = np.einsum('ti,il,ij->tjl', f_bound, S, W)
+        fSWP = np.einsum('tjl,tj->tjl', fSW, P)
 
-        M = amp['M_mean'] + (amp['M_var'])**0.5 * self.gen_M()  # multiplicative, with specified mean and variance
-        M = clip(M, threshold=0.1)                              # fix to ensure M is positive
+        # hemodynamics absorption
+        HbO, HbR, HbT, f_HbO = self.gen_H()
+        H = np.einsum('td,dl -> tl', HbO[..., np.newaxis], Mu_HbO[np.newaxis, ...]) \
+            + np.einsum('td,dl -> tl', HbR[..., np.newaxis], Mu_HbR[np.newaxis, ...])
+        H = np.einsum('j,tl -> tjl', np.ones((self.J,)), np.exp(-H))
+
+        # M = amp['M_mean'] + (amp['M_var'])**0.5 * self.gen_M()  # multiplicative, with specified mean and variance
+        # M = clip(M, threshold=0.1)                              # fix to ensure M is positive
+        
         B = amp['B'] * self.gen_B()
         HDM = np.einsum('tjl,t -> tjl', HD, M)
-        B_ = np.einsum('t,jl -> tjl', np.ones((self.T,)), B)
+        B_ = np.einsum('t,jl -> tjl', np.ones((self.n_samples,)), B)
         H = HDM + B_
 
         # 3rd term
         N = amp['N_mean'] + (amp['N_var'])**0.5 * self.gen_N()   # multiplicative, with specified mean and variance
         N = clip(N, threshold=0.1)                               # fix to ensure N is positive
         N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
-        O = np.einsum('tjl,tjl -> tjl', ASWE, H)
+        O = np.einsum('tjl,tjl -> tjl', fSWP, H)
         O = np.einsum('tjl,tjl -> tjl', O, N_)
 
-        O = np.einsum('tjl,l -> tjl', O, notches)           # apply notch filter <-- TODO: handle this gracefully if notches aren't used
+        O = np.einsum('tjl,l -> tjl', O, notches)                # notch filter attenuates each wavelength
+
+        # image formation; K is the kernel
+        K = np.ones_like(np.arange(0,self.cfg['image']['window_nm'], np.mean(np.diff(self.L_arr))))
+        K = K / np.sum(K)
+        K = K.reshape(1,1,-1)
+        O = convolve(O, K, mode='reflect')
 
         dat = dict(O=O,
-                   A=A,
+                   f_bound=f_bound,
                    N=N,
                    B=B,
-                   M=M,
-                   H_ox=H_ox,
-                   H_dox=H_dox,
+                   HbO=HbO,
+                   HbR=HbR,
                    S=S,
                    W=W,
                    E=E,
-                   Mu_ox=Mu_ox,
-                   Mu_dox=Mu_dox)
+                   Mu_HbO=Mu_HbO,
+                   Mu_HbR=Mu_HbR)
         return dat
+
+    def make_signal():
+        # f_b(t)S_b(λ)w_b(j)C(t)P(j,t)+(1−fb(t))S f(λ)wf(j)C(t)P(j,t)
+        pass
+        return
 
 
 def clip(x, threshold=0.0):
     """Clip values below threshold to threshold
     """
-    x[x<threshold] = threshold
+    x[x < threshold] = threshold
     return x
 
 
@@ -380,5 +470,6 @@ if __name__ == '__main__':
     from sourcesep.sim import SimData
     from sourcesep.utils.config import load_config
     paths = load_config(dataset_key='all')
-    sim = SimData(T=3600, cfg_path=paths['root'] / "sim_config.toml")
-    sim.compose_torch()
+    sim = SimData(T=500, cfg_path=paths['root'] / "sim_config.toml")
+    sim.get_W()
+    #sim.compose_torch()
