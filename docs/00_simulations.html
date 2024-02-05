@@ -318,14 +318,14 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 </section>
 <section id="isosbestic-control" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="isosbestic-control"><span class="header-section-number">1.3</span> Isosbestic control</h2>
-<p>Isosbestic control signal <span class="math inline">I</span> refers to a signal that is independent of the ligand bound fraction <span class="math inline">f</span>. The same noise sources that affect the indicator signal also affect the isosbestic control signal. Removing the component shared with <span class="math inline">I</span> is common strategy to denoise fiber photometry data, <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>.</p>
+<p>Isosbestic control signal <span class="math inline">I</span> refers to a signal that is independent of the ligand bound fraction <span class="math inline">f</span>. Any variation in <span class="math inline">I</span> can be viewed as noise, and removing components of the signal that are related to <span class="math inline">I</span> would help denoise fiber photometry data, <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>.</p>
 <p>Let <span class="math inline">\lambda^{\textrm{exc}}</span> refer to a particular excitation wavelength. From indicator characterization experiments, we have access to the following:</p>
 <ol type="1">
 <li>Excitation spectrum for the bound state, <span class="math inline">w_\textrm{b}(\lambda^{\textrm{exc}})</span>.</li>
-<li>Excitation spectrum for the free state, <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, relative to the <strong>bound</strong> state spectrum.</li>
+<li>Excitation spectrum for the free state, <span class="math inline">w_\textrm{f}(\lambda^{\textrm{exc}})</span>, <strong>relative to</strong> <span class="math inline">w_\textrm{b}(\lambda^{\textrm{exc}})</span>.</li>
 <li>Bound and free states emission spectra <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span>, normalized so that <span class="math inline">\int{S_\textrm{f}(\lambda) d\lambda} = 1</span> and <span class="math inline">\int{S_\textrm{b}(\lambda) d\lambda} = 1</span>.</li>
 </ol>
-<p>The emission at two emission wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span> while invoked by exciting the sample at <span class="math inline">\lambda_{1}^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_{2}^{\textrm{{exc}}}</span> (each excitation wavelength corresponds to a different laser <span class="math inline">j</span>):</p>
+<p>Consider emission at two distinct wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span> invoked by exciting the sample at <span class="math inline">\lambda_{1}^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_{2}^{\textrm{{exc}}}</span> respectively. Each excitation wavelength corresponds to a different laser <span class="math inline">j</span>:</p>
 <p>Following <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>,</p>
 <p><span class="math display">
 \begin{align*}
@@ -356,11 +356,10 @@ x(t)+y(t)   &amp;= 1 \\
 <p><span id="eq-isosbestic-linear-combo"><span class="math display">
 mF_{1}(\lambda)+nF_{2}(\lambda')    = x(t)(a_{1}m+a_{2}n)+y(t)(b_{1}m+b_{2}n)
 \tag{1.8}</span></span></p>
-<p>This would be independent of <span class="math inline">f(t)</span> if and only if:</p>
+<p>This would be independent of <span class="math inline">f(t)</span> if and only if <span class="math inline">m</span>, <span class="math inline">n</span> are not both zero, and:</p>
 <p><span class="math display">
 \begin{align*}
 a_{1}m+a_{2}n   &amp;= b_{1}m+b_{2}n \\
-m+n &amp;\neq 0 \\
 \end{align*}
 </span></p>
 <p>Then the condition for such a linear combination to be considered as the isosbestic control signal is:</p>
@@ -379,15 +378,19 @@ Special cases to obtain an isosbestic control signal
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Experimental setups may present various constraints. Here we consider two such special cases.</p>
+<p>Experimental setups may present various constraints. Here we consider three such special cases.</p>
 <p><strong>Case I</strong></p>
-<p>There is one excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span> and emission spectra of the bound and free states are the same, i.e.&nbsp;<span class="math inline">S_{\textrm{f}}=S_{\textrm{b}}=S</span>. Then based on <a href="#eq-isosbestic-linear-combo">Equation&nbsp;<span>1.8</span></a> and <a href="#eq-isosbestic-coeff-ratio">Equation&nbsp;<span>1.9</span></a>:</p>
+<p>There are two excitation lasers, <span class="math inline">\lambda_1^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_2^{\textrm{{exc}}}</span>. Assuming that emission spectra of the bound and <strong>free</strong> states are the same, i.e.&nbsp;<span class="math inline">S_{\textrm{f}}=S_{\textrm{b}}=S</span>. Then based on <a href="#eq-isosbestic-linear-combo">Equation&nbsp;<span>1.8</span></a> and <a href="#eq-isosbestic-coeff-ratio">Equation&nbsp;<span>1.9</span></a>:</p>
 <p><span class="math display">
-\frac{m}{n} =\frac{S(\lambda')w_{\textrm{f}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})-S(\lambda')w_{\textrm{b}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})}{S(\lambda)w_{\textrm{b}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})-S(\lambda)w_{\textrm{f}}(\lambda^{\textrm{{exc}}})P(\lambda^{\textrm{{exc}}})} = -\frac{S(\lambda')}{S(\lambda)}
+\frac{m}{n} = \frac{S(\lambda')P(\lambda_{2}^{\textrm{{exc}}})[w_{\textrm{f}}(\lambda_{2}^{\textrm{{exc}}})-w_{\textrm{b}}(\lambda_{2}^{\textrm{{exc}}})]}{S(\lambda)P(\lambda_{1}^{\textrm{{exc}}})[w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})-w_{\textrm{f}}(\lambda_{1}^{\textrm{{exc}}})]}
 </span></p>
+<p>Choosing <span class="math inline">m</span> and <span class="math inline">n</span> as exactly the numerator and denominator and defining <span class="math inline">\kappa = S(\lambda)P(\lambda_{1}^{\textrm{{exc}}})S(\lambda')P(\lambda_{2}^{\textrm{{exc}}})</span>: <span class="math display">mF_{1}(\lambda)+nF_{2}(\lambda') = \kappa[w_{\textrm{b}}(\lambda_{1}^{\textrm{exc}})w_{\textrm{f}}(\lambda_{2}^{\textrm{exc}})-w_{\textrm{b}}(\lambda_{2}^{\textrm{exc}})w_{\textrm{f}}(\lambda_{1}^{\textrm{exc}})]</span></p>
+<p>This is a non-zero signal that is independent of <span class="math inline">f(t)</span>, which can provide information on noise factors for such experiments.</p>
 <p><strong>Case II</strong></p>
-<p>There is a single excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span>, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typicaly there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties.</p>
+<p>There is a single excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span>, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typically there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties.</p>
 <p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> suggests that for <span class="math inline">F</span> to be independent of <span class="math inline">f</span>, we need <span class="math inline">w_\textrm{b}(\lambda^{\textrm{{exc}}}) = w_\textrm{f}(\lambda^{\textrm{{exc}}})</span>, and for excitation by this laser, any emission wavelength <span class="math inline">\lambda</span> can serve as the isosbestic control.</p>
+<p><strong>Case III</strong></p>
+<p>If there is just a single excitation laser, signals <span class="math inline">F_1(\lambda)</span> and <span class="math inline">F_2(\lambda')</span> are simply scalar multiples of one another. Under the assumption <span class="math inline">S_\textrm{f}=S_\textrm{b}=S</span> there is no additional information to be gained from the second measurement under our model.</p>
 </div>
 </div>
 </div>
@@ -402,21 +405,21 @@ Special cases to obtain an isosbestic control signal
 <li><span class="math inline">\varepsilon</span>: extinction coefficient (in <span class="math inline">{\textrm{cm}}^{-1}{\textrm{mole}}^{-1}{L}</span>), see <span class="citation" data-cites="hemoglobinspectra">Prahl (<a href="references.html#ref-hemoglobinspectra" role="doc-biblioref">1998</a>)</span>. This is a function of <span class="math inline">\lambda</span></li>
 <li><span class="math inline">h</span>: concentration (100 to 200 <span class="math inline">gL^{-1}</span> for Hemoglobin in brain, is a function of time, and linked to brain region-specific neuron activity</li>
 <li><span class="math inline">l</span>: effective cuvette length in the Beer-Lambert law. We set this to 1 <span class="math inline">\textrm{cm}</span>, and assume no dependence on <span class="math inline">\lambda</span> here.</li>
-<li><span class="math inline">M_{\textrm{Hg}}</span>: molar mass of Hemoglobin = 64,500 <span class="math inline">g\textrm{mole}^{-1}</span></li>
-<li><span class="math inline">A</span>: absorbance, calculated as per Beer-Lambert’s law <span class="math inline">A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hg}}}</span></li>
-<li>Let <span class="math inline">f(t)</span> be fraction of hemoglobin in the oxygenated state. Define <span class="math inline">h_{\textrm{oxy}}</span>, <span class="math inline">h_{\textrm{deoxy}}</span>, <span class="math inline">\mu_{\textrm{oxy}}</span> and <span class="math inline">\mu_{\textrm{deoxy}}</span> as:</li>
+<li><span class="math inline">M_{\textrm{Hb}}</span>: molar mass of Hemoglobin = 64,500 <span class="math inline">g\textrm{mole}^{-1}</span></li>
+<li><span class="math inline">A</span>: absorbance, calculated as per Beer-Lambert’s law <span class="math inline">A = \frac{\varepsilon \times h \times {l}}{M_{\textrm{Hb}}}</span></li>
+<li>Let <span class="math inline">f(t)</span> be fraction of hemoglobin in the oxygenated state. Define <span class="math inline">h_{\textrm{HbO}}</span>, <span class="math inline">h_{\textrm{HbR}}</span>, <span class="math inline">\mu_{\textrm{HbO}}</span> and <span class="math inline">\mu_{\textrm{HbR}}</span> as:</li>
 </ul>
 <p><span class="math display">
 \begin{align*}
-h_\textrm{oxy}(t) &amp;= f(t)h_{\textrm{total}}(t) \\
-h_\textrm{deoxy}(t) &amp;= (1 - f(t))h_{\textrm{total}}(t) \\
-\mu_\textrm{oxy}(\lambda) &amp;= \tfrac{\varepsilon_{\textrm{oxy}}(\lambda)}{M_{\textrm{Hg}}} \\
-\mu_\textrm{deoxy}(\lambda) &amp;= \tfrac{\varepsilon_{\textrm{deoxy}}(\lambda)}{M_{\textrm{Hg}}}
+h_\textrm{HbO}(t) &amp;= f(t)h_{\textrm{HbT}}(t) \\
+h_\textrm{HbR}(t) &amp;= (1 - f(t))h_{\textrm{HbT}}(t) \\
+\mu_\textrm{HbO}(\lambda) &amp;= \tfrac{\varepsilon_{\textrm{HbO}}(\lambda)}{M_{\textrm{Hg}}} \\
+\mu_\textrm{HbR}(\lambda) &amp;= \tfrac{\varepsilon_{\textrm{HbR}}(\lambda)}{M_{\textrm{Hg}}}
 \end{align*}
 </span></p>
 <ul>
 <li>Replacing <span class="math inline">A</span> in the definition of absorbance: <span class="math inline">\frac{I}{I_o} = e^{-A}</span>: <span class="math display">
-I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{HbO}(\lambda)}h_{\textrm{HbO}}(t) + \mu_{\textrm{HbR}(\lambda)}h_{\textrm{HbR}}(t))}
 </span></li>
 </ul>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
@@ -450,9 +453,9 @@ Approach in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (
 </span></p>
 <p>Compared to notation in <a href="#sec-hemodynamics"><span>Section&nbsp;1.4</span></a>, here we use:</p>
 <ul>
-<li><span class="math inline">\xi_{{\textrm{HbO}}} \equiv \varepsilon_{\textrm{oxy}} / M_{\textrm{Hg}}</span>, <span class="math inline">\xi_{{\textrm{HbR}}} \equiv \varepsilon_{\textrm{deoxy}} / M_{\textrm{Hg}}</span></li>
+<li><span class="math inline">\xi_{{\textrm{HbO}}} \equiv \varepsilon_{\textrm{HbO}} / M_{\textrm{Hg}}</span>, <span class="math inline">\xi_{{\textrm{HbR}}} \equiv \varepsilon_{\textrm{HbR}} / M_{\textrm{Hg}}</span></li>
 <li><span class="math inline">\chi(\lambda) \equiv l</span> (previously assumed to be fixed (1 cm) for all <span class="math inline">\lambda</span>)</li>
-<li><span class="math inline">C_\textrm{HbO}(t) \equiv h_{\textrm{oxy}}(t)</span>, <span class="math inline">C_\textrm{HbR}(t) \equiv h_{\textrm{deoxy}}(t)</span>, <span class="math inline">C_\textrm{HbT}(t) \equiv h_{\textrm{total}}(t)</span></li>
+<li><span class="math inline">C_\textrm{HbO}(t) \equiv h_{\textrm{HbO}}(t)</span>, <span class="math inline">C_\textrm{HbR}(t) \equiv h_{\textrm{HbR}}(t)</span>, <span class="math inline">C_\textrm{HbT}(t) \equiv h_{\textrm{HbT}}(t)</span></li>
 </ul>
 <p>Consider that emission is measured at <span class="math inline">n</span> different wavelengths, indexed by <span class="math inline">i</span>. Define the following terms:</p>
 <p><span class="math display">
@@ -485,14 +488,14 @@ B_i    &amp;= \xi_{\textrm{HbR}}(\lambda_{\textrm{exc}})\chi(\lambda_{{\textrm{e
 <p><span id="eq-observation"><span class="math display">
 \begin{align}
 O(t,\lambda,j) &amp;= [ \left( \sum_{i \in \{\textrm{I},\textrm{AF}\}}{a(i,t) s(i,\lambda) w(i,j)} \right) H(t, \lambda) m(t) + b(\lambda,j) ] n(t,j) \\
-H(t, \lambda) &amp;= e^{-(\mu_{\textrm{oxy}(\lambda)}h_{\textrm{oxy}}(t) + \mu_{\textrm{deoxy}(\lambda)}h_{\textrm{deoxy}}(t))}
+H(t, \lambda) &amp;= e^{-(\mu_{\textrm{HbO}(\lambda)}h_{\textrm{HbO}}(t) + \mu_{\textrm{HbR}(\lambda)}h_{\textrm{HbR}}(t))}
 \end{align}
 \tag{1.10}</span></span></p>
 <ul>
 <li><span class="math inline">a(i,t)</span> for <span class="math inline">i \in \textrm{I}</span> has fast and slow components</li>
 <li><span class="math inline">a(t) = c\{f(t)s_\textrm{bound}(\lambda) + (1-f(t))s_\textrm{free}(\lambda)\}</span> : an indicator with concentration <span class="math inline">c</span> exists in two states (e.g.&nbsp;bright, dark or bound, free) that have their own emission spectra.</li>
 <li>Isosbestic point is the particular <span class="math inline">\lambda</span> where the two populations cannot be distinguished. This does not always exist for all indicators, but when it does exist it might be possible to use it for corrections related to Hemodynamics, see <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span></li>
-<li><span class="math inline">h_{\textrm{oxy}}(t), h_{\textrm{deoxy}}(t)</span> : Blood concentration of hemoglobin in oxygenated or deoxygenated states over time</li>
+<li><span class="math inline">h_{\textrm{HbO}}(t), h_{\textrm{HbR}}(t)</span> : Blood concentration of oxygenated and deoxygenated hemoglobin over time</li>
 <li><span class="math inline">a(i,t)</span> is multiplied by a decay term <span class="math inline">d(i,t)</span> associated with bleaching. <span class="math inline">d(i,t) = d_\textrm{fast}(i)e^{-\frac{t}{\tau_\textrm{fast}}} + d_\textrm{slow}(i)e^{-\frac{t}{\tau_\textrm{slow}}} + d_\textrm{constant}(i)</span></li>
 </ul>
 </section>
