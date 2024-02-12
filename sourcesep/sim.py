@@ -7,7 +7,6 @@ from dysts.flows import Lorenz
 from sourcesep.utils.config import load_config
 from sourcesep.utils.compute import lowpass, softplus, custom_sigmoid
 
-
 class SimData():
     def __init__(self, n_samples=None, cfg_path=None):
         """Class to generate samples for the simulation
@@ -29,7 +28,8 @@ class SimData():
         self.W = None   # relative excitation efficiency of different lasers for each indicator
         self.S = None   
         self.X = None
-        self.notches = None
+        self.S_autofl = None
+        self.W_autofl = None
         self.Mu_HbO = None
         self.Mu_HbR = None
         self.notch = None
@@ -49,6 +49,15 @@ class SimData():
                                  self.cfg['sensor']['lambda_max_nm'],
                                  self.cfg['sensor']['n_channels'])
         return
+
+    
+    def get_L_ind(self, lam):
+        """Find the index of the closest wavelength in the L_arr"""
+        return np.argmin(np.abs(self.L_arr-lam))
+
+    def get_S_names(self):
+        return np.array([k for k in self.cfg['indicator'].keys()])
+
 
     def get_S(self):
         """Populates self.S with the indicator spectra
@@ -71,6 +80,26 @@ class SimData():
 
         return self.S
     
+    def get_S_synthetic(self):
+        """Synthetic excitation and emission specspectra for bound and free to test simulation 
+
+        Returns:
+            S (dict): with keys 'bound_ex', 'free_ex', 'bound_em', 'free_em'
+        """
+        df = pd.read_csv(self.paths['spectra'] / 'EGFP.csv')
+        df.fillna(0, inplace=True)
+
+        S = {}
+        S['bound_ex'] = np.interp(x=self.L_arr, xp=df['wavelength'], fp=df['EGFP ex'])
+        S['bound_ex'] = S['bound_ex']/np.max(S['bound_ex'])
+        S['free_ex'] = np.exp(-(self.L_arr-400)**2/(2*(40**2))) / (np.sqrt(2*np.pi)*30)
+        S['free_ex'] = S['free_ex']/np.max(S['free_ex'])*0.3
+        S['bound_em'] = np.interp(x=self.L_arr, xp=df['wavelength'], fp=df['EGFP em'])
+        S['bound_em'] = S['bound_em']/np.max(S['bound_em'])
+        S['free_em'] = S['bound_em']
+        return S
+    
+    
     def get_X(self):
         """Populates self.Xex and self.Xem with pathlengths from Zhang et al. 2022
         """
@@ -87,7 +116,6 @@ class SimData():
         notch filters
 
         """
-        
         if self.notch is None:
             ncfg = self.cfg['notch']
             self.notch = np.ones((self.L,))
@@ -95,7 +123,8 @@ class SimData():
                 notch_dict = {}
                 for key in ncfg.keys():
                     lam = ncfg[key]['block_freq_nm']
-                    df = pd.read_excel(self.paths['spectra'] / f'Semrock_{lam}nm_notch.xlsx', skiprows=13)  # Skip the first 10 rows if they contain headers or metadata
+                    # Skip the first 10 rows if they contain headers or metadata
+                    df = pd.read_excel(self.paths['spectra'] / f'Semrock_{lam}nm_notch.xlsx', skiprows=13)  
                     df.columns = ['wavelength', 'trans']
                     df_interp = pd.DataFrame({'wavelength': self.L_arr})
                     df_interp['trans'] = np.interp(self.L_arr, df['wavelength'], df['trans'])
@@ -155,19 +184,63 @@ class SimData():
     def get_Mu(self):
         if (self.Mu_HbO is None) or (self.Mu_HbR is None):
             df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['spectrum_path'])
-            self.eps_ox = np.interp(self.L_arr, df['wavelength'], df['Hb02 (cm-1/M)'])
-            self.eps_dox = np.interp(self.L_arr, df['wavelength'], df['Hb (cm-1/M)']) # cm-1 g-1
+            self.eps_HbO = np.interp(self.L_arr, df['wavelength'], df['Hb02 (cm-1/M)'])
+            self.eps_HbR = np.interp(self.L_arr, df['wavelength'], df['Hb (cm-1/M)']) # cm-1 g-1
             self.MHg = 64500 # Hemoglobin grams per mole
             self.blood_concentration = 150 # grams per Liter
+            self.blood_concentration_M = self.blood_concentration/self.MHg # mol per Liter
 
             #df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['pathlength_path'])
             #self.pathlength = np.interp(x=self.L_arr, xp=df['Wavelength (nm)'], fp=df['Estimated average pathlength (cm)'])
             self.pathlength = self.cfg['hemodynamics']['pathlength']
 
-            self.Mu_HbR = self.blood_concentration * (self.pathlength * self.eps_dox) / self.MHg
-            self.Mu_HbO = self.blood_concentration * (self.pathlength * self.eps_ox) / self.MHg
-
+            self.Mu_HbO = self.blood_concentration_M * (self.pathlength * self.eps_HbO)
+            self.Mu_HbR = self.blood_concentration_M * (self.pathlength * self.eps_HbR)
         return self.Mu_HbO, self.Mu_HbR
+    
+    def get_S_autofl(self):
+        if self.S_autofl is None:
+            acfg = self.cfg['autofl']
+            n_autofl = len(acfg.keys())
+            S_autofl = []
+            for i, k in enumerate(acfg.keys()):
+                df = pd.read_csv(self.paths['spectra'] / acfg[k]['spectrum_path'])
+                df.rename(columns=dict(zip(df.columns, ['wavelength', 'exc', 'em', '2p'])), inplace=True)
+                df['em'] = df['em'].fillna(0)
+                df['em'] = df['em']/100 # autofluoresence spectra are in %
+                S_autofl.append(np.interp(x=self.L_arr, xp=df['wavelength'], fp=df['em']))
+
+            S_autofl = np.vstack(S_autofl)
+            assert S_autofl.shape == (n_autofl, self.L), 'check spectra shape'
+            self.S_autofl = S_autofl
+
+        return self.S_autofl
+
+    def get_W_autofl(self):
+        """Populates self.W_autofl with the excitation efficiency
+        """
+
+        if self.W_autofl is None:
+            acfg = self.cfg['autofl']
+            lcfg = self.cfg['laser']
+
+            laser_freq = [lcfg[name]['em_wavelength_nm'] for name in lcfg.keys()]
+            laser_freq = np.array(laser_freq)
+            n_autofl = len(acfg.keys())
+
+            aufl_src = []
+            W = np.zeros((n_autofl, self.J))
+            for i, k in enumerate(acfg.keys()):
+                df = pd.read_csv(self.paths['spectra'] / acfg[k]['spectrum_path'])
+                df.rename(columns=dict(zip(df.columns, ['wavelength', 'exc', 'em', '2p'])), inplace=True)
+                df['exc'] = df['exc'].fillna(0)
+                df['exc'] = df['exc']/100 # autofluoresence spectra are in %
+                W[i, :] = np.interp(x=laser_freq, xp=df['wavelength'], fp=df['exc'])
+                aufl_src.append(k)
+            W_df = pd.DataFrame(W, columns=laser_freq.astype(int), index=aufl_src)
+            self.W_autofl = W
+            self.W_autofl_df = W_df
+        return self.W_autofl
 
     @staticmethod
     def _dyn_slow(n_samples, sampling_interval, lowpass_thr_Hz, 
@@ -319,24 +392,52 @@ class SimData():
         f_HbO = self._dyn_slow(n_samples=self.n_samples,
                                sampling_interval=sampling_interval,
                                lowpass_thr_Hz=hdyn['lowpass_thr_Hz'],
-                               bottom=hdyn['HbT_min'],
-                               top=hdyn['HbT_max'],
+                               bottom=hdyn['f_HbO_min'],
+                               top=hdyn['f_HbO_max'],
                                beta=1.0,
                                rng=self.rng)
 
-        HbO = f_HbO*HbT
-        HbR = (1-f_HbO)*HbT
+        HbO = f_HbO * HbT
+        HbR = (1-f_HbO) * HbT
 
         assert HbO.shape == (self.n_samples,), 'check HbO shape'
         assert HbR.shape == (self.n_samples,), 'check HbR shape'
         return HbO, HbR, HbT, f_HbO
 
-    def gen_P(self, mean, var):
+    
+    def gen_autofl(self):
+        """Simulate autofluorescence components"""
+
+        acfg = self.cfg['autofl']
+        sampling_interval = 1/self.cfg['sensor']['sampling_freq_Hz']
+        f_autofl = np.zeros((self.n_samples,len(acfg.keys())))
+        for i,k in enumerate(acfg.keys()):
+            f_autofl[:,i] = self._dyn_slow(n_samples=self.n_samples,
+                             sampling_interval=sampling_interval,
+                             lowpass_thr_Hz=acfg[k]['lowpass_thr_Hz'],
+                             bottom=acfg[k]['autofl_min'],
+                             top=acfg[k]['autofl_max'],
+                             beta=1.0,
+                             rng=self.rng)
+            
+        assert f_autofl.shape == (self.n_samples,len(acfg.keys())), 'check f_autofl shape'
+        return f_autofl
+
+
+    def gen_P(self):
         """Simulate laser power as i.i.d Gaussian distributed samples
         
         Returns:
             P (np.array): with shape (n_samples, J)"""
-        return self.rng.normal(loc=mean, scale=var**0.5, size=(self.n_samples,self.J))
+        
+        P = np.ones((self.n_samples, self.J))
+        lcfg = self.cfg['laser']
+        for j, key in enumerate(lcfg.keys()):
+            mean_ = lcfg[key]['power_mean']
+            var_ = lcfg[key]['power_var']
+            sd_ = var_**0.5
+            P[:,j] = self.rng.normal(loc=mean_, scale=sd_, size=(self.n_samples,))
+        return P
 
     def gen_M(self): 
         """Simulate motion artifacts as i.i.d Gaussian distributed samples
@@ -391,85 +492,117 @@ class SimData():
         return
 
     def compose(self):
-        amp = self.cfg['amplitude']
+        S = self.get_S_synthetic()
+        lam_ = [self.cfg['laser'][key]['em_wavelength_nm']
+                for key in self.cfg['laser'].keys()]
 
-        # Read in known constants:
-        S = self.get_S()
-        W = self.get_W()
-        E = self.get_E()
+        # W: excitation efficiency
+        Wb = np.zeros((1, self.J))
+        Wf = np.zeros((1, self.J))
+        for j in range(self.J):
+            Wb[0, j] = S['bound_ex'][self.get_L_ind([lam_[j]])]
+            Wf[0, j] = S['free_ex'][self.get_L_ind([lam_[j]])]
+
+        # S: emission spectra
+        Wb_full = S['bound_ex'].reshape(1, -1)
+        Wf_full = S['free_ex'].reshape(1, -1)
+        Sb = S['bound_em'].reshape(1, -1)
+        Sf = S['free_em'].reshape(1, -1)
+        P = self.gen_P()
+
+        # H: hemodynamics
+        fudge = 1.0
+        C_HbO, C_HbR, C_HbT, f_HbO = self.gen_H()
         Mu_HbO, Mu_HbR = self.get_Mu()
+        H = np.einsum('t,l->tl', C_HbO, Mu_HbO) + \
+            np.einsum('t,l->tl', C_HbR, Mu_HbR)
+        H = np.exp(-fudge*H)
+
+        # Indicator activity free, bound
+        f_rest = 0.3
+        f_dynamic_range = 0.2 * f_rest
+        fb = self.gen_f_bound_slow() + self.gen_f_bound_fast()
+        fb = 1.0 - softplus(1.0 - fb, beta=40, thr=1.0)
+        fb = f_rest + fb * f_dynamic_range
+        ff = 1.0 - fb
+
+        # Compile indicator signal component
+        fSW_b = np.einsum('ti,il,ij->tjl', fb, Sb, Wb)
+        fSWP_b = np.einsum('tjl,tj->tjl', fSW_b, P)
+        fSW_f = np.einsum('ti,il,ij->tjl', ff, Sf, Wf)
+        fSWP_f = np.einsum('tjl,tj->tjl', fSW_f, P)
+        fSWP = fSWP_b + fSWP_f
+        fSWPH = np.einsum('tjl,tl->tjl', fSWP, H)
+
+        # Compile autofluorescence signal component
+        S_autofl = self.get_S_autofl()
+        W_autofl = self.get_W_autofl()
+        f_autofl = self.gen_autofl()
+        fSW_autofl = np.einsum('ti,il,ij->tjl', f_autofl, S_autofl, W_autofl)
+        fSWP_autofl = np.einsum('tjl,tj->tjl', fSW_autofl, P)
+        fSWPH_autofl = np.einsum('tjl,tl->tjl', fSWP_autofl, H)
+
+        # Compile total signal
+        O = fSWPH_autofl + fSWPH
         notches = self.get_notches()
-        
-        # simulate bound fraction of indicator
-        f_bound = self.gen_f_bound_slow() + self.gen_f_bound_fast()
-        f_bound = 1.0 - softplus(1.0 - f_bound, beta=40, thr=1.0) # ensures f_bound in [0,1]
+        O = np.einsum('tjl,l->tjl', fSWPH + fSWPH_autofl, notches)
 
-        # simlulate laser power
-        P = self.gen_P(mean = amp['P_mean'], var = amp['P_var'])
-
-        # multiply by known spectra, indicator concentration, and laser power
-        fSW = np.einsum('ti,il,ij->tjl', f_bound, S, W)
-        fSWP = np.einsum('tjl,tj->tjl', fSW, P)
-
-        # hemodynamics absorption
-        HbO, HbR, HbT, f_HbO = self.gen_H()
-        H = np.einsum('td,dl -> tl', HbO[..., np.newaxis], Mu_HbO[np.newaxis, ...]) \
-            + np.einsum('td,dl -> tl', HbR[..., np.newaxis], Mu_HbR[np.newaxis, ...])
-        H = np.einsum('j,tl -> tjl', np.ones((self.J,)), np.exp(-H))
-
-        # M = amp['M_mean'] + (amp['M_var'])**0.5 * self.gen_M()  # multiplicative, with specified mean and variance
-        # M = clip(M, threshold=0.1)                              # fix to ensure M is positive
-        
-        B = amp['B'] * self.gen_B()
-        HDM = np.einsum('tjl,t -> tjl', HD, M)
-        B_ = np.einsum('t,jl -> tjl', np.ones((self.n_samples,)), B)
-        H = HDM + B_
-
-        # 3rd term
-        N = amp['N_mean'] + (amp['N_var'])**0.5 * self.gen_N()   # multiplicative, with specified mean and variance
-        N = clip(N, threshold=0.1)                               # fix to ensure N is positive
-        N_ = np.einsum('l,tj -> tjl', np.ones((self.L,)), N)
-        O = np.einsum('tjl,tjl -> tjl', fSWP, H)
-        O = np.einsum('tjl,tjl -> tjl', O, N_)
-
-        O = np.einsum('tjl,l -> tjl', O, notches)                # notch filter attenuates each wavelength
+        # true f_rest <-- only used for checks
+        f0SW_b = np.einsum('ti,il,ij->tjl', np.ones_like(fb)*f_rest, Sb, Wb)
+        f0SWP_b = np.einsum('tjl,tj->tjl', f0SW_b, P)
+        f0SW_f = np.einsum(
+            'ti,il,ij->tjl', (1.0 - np.ones_like(fb)*f_rest), Sf, Wf)
+        f0SWP_f = np.einsum('tjl,tj->tjl', f0SW_f, P)
+        f0SWP = f0SWP_b + f0SWP_f
+        f0SWPH = np.einsum('tjl,tl->tjl', f0SWP, H)
 
         # image formation; K is the kernel
-        K = np.ones_like(np.arange(0,self.cfg['image']['window_nm'], np.mean(np.diff(self.L_arr))))
+        K = np.ones_like(
+            np.arange(0, self.cfg['image']['window_nm'], np.mean(np.diff(self.L_arr))))
         K = K / np.sum(K)
-        K = K.reshape(1,1,-1)
-        O = convolve(O, K, mode='reflect')
+        K = K.reshape(1, 1, -1)
+        OK = convolve(O, K, mode='reflect')
 
         dat = dict(O=O,
-                   f_bound=f_bound,
-                   N=N,
-                   B=B,
-                   HbO=HbO,
-                   HbR=HbR,
-                   S=S,
-                   W=W,
-                   E=E,
+                   OK=OK,
+                   fb=fb,
+                   ff=ff,
+                   f_rest=f_rest,
+                   f_dynamic_range=f_dynamic_range,
+                   Wb=Wb,
+                   Wf=Wf,
+                   Wb_full=Wb_full,
+                   Wf_full=Wf_full,
+                   Sb=Sb,
+                   Sf=Sf,
+                   P=P,
+                   fSWPH=fSWPH,
+                   fSWPH_autofl=fSWPH_autofl,
+                   f0SWPH=f0SWPH,
+                   C_HbO=C_HbO,
+                   C_HbR=C_HbR,
+                   C_HbT=C_HbT,
+                   f_HbO=f_HbO,
                    Mu_HbO=Mu_HbO,
-                   Mu_HbR=Mu_HbR)
+                   Mu_HbR=Mu_HbR,
+                   notches=notches,
+                   T_arr=self.T_arr,
+                   L_arr=self.L_arr,
+                   )
         return dat
-
-    def make_signal():
-        # f_b(t)S_b(λ)w_b(j)C(t)P(j,t)+(1−fb(t))S f(λ)wf(j)C(t)P(j,t)
-        pass
-        return
-
-
-def clip(x, threshold=0.0):
-    """Clip values below threshold to threshold
-    """
-    x[x < threshold] = threshold
-    return x
 
 
 if __name__ == '__main__':
     from sourcesep.sim import SimData
     from sourcesep.utils.config import load_config
     paths = load_config(dataset_key='all')
-    sim = SimData(T=500, cfg_path=paths['root'] / "sim_config.toml")
-    sim.get_W()
-    #sim.compose_torch()
+    sim = SimData(n_samples=500, cfg_path=paths['root'] / "sim_config.toml")
+    dat = sim.compose()
+
+
+
+
+
+
+
+
