@@ -8,7 +8,8 @@ Source separation and denoising for hyperspectral fiber photometry neuromodulato
 conda create -n sourcesep python=3.8
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
 conda install scipy scikit-learn statsmodels jupyterlab pandas seaborn h5py pytables
- pip install lightning timebudget rich autopep8 tensorboard dysts sdeint librosa 
+ pip install lightning tensorboard rich timebudget autopep8 pytest
+ pip install xarray hvplot
  pip install -e .
 ```
 
