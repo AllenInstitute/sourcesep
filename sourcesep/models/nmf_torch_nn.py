@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-
+from scipy.optimize import nnls
 
 def parameter(x):
     return torch.tensor(x, requires_grad=True, dtype=torch.float32)
@@ -39,28 +39,31 @@ class AHX(nn.Module):
         self.a_coef = nn.ParameterDict({str(i): parameter(se[i]) for i in range(n_sources)})
         # fmt: on
 
-        self.sigma_h = 0.03
-        self.mu_h = 0.3
-        self.set_fac(X)
+        #self.sigma_h = 0.03
+        #self.mu_h = 0.3
+        #self.set_fac(X)
 
-        # fmt: off
-        self.h_coef = parameter([1/(self.fac*self.mu_h), 1/(self.fac*self.mu_h)])
-        self.h01 = parameter(self.sigma_h * np.random.randn(1, n_timepoints) + self.mu_h)  # req. positive entries
-        self.h2 = parameter(self.sigma_h * np.random.randn(1, n_timepoints) + self.mu_h)  # req. positive entries
-        # fmt: on
+        H_init = self.get_H_init(X)
+        self.h_coef = parameter([1.0, 1.0])
+        self.h01 = parameter(H_init[[0],:]) 
+        self.h2 = parameter(H_init[[2],:])  
+        self.rescale_H()
 
         self.rescale_coef = 0.90
         self.prox_plus = torch.nn.Threshold(0, self.min_value)
 
-    def set_fac(self, X=None):
-        if X is None:
-            self.fac = 1
-        else:
-            A_ = self.get_A()
-            AA = A_.detach().numpy().copy()
-            X_init = AA @ np.ones((AA.shape[1], X.shape[1]))
-            self.fac = np.median(X_init[X > 0] / X[X > 0])
-        return
+    def get_H_init(self, X=None):
+        A_ = self.get_A()
+        # if A_ is a tensor convert ot a numpy array
+        if isinstance(A_, torch.Tensor):
+            A_ = A_.detach().cpu().numpy()
+        if isinstance(A_, torch.Tensor):
+            X = X.detach().cpu().numpy()
+        H_init = np.zeros((self.n_sources, self.n_timepoints))
+        for i in range(self.n_timepoints):
+            H_init[:,i], _ = nnls(A_, X[:,i])
+    
+        return H_init
 
     def get_A(self):
         with torch.no_grad():
@@ -88,7 +91,7 @@ class AHX(nn.Module):
         X_ = torch.matmul(A_, H_)
         return X_
 
-    def rescale(self):
+    def rescale_H(self):
         while torch.sum(self.h01 > 1) > (0.05 * self.h01.numel()):
             self.h01.data = self.h01 * self.rescale_coef
             self.h_coef.data = self.h_coef / self.rescale_coef
@@ -106,12 +109,13 @@ class AHX(nn.Module):
             loss_list.append(loss.item())
             param_list = [self.h01, self.h2, self.h_coef]
 
+            nn.utils.clip_grad_norm_(param_list, 1.0)
             for p in param_list:
-                p.data -= lr * p.grad
+                p.data -= lr * torch.clamp(p.grad, -1e-2, 1e-2)
                 p.grad.zero_()
                 p.data = self.prox_plus(p)
 
-            self.rescale()
+            self.rescale_H()
 
             print(f"Step: {i}, Loss: {loss.item()}")
 
