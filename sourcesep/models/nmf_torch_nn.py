@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 from scipy.optimize import nnls
 
+
 def parameter(x):
     return torch.tensor(x, requires_grad=True, dtype=torch.float32)
 
@@ -39,14 +40,10 @@ class AHX(nn.Module):
         self.a_coef = nn.ParameterDict({str(i): parameter(se[i]) for i in range(n_sources)})
         # fmt: on
 
-        #self.sigma_h = 0.03
-        #self.mu_h = 0.3
-        #self.set_fac(X)
-
         H_init = self.get_H_init(X)
         self.h_coef = parameter([1.0, 1.0])
-        self.h01 = parameter(H_init[[0],:]) 
-        self.h2 = parameter(H_init[[2],:])  
+        self.h01 = parameter(H_init[[0], :])
+        self.h2 = parameter(H_init[[2], :])
         self.rescale_H()
 
         self.rescale_coef = 0.90
@@ -61,8 +58,8 @@ class AHX(nn.Module):
             X = X.detach().cpu().numpy()
         H_init = np.zeros((self.n_sources, self.n_timepoints))
         for i in range(self.n_timepoints):
-            H_init[:,i], _ = nnls(A_, X[:,i])
-    
+            H_init[:, i], _ = nnls(A_, X[:, i])
+
         return H_init
 
     def get_A(self):
