@@ -10,9 +10,7 @@ def test_data_v1(verbose=True, plots=True):
     paths = load_config(dataset_key="all")
 
     # make dataset with custom parameters:
-    sim = SimData(
-        n_samples=6000, cfg_path=paths["root"] / "sim_config.toml", rng_seed=42
-    )
+    sim = SimData(n_samples=6000, cfg_path=paths["root"] / "sim_config.toml", rng_seed=42)
 
     # change simulation parameters from default values to custom ones.
     h_mean = 0.0
@@ -28,9 +26,7 @@ def test_data_v1(verbose=True, plots=True):
     S_autofl = sim.get_S_autofl()
 
     # create array with physical units for the excitation wavelength
-    lam_ = [
-        sim.cfg["laser"][key]["em_wavelength_nm"] for key in sim.cfg["laser"].keys()
-    ]
+    lam_ = [sim.cfg["laser"][key]["em_wavelength_nm"] for key in sim.cfg["laser"].keys()]
 
     # create a dataset with xarray
     xdat = xr.DataArray(
@@ -66,15 +62,9 @@ def test_data_v1(verbose=True, plots=True):
 
     if plots:
         f, ax = plt.subplots(4, 1, figsize=(8, 6))
-        xdat.sel(wavelength=510, laser=405, method="nearest").plot(
-            label="free dominant", ax=ax[0]
-        )
-        xdat.sel(wavelength=510, laser=473, method="nearest").plot(
-            label="bound dominant", ax=ax[1]
-        )
-        xdat.sel(wavelength=575, laser=445, method="nearest").plot(
-            label="FAD dominant", c="r", ax=ax[2]
-        )
+        xdat.sel(wavelength=510, laser=405, method="nearest").plot(label="free dominant", ax=ax[0])
+        xdat.sel(wavelength=510, laser=473, method="nearest").plot(label="bound dominant", ax=ax[1])
+        xdat.sel(wavelength=575, laser=445, method="nearest").plot(label="FAD dominant", c="r", ax=ax[2])
         ax[3].plot(dat["T_arr"], dat["fb"], label="fb")
         ax[3].plot(dat["T_arr"], dat["ff"], label="ff")
         ax[3].plot(dat["T_arr"], dat["f_autofl"], label="f_autofl")
@@ -92,9 +82,7 @@ def test_data_v1(verbose=True, plots=True):
         n_samples = xdat.shape[0]
         n_channels = xdat.shape[1]
         n_wavelengths = xdat.shape[2]
-        xdat_concat = np.concatenate(
-            [np.squeeze(xdat[:, j, :]) for j in range(n_channels)], axis=1
-        )
+        xdat_concat = np.concatenate([np.squeeze(xdat[:, j, :]) for j in range(n_channels)], axis=1)
         xdat_concat = xdat_concat.T
         assert xdat_concat.shape == (
             n_wavelengths * n_channels,

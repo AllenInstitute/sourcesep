@@ -22,9 +22,7 @@ class SimData:
         self.cfg = toml.load(cfg_path)
 
         self.J = len(self.cfg["laser"])  # Number of excitation lasers (input channels)
-        self.L = self.cfg["sensor"][
-            "n_channels"
-        ]  # Number of sensor pixels (output channels)
+        self.L = self.cfg["sensor"]["n_channels"]  # Number of sensor pixels (output channels)
         self.I = len(self.cfg["indicator"])  # Number of indicators
         self.n_samples = n_samples  # Duration of signal in seconds
 
@@ -79,9 +77,7 @@ class SimData:
                 if icfg[k]["from_path"]:
                     df = pd.read_csv(self.paths["spectra"] / icfg[k]["spectrum_path"])
                     df.rename(
-                        columns=dict(
-                            zip(df.columns, ["wavelength", "exc", "em", "2p"])
-                        ),
+                        columns=dict(zip(df.columns, ["wavelength", "exc", "em", "2p"])),
                         inplace=True,
                     )
                     df["em"] = df["em"].fillna(0)
@@ -114,9 +110,7 @@ class SimData:
     def get_X(self):
         """Populates self.Xex and self.Xem with pathlengths from Zhang et al. 2022"""
         if self.X is None:
-            df = pd.read_csv(
-                self.paths["spectra"] / self.cfg["sensor"]["pathlength_path"]
-            )
+            df = pd.read_csv(self.paths["spectra"] / self.cfg["sensor"]["pathlength_path"])
             df.columns = ["wavelength", "Xex", "Xem"]
             self.X = np.interp(x=self.L_arr, xp=df["wavelength"], fp=df["em"])
 
@@ -141,9 +135,7 @@ class SimData:
                     )
                     df.columns = ["wavelength", "trans"]
                     df_interp = pd.DataFrame({"wavelength": self.L_arr})
-                    df_interp["trans"] = np.interp(
-                        self.L_arr, df["wavelength"], df["trans"]
-                    )
+                    df_interp["trans"] = np.interp(self.L_arr, df["wavelength"], df["trans"])
                     notch_dict[key] = df_interp
 
                 for key in notch_dict:
@@ -167,9 +159,7 @@ class SimData:
                 if icfg[k]["from_path"]:
                     df = pd.read_csv(self.paths["spectra"] / icfg[k]["spectrum_path"])
                     df.rename(
-                        columns=dict(
-                            zip(df.columns, ["wavelength", "exc", "em", "2p"])
-                        ),
+                        columns=dict(zip(df.columns, ["wavelength", "exc", "em", "2p"])),
                         inplace=True,
                     )
                     df["exc"] = df["exc"].fillna(0)
@@ -200,18 +190,12 @@ class SimData:
 
     def get_Mu(self):
         if (self.Mu_HbO is None) or (self.Mu_HbR is None):
-            df = pd.read_csv(
-                self.paths["spectra"] / self.cfg["hemodynamics"]["spectrum_path"]
-            )
+            df = pd.read_csv(self.paths["spectra"] / self.cfg["hemodynamics"]["spectrum_path"])
             self.eps_HbO = np.interp(self.L_arr, df["wavelength"], df["Hb02 (cm-1/M)"])
-            self.eps_HbR = np.interp(
-                self.L_arr, df["wavelength"], df["Hb (cm-1/M)"]
-            )  # cm-1 g-1
+            self.eps_HbR = np.interp(self.L_arr, df["wavelength"], df["Hb (cm-1/M)"])  # cm-1 g-1
             self.MHg = 64500  # Hemoglobin grams per mole
             self.blood_concentration = 150  # grams per Liter
-            self.blood_concentration_M = (
-                self.blood_concentration / self.MHg
-            )  # mol per Liter
+            self.blood_concentration_M = self.blood_concentration / self.MHg  # mol per Liter
 
             # df = pd.read_csv(self.paths['spectra']/ self.cfg['hemodynamics']['pathlength_path'])
             # self.pathlength = np.interp(x=self.L_arr, xp=df['Wavelength (nm)'], fp=df['Estimated average pathlength (cm)'])
@@ -234,9 +218,7 @@ class SimData:
                 )
                 df["em"] = df["em"].fillna(0)
                 df["em"] = df["em"] / 100  # autofluoresence spectra are in %
-                S_autofl.append(
-                    np.interp(x=self.L_arr, xp=df["wavelength"], fp=df["em"])
-                )
+                S_autofl.append(np.interp(x=self.L_arr, xp=df["wavelength"], fp=df["em"]))
 
             S_autofl = np.vstack(S_autofl)
             assert S_autofl.shape == (n_autofl, self.L), "check spectra shape"
@@ -273,9 +255,7 @@ class SimData:
         return self.W_autofl
 
     @staticmethod
-    def _dyn_slow(
-        n_samples, sampling_interval, lowpass_thr_Hz, bottom, top, beta, rng=None
-    ):
+    def _dyn_slow(n_samples, sampling_interval, lowpass_thr_Hz, bottom, top, beta, rng=None):
         """_summary_
 
         Args:
@@ -321,9 +301,7 @@ class SimData:
             min_amplitude = 0.0
             max_amplitude = icfg[key]["modulator_slow_amplitude"]
             assert (
-                icfg[key]["modulator_slow_amplitude"]
-                + icfg[key]["modulator_fast_amplitude"]
-                <= 1.0
+                icfg[key]["modulator_slow_amplitude"] + icfg[key]["modulator_fast_amplitude"] <= 1.0
             ), f"slow + fast amplitude for {key} should be <= 1.0"
 
             A_slow[:, i] = self._dyn_slow(
@@ -549,10 +527,7 @@ class SimData:
 
     def compose(self):
         S = self.get_S_synthetic()
-        lam_ = [
-            self.cfg["laser"][key]["em_wavelength_nm"]
-            for key in self.cfg["laser"].keys()
-        ]
+        lam_ = [self.cfg["laser"][key]["em_wavelength_nm"] for key in self.cfg["laser"].keys()]
 
         # W: excitation efficiency
         Wb = np.zeros((1, self.J))
@@ -613,9 +588,7 @@ class SimData:
         f0SWPH = np.einsum("tjl,tl->tjl", f0SWP, H)
 
         # image formation; K is the kernel
-        K = np.ones_like(
-            np.arange(0, self.cfg["image"]["window_nm"], np.mean(np.diff(self.L_arr)))
-        )
+        K = np.ones_like(np.arange(0, self.cfg["image"]["window_nm"], np.mean(np.diff(self.L_arr))))
         K = K / np.sum(K)
         K = K.reshape(1, 1, -1)
         OK = convolve(Obs_notches, K, mode="reflect")
@@ -671,7 +644,7 @@ class SimData:
         T_arr = T_arr.reshape(
             -1,
         )
-        l_ind = [np.argmin(np.abs(L_arr - l)) for l in L_range]
+        l_ind = [np.argmin(np.abs(L_arr - lam)) for lam in L_range]
         t_ind = [np.argmin(np.abs(T_arr - t)) for t in T_range]
 
         def fmt_y_(x, _):
@@ -690,7 +663,7 @@ class SimData:
 
         fmt_x = mpl.ticker.FuncFormatter(fmt_x_)
 
-        if ax == None:
+        if ax is None:
             f, ax = plt.subplots(1, 1, figsize=(8, 3))
         img = ax.imshow(
             X[:, J, :].T,
@@ -725,8 +698,8 @@ class SimData:
             l_ind = [np.argmin(np.abs(L_arr - L_))]
         if ax is None:
             f, ax = plt.subplots(1, 1, figsize=(8, 3))
-        for l in l_ind:
-            ax.plot(T_arr, X[:, J, l], label=f"{L_arr[l]:0.1f} nm")
+        for lam in l_ind:
+            ax.plot(T_arr, X[:, J, lam], label=f"{L_arr[lam]:0.1f} nm")
         ax.set(xlabel="time", ylabel="intensity", title=f"exc. laser {J}")
         ax.legend()
         return f, ax

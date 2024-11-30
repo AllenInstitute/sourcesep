@@ -29,8 +29,6 @@ This chapter documents ideas to analyze the raw signals.
 \end{aligned}
 
 
-
-
 ### Implementation in scikit-learn
 
  `scikit-learn` provides implementations of the multiplicative update @lee1999nmf and co-ordinate descent rules to solve the problem, includes regularizers for sparsity and smoothness. The problem considered in scikit-learn is:
@@ -222,6 +220,8 @@ Review [PICASSO](https://www.nature.com/articles/s41467-022-30168-z).
     - Experimental setup is changing.
     - Position of notch filters must also be modeled (adds to complexity).
     - Similarity metric (to compare synthetic with real data) must be well-defined to learn parameters through optimization.
+
+Non-negative Least Squares is a convex optimization problem, with solvers implemented in `scipy`. This should be used to initialize NMF, since we know the spectra pretty well. 
 
 ### Software tools
 

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.550">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -24,6 +24,7 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -66,7 +67,13 @@ div.csl-indent {
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -75,6 +82,7 @@ div.csl-indent {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -98,6 +106,33 @@ div.csl-indent {
   </script>
   <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -107,12 +142,12 @@ div.csl-indent {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_simulations.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_simulations.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simulating hyperspectral fiber photometry signals</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
@@ -122,7 +157,7 @@ div.csl-indent {
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Source separation</a> 
@@ -162,7 +197,7 @@ div.csl-indent {
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -197,7 +232,9 @@ div.csl-indent {
   </div>
   
 
+
 </header>
+
 
 <p>A recap of the basic model for fluorescence signals from protein indicators.</p>
 <p>The challenges for <em>in vivo</em> fiber photometry data analysis are highlighted in <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span>:</p>
@@ -224,32 +261,37 @@ div.csl-indent {
 <p>The fluorescing indicator molecules can exist in one of two states, bound to ligand or free. Let the fraction of the bound indicator be <span class="math inline">f_{\textrm{b}}(t)</span>. Assuming emission spectra <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span> for the different indicator states, power of the <span class="math inline">j</span><sup>th</sup> laser <span class="math inline">P(j,t)</span>, and efficiency of the laser to excite populations <span class="math inline">w_\textrm{b}(j)</span> and <span class="math inline">w_\textrm{f}(j)</span>, the fluorescence readout <span class="math inline">F(t,\lambda,j)</span> is modeled as:</p>
 <p><span id="eq-single-indicator"><span class="math display">
 \begin{align*}
-F(t,\lambda,j) = &amp; \textcolor{6488EA}{f_{\textrm{b}}(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) C(t) P(j,t)} + \\
-                 &amp; \textcolor{AA2704}{(1 - f_{\textrm{b}}(t)) S_\textrm{f}(\lambda)w_\textrm{f}(j) C(t) P(j,t)}
+F(t,\lambda,j) = &amp; \textcolor{40bf9a}{f_{\textrm{b}}(t) C(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) P(j,t)} + \\
+                 &amp; \textcolor{63a7ff}{(1 - f_{\textrm{b}}(t)) C(t) S_\textrm{f}(\lambda)w_\textrm{f}(j) P(j,t)}
 \end{align*}
 \tag{1.1}</span></span></p>
-<p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> is analogous to the setup in and in <span class="citation" data-cites="helmchen2011calibration">Helmchen (<a href="references.html#ref-helmchen2011calibration" role="doc-biblioref">2011</a>)</span>. In the following we refer to <span class="math inline">f_{\textrm{b}}</span> as just <span class="math inline">f</span>. Assuming a positive indicator (where the bound state is brighter than free state), define <span class="math inline">F_{\max}</span> and <span class="math inline">F_{\min}</span> as the signal when <span class="math inline">f=0</span> and <span class="math inline">f=1</span> respectively. We’ll pack terms other than <span class="math inline">f</span> in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> into <span class="math inline">\eta_\textrm{b}</span> and <span class="math inline">\eta_\textrm{f}</span> for the bound and free components, and drop the arguments <span class="math inline">t</span>, <span class="math inline">\lambda</span>, <span class="math inline">j</span> for now. Then:</p>
+<!-- \begin{align*}
+F(t,\lambda,j) = & [\colg{f_{\textrm{b}}(t) C(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) P(j,t)} + \\
+                 & \colb{(1 - f_{\textrm{b}}(t)) C(t) S_\textrm{f}(\lambda)w_\textrm{f}(j) P(j,t)} + \\
+                 & \colr{a(t) S_\textrm{a}(\lambda)w_\textrm{f}(j) P(j,t)}] H(t,\lambda)
+\end{align*} -->
+<p><a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a> is analogous to the setup in and in <span class="citation" data-cites="helmchen2011calibration">Helmchen (<a href="references.html#ref-helmchen2011calibration" role="doc-biblioref">2011</a>)</span>. In the following we refer to <span class="math inline">f_{\textrm{b}}</span> as just <span class="math inline">f</span>. Assuming a positive indicator (where the bound state is brighter than free state), define <span class="math inline">F_{\max}</span> and <span class="math inline">F_{\min}</span> as the signal when <span class="math inline">f=0</span> and <span class="math inline">f=1</span> respectively. We’ll pack terms other than <span class="math inline">f</span> in <a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a> into <span class="math inline">\eta_\textrm{b}</span> and <span class="math inline">\eta_\textrm{f}</span> for the bound and free components, and drop the arguments <span class="math inline">t</span>, <span class="math inline">\lambda</span>, <span class="math inline">j</span> for now. Then:</p>
 <p><span id="eq-bound-fraction"><span class="math display">
 \begin{align*}
 F &amp;= \eta_{\textrm{b}}f + \eta_{\textrm{f}}(1-f)\\
-  &amp;= F_{\min} + (\eta_{\textrm{b}} − \eta_{\textrm{f}})f \\
+  &amp;= F_{\min} + (\eta_{\textrm{b}} - \eta_{\textrm{f}})f \\
   &amp;= F_{\max} − (\eta_{\textrm{b}} − \eta_{\textrm{f}})(1-f) \\
 \implies \frac{f}{1-f} &amp;= \frac{F - F_{\min}}{F_{\max} - F} \\
 \end{align*}
 \tag{1.2}</span></span></p>
-<p>Defining <span class="math inline">R := {F_{\max}}/{F_{\min}}</span>, we can rewrite <a href="#eq-bound-fraction">Equation&nbsp;<span>1.2</span></a> as: <span id="eq-bound-fraction-rel"><span class="math display">
+<p>Defining <span class="math inline">R := {F_{\max}}/{F_{\min}}</span>, we can rewrite <a href="#eq-bound-fraction" class="quarto-xref">Equation&nbsp;<span>1.2</span></a> as: <span id="eq-bound-fraction-rel"><span class="math display">
 \frac{f}{1-f} = \frac{F / F_{\max} − 1 / R}{1 − F / F_{\max}}
 \tag{1.3}</span></span></p>
-<p><a href="#eq-bound-fraction-rel">Equation&nbsp;<span>1.3</span></a> only contains ratios of fluorosence; these terms are invariant to indicator concentration and laser power as in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>.</p>
+<p><a href="#eq-bound-fraction-rel" class="quarto-xref">Equation&nbsp;<span>1.3</span></a> only contains ratios of fluorosence; these terms are invariant to indicator concentration and laser power as in <a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a>.</p>
 </section>
 <section id="relating-ligand-concentration-to-fluorescence" class="level4">
 <h4 class="anchored" data-anchor-id="relating-ligand-concentration-to-fluorescence">Relating ligand concentration to fluorescence</h4>
 <p>This section is based on discussions in <span class="citation" data-cites="helmchen2011calibration">Helmchen (<a href="references.html#ref-helmchen2011calibration" role="doc-biblioref">2011</a>)</span> and <span class="citation" data-cites="grynkiewicz1985new">Grynkiewicz, Poenie, and Tsien (<a href="references.html#ref-grynkiewicz1985new" role="doc-biblioref">1985</a>)</span> to relate observed signal to ligand (<span class="math inline">\textrm{Ca}^{2+}</span> in these studies) concentration in imaging experiments.</p>
-<p>For indicator protein <span class="math inline">P</span> and the ligand <span class="math inline">L</span>, assumiing 1:1 complexation (i.e.&nbsp;1 molecule of <span class="math inline">P</span> binds to 1 molecule of <span class="math inline">L</span>):</p>
+<p>For indicator protein <span class="math inline">P</span> and the ligand <span class="math inline">L</span>, assuming 1:1 complexation (i.e.&nbsp;1 molecule of <span class="math inline">P</span> binds to 1 molecule of <span class="math inline">L</span>):</p>
 <p><span class="math display">
 L + P \xrightleftharpoons[k_{d}]{k_{a}} LP
 </span></p>
-<p>At equillibrium: <span class="math display">
+<p>At equilibrium: <span class="math display">
 k_d[LP] = k_a[L][P]
 </span></p>
 <p>The dissociation constant <span class="math inline">K</span> is defined as <span class="math inline">\frac{k_d}{k_a}</span>:</p>
@@ -260,7 +302,7 @@ K = \frac{[L][P]}{[LP]} \qquad [P] = \frac{K[LP]}{[L]}
 f = \frac{[LP]}{[P] + [LP]}
 = \frac{[L]}{K + [L]}
 </span></p>
-<p>Then <span class="math inline">[L]</span> can be expressed as a function of <span class="math inline">f</span>, and using <a href="#eq-bound-fraction">Equation&nbsp;<span>1.2</span></a>, we relate the ligand concentration to the observed fluoresence signal. <span id="eq-ligand-F"><span class="math display">
+<p>Then <span class="math inline">[L]</span> can be expressed as a function of <span class="math inline">f</span>, and using <a href="#eq-bound-fraction" class="quarto-xref">Equation&nbsp;<span>1.2</span></a>, we relate the ligand concentration to the observed fluoresence signal. <span id="eq-ligand-F"><span class="math display">
 [L] = K\frac{f}{1-f} = K\frac{F - F_{\min}}{F_{\max} - F} = K\frac{F / F_{\max} − 1 / R}{1 − F / F_{\max}}
 \tag{1.4}</span></span></p>
 <p>As a further simplification, for <span class="math inline">f \ll 1</span> (Taylor expansion of <span class="math inline">\frac{f}{1-f}</span> around <span class="math inline">f=0</span>)</p>
@@ -306,8 +348,8 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 </section>
 <section id="multiple-indicators" class="level4">
 <h4 class="anchored" data-anchor-id="multiple-indicators">Multiple indicators</h4>
-<p>For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum, <span class="math inline">\Delta f(t) \propto {\Delta F}/{F}</span> according to <a href="#eq-ligand-F-approx">Equation&nbsp;<span>1.5</span></a> and <a href="#eq-ligand-dF-approx">Equation&nbsp;<span>1.7</span></a>.</p>
-<p>With multiple indicators, the fluorescence signal would consist of multiple indicator-specific terms as shown for one indicator in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>.</p>
+<p>For experiments involving one indicator excited by a single laser and measured in a particular region of the emission spectrum, <span class="math inline">\Delta f(t) \propto {\Delta F}/{F}</span> according to <a href="#eq-ligand-F-approx" class="quarto-xref">Equation&nbsp;<span>1.5</span></a> and <a href="#eq-ligand-dF-approx" class="quarto-xref">Equation&nbsp;<span>1.7</span></a>.</p>
+<p>With multiple indicators, the fluorescence signal would consist of multiple indicator-specific terms as shown for one indicator in <a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a>.</p>
 <p>Depending on the emission spectrum of the indicators, the signal at particular <span class="math inline">\lambda</span> would be expected to be dominated by a single indicator. We’ll treat this approach to analyzing the data as a baseline strategy.</p>
 </section>
 </section>
@@ -326,7 +368,7 @@ F_{\min} &amp;= F_\textrm{rest} - \frac{[L]_\textrm{rest}({F_{\max} - F_\textrm{
 <li>Bound and free states emission spectra <span class="math inline">S_\textrm{b}(\lambda)</span> and <span class="math inline">S_\textrm{f}(\lambda)</span>, normalized so that <span class="math inline">\int{S_\textrm{f}(\lambda) d\lambda} = 1</span> and <span class="math inline">\int{S_\textrm{b}(\lambda) d\lambda} = 1</span>.</li>
 </ol>
 <p>Consider emission at two distinct wavelengths <span class="math inline">\lambda</span> and <span class="math inline">\lambda'</span> invoked by exciting the sample at <span class="math inline">\lambda_{1}^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_{2}^{\textrm{{exc}}}</span> respectively. Each excitation wavelength corresponds to a different laser <span class="math inline">j</span>:</p>
-<p>Following <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>,</p>
+<p>Following <a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a>,</p>
 <p><span class="math display">
 \begin{align*}
 F_{1}(\lambda)  &amp;={f_{\textrm{b}}S_{\textrm{b}}(\lambda)w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}})}+{(1-f_{\textrm{b}})S_{\textrm{f}}(\lambda)w_{\textrm{f}}(\lambda_{1}^{\textrm{{exc}}})P(\lambda_{1}^{\textrm{{exc}}})} \\
@@ -380,7 +422,7 @@ Special cases to obtain an isosbestic control signal
 <div class="callout-body-container callout-body">
 <p>Experimental setups may present various constraints. Here we consider three such special cases.</p>
 <p><strong>Case I</strong></p>
-<p>There are two excitation lasers, <span class="math inline">\lambda_1^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_2^{\textrm{{exc}}}</span>. Assuming that emission spectra of the bound and <strong>free</strong> states are the same, i.e.&nbsp;<span class="math inline">S_{\textrm{f}}=S_{\textrm{b}}=S</span>. Then based on <a href="#eq-isosbestic-linear-combo">Equation&nbsp;<span>1.8</span></a> and <a href="#eq-isosbestic-coeff-ratio">Equation&nbsp;<span>1.9</span></a>:</p>
+<p>There are two excitation lasers, <span class="math inline">\lambda_1^{\textrm{{exc}}}</span> and <span class="math inline">\lambda_2^{\textrm{{exc}}}</span>. Assuming that emission spectra of the bound and <strong>free</strong> states are the same, i.e.&nbsp;<span class="math inline">S_{\textrm{f}}=S_{\textrm{b}}=S</span>. Then based on <a href="#eq-isosbestic-linear-combo" class="quarto-xref">Equation&nbsp;<span>1.8</span></a> and <a href="#eq-isosbestic-coeff-ratio" class="quarto-xref">Equation&nbsp;<span>1.9</span></a>:</p>
 <p><span class="math display">
 \frac{m}{n} = \frac{S(\lambda')P(\lambda_{2}^{\textrm{{exc}}})[w_{\textrm{f}}(\lambda_{2}^{\textrm{{exc}}})-w_{\textrm{b}}(\lambda_{2}^{\textrm{{exc}}})]}{S(\lambda)P(\lambda_{1}^{\textrm{{exc}}})[w_{\textrm{b}}(\lambda_{1}^{\textrm{{exc}}})-w_{\textrm{f}}(\lambda_{1}^{\textrm{{exc}}})]}
 </span></p>
@@ -388,18 +430,19 @@ Special cases to obtain an isosbestic control signal
 <p>This is a non-zero signal that is independent of <span class="math inline">f(t)</span>, which can provide information on noise factors for such experiments.</p>
 <p><strong>Case II</strong></p>
 <p>There is a single excitation laser, <span class="math inline">\lambda^{\textrm{{exc}}}</span>, emission spectra of the bound and free states are the same, and there is only one observed emission wavelength. In this scenario, typically there is a dedicated laser to obtain the isosbestic control signal, for which the wavelength needs to be picked based on indicator properties.</p>
-<p><a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a> suggests that for <span class="math inline">F</span> to be independent of <span class="math inline">f</span>, we need <span class="math inline">w_\textrm{b}(\lambda^{\textrm{{exc}}}) = w_\textrm{f}(\lambda^{\textrm{{exc}}})</span>, and for excitation by this laser, any emission wavelength <span class="math inline">\lambda</span> can serve as the isosbestic control.</p>
+<p><a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a> suggests that for <span class="math inline">F</span> to be independent of <span class="math inline">f</span>, we need <span class="math inline">w_\textrm{b}(\lambda^{\textrm{{exc}}}) = w_\textrm{f}(\lambda^{\textrm{{exc}}})</span>, and for excitation by this laser, any emission wavelength <span class="math inline">\lambda</span> can serve as the isosbestic control.</p>
 <p><strong>Case III</strong></p>
 <p>If there is just a single excitation laser, signals <span class="math inline">F_1(\lambda)</span> and <span class="math inline">F_2(\lambda')</span> are simply scalar multiples of one another. Under the assumption <span class="math inline">S_\textrm{f}=S_\textrm{b}=S</span> there is no additional information to be gained from the second measurement under our model.</p>
 </div>
 </div>
 </div>
+<p>Signals obtained <em>in vivo</em> will also contain other, additive sources (e.g.&nbsp;autofluoresence and other other signals from other indicators, if present). We’ve ignored those in the above analysis. We also implicitly set <span class="math inline">C(t)</span> to 1 everywhere - thus ignoring the effect of bleaching. Both bleaching and hemodynamics are multiplicative effects, which will persist in the isosbestic signal.</p>
 <p>Motion-related artifacts are a common source of noise in fiber photometry experiments. Motion (e.g.&nbsp;head movements) disturbs the optical path (e.g.&nbsp;bending of the fiber), and typically attenuates the signal. This is a multiplicative effect which also affects the isosbestic control signal. Regressing out the component common to the isosbestic control signal and the indicator signal can reduce severity of this artifact, see <span class="citation" data-cites="simpson2023lights">Simpson et al. (<a href="references.html#ref-simpson2023lights" role="doc-biblioref">2023</a>)</span> for an overview and <span class="citation" data-cites="keevers2023obtaining">Keevers, McNally, and Jean-Richard-dit-Bressel (<a href="references.html#ref-keevers2023obtaining" role="doc-biblioref">2023</a>)</span> for an implementation of such a procedure.</p>
 <p><span class="citation" data-cites="creamer2022correcting">Creamer et al. (<a href="references.html#ref-creamer2022correcting" role="doc-biblioref">2022</a>)</span> discuss motion-related artifacts in a different system but may provide inspiration for solutions in mouse fiber photometry experiments.</p>
 </section>
 <section id="sec-hemodynamics" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="sec-hemodynamics"><span class="header-section-number">1.4</span> Hemodynamics</h2>
-<p>Absorption by hemoglobin corrupts the signal. For <em>in vivo</em> measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenrated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span>.</p>
+<p>Absorption by hemoglobin corrupts the signal. For <em>in vivo</em> measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (<a href="references.html#ref-zhang2022spectral" role="doc-biblioref">2022</a>)</span>.</p>
 <p>Previous work in <span class="citation" data-cites="ma2016wide">Ma et al. (<a href="references.html#ref-ma2016wide" role="doc-biblioref">2016</a>)</span> may also be relevant to this problem.</p>
 <ul>
 <li><span class="math inline">\varepsilon</span>: extinction coefficient (in <span class="math inline">{\textrm{cm}}^{-1}{\textrm{mole}}^{-1}{L}</span>), see <span class="citation" data-cites="hemoglobinspectra">Prahl (<a href="references.html#ref-hemoglobinspectra" role="doc-biblioref">1998</a>)</span>. This is a function of <span class="math inline">\lambda</span></li>
@@ -419,7 +462,7 @@ h_\textrm{HbR}(t) &amp;= (1 - f(t))h_{\textrm{HbT}}(t) \\
 </span></p>
 <ul>
 <li>Replacing <span class="math inline">A</span> in the definition of absorbance: <span class="math inline">\frac{I}{I_o} = e^{-A}</span>: <span class="math display">
-I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{HbO}(\lambda)}h_{\textrm{HbO}}(t) + \mu_{\textrm{HbR}(\lambda)}h_{\textrm{HbR}}(t))}
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{HbO}}(\lambda)h_{\textrm{HbO}}(t) + \mu_{\textrm{HbR}}(\lambda)h_{\textrm{HbR}}(t))}
 </span></li>
 </ul>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
@@ -434,11 +477,11 @@ Approach in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>As in <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>, fluorescence is modeled as linearly proportional to indicator concentration. Assuming the bound state fraction is the same across time (e.g.&nbsp;in a dead-sensor experiment), ratio of fluorescence measurements at any time <span class="math inline">t</span> relative to reference time <span class="math inline">t_0</span> in the absence of any absorption:</p>
+<p>As in <a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a>, fluorescence is modeled as linearly proportional to indicator concentration. Assuming the bound state fraction is the same across time (e.g.&nbsp;in a dead-sensor experiment), ratio of fluorescence measurements at any time <span class="math inline">t</span> relative to reference time <span class="math inline">t_0</span> in the absence of any absorption:</p>
 <p><span class="math display">
 \frac{F(t)}{F(t_0)} = \frac{C(t)}{C(t_0)}
 </span></p>
-<p>Absorption is considered along the path followed by the excitation light, and the path followed by the emission light. In <a href="#eq-single-indicator">Equation&nbsp;<span>1.1</span></a>, this amounts to multiplying the incident power by a factor related to the first path, and the overall emission by another factor.</p>
+<p>Absorption is considered along the path followed by the excitation light, and the path followed by the emission light. In <a href="#eq-single-indicator" class="quarto-xref">Equation&nbsp;<span>1.1</span></a>, this amounts to multiplying the incident power by a factor related to the first path, and the overall emission by another factor.</p>
 <p><span class="math display">
 \begin{align*}
 \frac{F(t,\lambda)}{F(t_{0},\lambda)}&amp;=e^{-\Delta\mu(\lambda)\chi(\lambda)}e^{-\Delta\mu(\lambda_{{\textrm{exc}}})\chi(\lambda_{{\textrm{exc}}})}\frac{C(t)}{C(t_{0})} \\
@@ -451,7 +494,7 @@ Approach in <span class="citation" data-cites="zhang2022spectral">Zhang et al. (
 &amp;+\Delta C_{{\textrm{HbR}}}(t)[\xi_{{\textrm{HbR}}}(\lambda)+\xi_{{\textrm{HbR}}}(\lambda_{{\textrm{exc}}})]
 \end{align*}
 </span></p>
-<p>Compared to notation in <a href="#sec-hemodynamics"><span>Section&nbsp;1.4</span></a>, here we use:</p>
+<p>Compared to notation in <a href="#sec-hemodynamics" class="quarto-xref"><span>Section 1.4</span></a>, here we use:</p>
 <ul>
 <li><span class="math inline">\xi_{{\textrm{HbO}}} \equiv \varepsilon_{\textrm{HbO}} / M_{\textrm{Hg}}</span>, <span class="math inline">\xi_{{\textrm{HbR}}} \equiv \varepsilon_{\textrm{HbR}} / M_{\textrm{Hg}}</span></li>
 <li><span class="math inline">\chi(\lambda) \equiv l</span> (previously assumed to be fixed (1 cm) for all <span class="math inline">\lambda</span>)</li>
@@ -515,7 +558,7 @@ H(t, \lambda) &amp;= e^{-(\mu_{\textrm{HbO}(\lambda)}h_{\textrm{HbO}}(t) + \mu_{
 </ol>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
 <div id="ref-creamer2022correcting" class="csl-entry" role="listitem">
 Creamer, Matthew S, Kevin S Chen, Andrew M Leifer, and Jonathan W Pillow. 2022. <span>“Correcting Motion Induced Fluorescence Artifacts in Two-Channel Neural Imaging.”</span> <em>PLoS Computational Biology</em> 18 (9): e1010421.
 </div>
@@ -629,10 +672,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -642,8 +684,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -656,6 +707,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -699,6 +869,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -724,6 +895,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -785,17 +982,18 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link">
+      <a href="./index.html" class="pagination-link" aria-label="Preface">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./01_methods.html" class="pagination-link">
+      <a href="./01_methods.html" class="pagination-link" aria-label="Methods">
         <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Methods</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
 </div> <!-- /content -->
+
 
 
 

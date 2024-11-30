@@ -1,6 +1,11 @@
 \gdef\colA#1{\textcolor{6488EA}{#1}}
 \gdef\colB#1{\textcolor{AA2704}{#1}}
 
+\gdef\colb#1{\textcolor{63a7ff}{#1}}
+\gdef\colr#1{\textcolor{ff6e63}{#1}}
+\gdef\colg#1{\textcolor{40bf9a}{#1}}
+
+
 # Simulating hyperspectral fiber photometry signals
 
 A recap of the basic model for fluorescence signals from protein indicators.
@@ -30,17 +35,24 @@ The fluorescing indicator molecules can exist in one of two states, bound to lig
 
 $$
 \begin{align*}
-F(t,\lambda,j) = & \colA{f_{\textrm{b}}(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) C(t) P(j,t)} + \\
-                 & \colB{(1 - f_{\textrm{b}}(t)) S_\textrm{f}(\lambda)w_\textrm{f}(j) C(t) P(j,t)} 
+F(t,\lambda,j) = & \colg{f_{\textrm{b}}(t) C(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) P(j,t)} + \\
+                 & \colb{(1 - f_{\textrm{b}}(t)) C(t) S_\textrm{f}(\lambda)w_\textrm{f}(j) P(j,t)} 
 \end{align*}
 $$ {#eq-single-indicator}
+
+<!-- \begin{align*}
+F(t,\lambda,j) = & [\colg{f_{\textrm{b}}(t) C(t) S_\textrm{b}(\lambda)w_\textrm{b}(j) P(j,t)} + \\
+                 & \colb{(1 - f_{\textrm{b}}(t)) C(t) S_\textrm{f}(\lambda)w_\textrm{f}(j) P(j,t)} + \\
+                 & \colr{a(t) S_\textrm{a}(\lambda)w_\textrm{f}(j) P(j,t)}] H(t,\lambda)
+\end{align*} -->
+
 
 @eq-single-indicator is analogous to the setup in and in @helmchen2011calibration. In the following we refer to $f_{\textrm{b}}$ as just $f$. Assuming a positive indicator (where the bound state is brighter than free state), define $F_{\max}$ and $F_{\min}$ as the signal when $f=0$ and $f=1$ respectively. We'll pack terms other than $f$ in @eq-single-indicator into $\eta_\textrm{b}$ and $\eta_\textrm{f}$ for the bound and free components, and drop the arguments $t$, $\lambda$, $j$ for now. Then:
 
 $$
 \begin{align*}
 F &= \eta_{\textrm{b}}f + \eta_{\textrm{f}}(1-f)\\
-  &= F_{\min} + (\eta_{\textrm{b}} − \eta_{\textrm{f}})f \\
+  &= F_{\min} + (\eta_{\textrm{b}} - \eta_{\textrm{f}})f \\
   &= F_{\max} − (\eta_{\textrm{b}} − \eta_{\textrm{f}})(1-f) \\
 \implies \frac{f}{1-f} &= \frac{F - F_{\min}}{F_{\max} - F} \\
 \end{align*}
@@ -57,13 +69,13 @@ $$ {#eq-bound-fraction-rel}
 
 This section is based on discussions in @helmchen2011calibration and @grynkiewicz1985new to relate observed signal to ligand ($\textrm{Ca}^{2+}$ in these studies) concentration in imaging experiments.
 
-For indicator protein $P$ and the ligand $L$, assumiing 1:1 complexation (i.e. 1 molecule of $P$ binds to 1 molecule of $L$):
+For indicator protein $P$ and the ligand $L$, assuming 1:1 complexation (i.e. 1 molecule of $P$ binds to 1 molecule of $L$):
 
 $$
 L + P \xrightleftharpoons[k_{d}]{k_{a}} LP
 $$
 
-At equillibrium:
+At equilibrium:
 $$
 k_d[LP] = k_a[L][P]
 $$
@@ -249,13 +261,15 @@ If there is just a single excitation laser, signals $F_1(\lambda)$ and $F_2(\lam
 
 :::
 
+Signals obtained _in vivo_ will also contain other, additive sources (e.g. autofluoresence and other other signals from other indicators, if present). We've ignored those in the above analysis. We also implicitly set $C(t)$ to 1 everywhere - thus ignoring the effect of bleaching. Both bleaching and hemodynamics are multiplicative effects, which will persist in the isosbestic signal. 
+
 Motion-related artifacts are a common source of noise in fiber photometry experiments. Motion (e.g. head movements) disturbs the optical path (e.g. bending of the fiber), and typically attenuates the signal. This is a multiplicative effect which also affects the isosbestic control signal. Regressing out the component common to the isosbestic control signal and the indicator signal can reduce severity of this artifact, see @simpson2023lights for an overview and @keevers2023obtaining for an implementation of such a procedure. 
 
 @creamer2022correcting discuss motion-related artifacts in a different system but may provide inspiration for solutions in mouse fiber photometry experiments. 
 
 ## Hemodynamics {#sec-hemodynamics}
 
-Absorption by hemoglobin corrupts the signal. For _in vivo_ measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenrated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in @zhang2022spectral.
+Absorption by hemoglobin corrupts the signal. For _in vivo_ measurements, the total cerebral blood volume, and fraction of oxygenated to deoxygenated hemoglobin are dynamic quantities. Oxygenated and deoxygenated hemoglobin have different absorption spectra. The Beer-Lambert law can used to model this effect in the generative model above. A similar approach is considered in @zhang2022spectral.
 
 Previous work in @ma2016wide may also be relevant to this problem.
 
@@ -278,7 +292,7 @@ $$
 
  - Replacing $A$ in the definition of absorbance: $\frac{I}{I_o} = e^{-A}$: 
 $$
-I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{HbO}(\lambda)}h_{\textrm{HbO}}(t) + \mu_{\textrm{HbR}(\lambda)}h_{\textrm{HbR}}(t))}
+I(\lambda, t) = I_o(\lambda, t) e^{-(\mu_{\textrm{HbO}}(\lambda)h_{\textrm{HbO}}(t) + \mu_{\textrm{HbR}}(\lambda)h_{\textrm{HbR}}(t))}
 $$
 
 

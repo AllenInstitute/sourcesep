@@ -1,8 +1,9 @@
 import itertools
-
 import numpy as np
+import xarray as xr
 import torch
 from scipy.fft import fft, fftfreq, ifft
+from tqdm import tqdm
 
 
 def lowpass(xt, sampling_interval, pass_below, axis=-1):
@@ -72,11 +73,7 @@ def perm_avgabscorr(X, Y, dim=1):
     perm_idx = np.array(list(itertools.permutations(range(n_dims))))
     corrs = np.zeros(perm_idx.shape[0])
     for i, perm in enumerate(perm_idx):
-        corrs[i] = np.nanmean(
-            np.abs(
-                [np.corrcoef(X[:, perm[j]], Y[:, j])[0, 1] for j in range(Y.shape[1])]
-            )
-        )
+        corrs[i] = np.nanmean(np.abs([np.corrcoef(X[:, perm[j]], Y[:, j])[0, 1] for j in range(Y.shape[1])]))
     return perm_idx, corrs
 
 
@@ -91,9 +88,7 @@ def test_perm_avgabscorr():
     return
 
 
-def welch_psd(
-    signal, n_per_segment=100, n_overlap=None, sampling_freq=20, verbose=False
-):
+def welch_psd(signal, n_per_segment=100, n_overlap=None, sampling_freq=20, verbose=False):
     """Calculate power spectral density for a 1d signal using Welch's method
     1. Split 1d `signal` into segments of length `n_per_segment`
     2. Apply Hann window to each segment
@@ -112,9 +107,7 @@ def welch_psd(
 
     if n_overlap is None:
         n_overlap = n_per_segment // 2
-    assert (
-        n_per_segment <= signal.shape[0]
-    ), "n_per_segment must be less than signal length"
+    assert n_per_segment <= signal.shape[0], "n_per_segment must be less than signal length"
     assert n_per_segment > n_overlap, "n_per_segment must be greater than n_overlap"
 
     segments = signal.unfold(0, n_per_segment, n_per_segment - n_overlap)
@@ -126,9 +119,82 @@ def welch_psd(
         print(f"Segment shape: {segments.shape}")
 
     # TODO: revisit normalization here:
-    psd_welch = torch.mean(torch.abs(fft_segments) ** 2, dim=0) / (
-        torch.sum(windows**2)
-    )
+    psd_welch = torch.mean(torch.abs(fft_segments) ** 2, dim=0) / (torch.sum(windows**2))
     freqs_welch = torch.fft.rfftfreq(n_per_segment, d=1 / sampling_freq)
 
     return freqs_welch, psd_welch
+
+
+def quadratic_bezier(p0, p1, p2, t):
+    """Quadratic Bezier curve
+
+    Args:
+        p0 (tuple): (x,y) control point
+        p1 (tuple): (x,y) control point
+        p2 (tuple): (x,y) control point
+        t (float): parameter along the curve.
+
+    Returns:
+        (x,y): Value at given t
+    """
+    return (1 - t) ** 2 * p0 + 2 * (1 - t) * t * p1 + t**2 * p2
+
+
+def solve_quadratic_bezier(p0x, p1x, p2x, x):
+    """Solves for t in a quadratic Bezier curve given x values of control points.
+
+    Args:
+        p0x (float): x value of control point
+        p1x (float): x value of control point
+        p2x (float): x value of control point
+        t (float): parameter along the curve.
+    """
+    a = p0x - 2 * p1x + p2x
+    b = 2 * (p1x - p0x)
+    c = p0x - x
+    t = np.roots([a, b, c])
+    t = t[(t >= 0) & (t <= 1)]
+    return t
+
+
+def cubic_bezier(p0, p1, p2, p3, t):
+    """Cubic Bezier curve
+
+    Args:
+        p0 (tuple): (x,y) control point
+        p1 (tuple): (x,y) control point
+        p2 (tuple): (x,y) control point
+        p3 (tuple): (x,y) control point
+        t (float): parameter along the curve.
+
+    Returns:
+        (x,y): Value at given t
+    """
+    return (1 - t) ** 3 * p0 + 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t**2 * p2 + t**3 * p3
+
+
+def detrend_1d(signal):
+    x = np.arange(len(signal))
+    p = np.polyfit(x, signal, 4)
+    polyfit = np.polyval(p, x)
+    detrended = signal - polyfit + np.mean(signal)
+    return detrended, polyfit
+
+
+def detrend_signal(F):
+    """Independently fit each entry in F along the time axis.
+
+    Args:
+        F (xr.DataArray): n-dim float array with fluoresence signal
+    """
+    assert isinstance(
+        F, xr.core.dataarray.DataArray
+    ), "Expecting F to be an xarray DataArray with a named time dimension"
+    F_detrended = xr.full_like(F, 0, dtype=np.double)
+    F_detrended = F_detrended.transpose("time", ...)
+    for i in tqdm(range(F.shape[1])):
+        for j in range(F.shape[2]):
+            F_detrended[:, i, j] = detrend_1d(F[:, i, j])[0]
+
+    F_detrended = F_detrended.transpose(*F.dims)
+    return F_detrended
